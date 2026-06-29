@@ -707,18 +707,17 @@ async function processarPDFs(){
 // ── EXTRAÇÃO LOCAL DE PDF (sem API) ──
 
 function extrairEscalasBovino(text){
-  // Funciona com \n ou espaços (pdf.js colapsa linhas)
   const acum={};
   const pats=[
-    [/(\d+)\s+FRIGORIFICO\s+SERRAD[AÃO]{1,2}\s+LTDA[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+SERRAD/is,'Serradão'],
-    [/(\d+)\s+IND\.\s*COM\.\s*FRIGO\s*VITTA\.[^0-9]{0,30}?(\d+)\s+IND\.\s*COM\.\s*FRIGO\s*VITTA/is,'Frigovitta'],
-    [/(\d+)\s+FRIGORIFICO\s+TOURINO\s+COM\.[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+TOURINO/is,'Frigomatos'],
-    [/(\d+)\s+FRIGORIFICO\s+COSTA\s+LTDA[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+COSTA/is,'Frigocosta'],
-    [/(\d+)\s+FR\.\s+DIAMANTE\s+LTDA[^0-9]{2,80}?(\d+)\s+FR\.\s+DIAMANTE/is,'Frigocosta'],
-    [/(\d+)\s+FRIGORIFICO\s+GUATU\s+LTDA[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+GUATU/is,'Guatu'],
-    [/(\d+)\s+FR\.\s+HORT\s+SUL\s+LTDA[^0-9]{2,80}?(\d+)\s+FR\.\s+HORT\s+SUL/is,'Hortsul'],
-    [/(\d+)\s+FRIGORIFICO\s+PRETA\s+LTDA[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+PRETA/is,'Hortsul'],
-    [/(\d+)\s+FRIGORIFICO\s+MARBOI[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+MARBOI/is,'Marboi'],
+    [/(\d+)\s+FRIGORIFICO\s+SERRAD[A\xc3\x83O]+\s+LTDA\.\s+(\d+)\s+FRIGORIFICO\s+SERRAD/i,'SerradÃ£o'],
+    [/(\d+)\s+IND\.\s+COM\.\s+FRIGO\s+VITTA\.\s+(\d+)\s+IND\./i,'Frigovitta'],
+    [/(\d+)\s+FRIGORIFICO\s+TOURINO\s+COM\.\s+(\d+)\s+FRIGORIFICO\s+TOURINO/i,'Frigomatos'],
+    [/(\d+)\s+FRIGORIFICO\s+COSTA\s+LTDA[^0-9]{2,60}?(\d+)\s+FRIGORIFICO\s+COSTA/i,'Frigocosta'],
+    [/(\d+)\s+FR\.\s+DIAMANTE\s+LTDA[^0-9]{2,60}?(\d+)\s+FR\.\s+DIAMANTE/i,'Frigocosta'],
+    [/(\d+)\s+FRIGORIFICO\s+GUATU\s+LTDA[^0-9]{2,60}?(\d+)\s+FRIGORIFICO\s+GUATU/i,'Guatu'],
+    [/(\d+)\s+FR\.\s+HORT\s+SUL\s+LTDA[^0-9]{2,60}?(\d+)\s+FR\.\s+HORT\s+SUL/i,'Hortsul'],
+    [/(\d+)\s+FRIGORIFICO\s+PRETA\s+LTDA[^0-9]{2,60}?(\d+)\s+FRIGORIFICO\s+PRETA/i,'Hortsul'],
+    [/(\d+)\s+FRIGORIFICO\s+MARBOI[^0-9]{2,60}?(\d+)\s+FRIGORIFICO\s+MARBOI/i,'Marboi'],
   ];
   pats.forEach(([pat,emp])=>{
     const m=text.match(pat);
@@ -735,15 +734,15 @@ function extrairEscalasBovino(text){
 function extrairEscalasSuino(text){
   const acum={};
   const pats=[
-    [/(\d+)\s+FRIGORIFICO\s+SERRAD[AÃO]{1,2}\.\s+MARCA\s+-A\s+(\d+)\s+FRIGORIFICO\s+SERRAD/is,'Serradão'],
-    [/(\d+)\s+FRIGORIFICO\s+TOURINO\s*\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+TOURINO/is,'Frigomatos'],
-    [/(\d+)\s+FRIGORIFICO\s+FRIGOVITTA\.\s+MARCA\s+-FS\s+(\d+)\s+FRIGORIFICO\s+FRIGOVITTA/is,'Frigovitta'],
-    [/(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA\.\s+MARCA\s+-IB\s+(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA/is,'Frigocosta'],
-    [/(\d+)\s+FRIGORIFICO\s+FRIGOGUATU\.\s+MARCA\s+-FG\s+(\d+)\s+FRIGORIFICO\s+FRIGOGUATU/is,'Guatu'],
-    [/(\d+)\s+FRIGORIFICO\s+HORTISU\.\s+MARCA\s+-L\s+(\d+)\s+FRIGORIFICO\s+HORTISU/is,'Hortsul'],
-    [/(\d+)\s+FRIGORIFICO\s+MARBOI\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+MARBOI/is,'Marboi'],
-    [/(\d+)\s+FRIGORIFICO\s+DIAMANTE\.\s+IB\s+(\d+)\s+FRIGORIFICO\s+DIAMANTE/is,'Frigocosta'],
-    [/(\d+)\s+SEALI\s+FOODS\s+B\s+(\d+)\s+SEALI\s+FOODS/is,'Seali'],
+    [/(\d+)\s+FRIGORIFICO\s+SERRAD[A\xc3\x83O]+\.\s+MARCA\s+-A\s+(\d+)\s+FRIGORIFICO\s+SERRAD/i,'SerradÃ£o'],
+    [/(\d+)\s+FRIGORIFICO\s+TOURINO\s*\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+TOURINO/i,'Frigomatos'],
+    [/(\d+)\s+FRIGORIFICO\s+FRIGOVITTA\.\s+MARCA\s+-FS\s+(\d+)\s+FRIGORIFICO\s+FRIGOVITTA/i,'Frigovitta'],
+    [/(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA\.\s+MARCA\s+-IB\s+(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA/i,'Frigocosta'],
+    [/(\d+)\s+FRIGORIFICO\s+FRIGOGUATU\.\s+MARCA\s+-FG\s+(\d+)\s+FRIGORIFICO\s+FRIGOGUATU/i,'Guatu'],
+    [/(\d+)\s+FRIGORIFICO\s+HORTISU\.\s+MARCA\s+-L\s+(\d+)\s+FRIGORIFICO\s+HORTISU/i,'Hortsul'],
+    [/(\d+)\s+FRIGORIFICO\s+MARBOI\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+MARBOI/i,'Marboi'],
+    [/(\d+)\s+FRIGORIFICO\s+DIAMANTE\.\s+IB\s+(\d+)\s+FRIGORIFICO\s+DIAMANTE/i,'Frigocosta'],
+    [/(\d+)\s+SEALI\s+FOODS\s+B\s+(\d+)\s+SEALI\s+FOODS/i,'Seali'],
   ];
   pats.forEach(([pat,emp])=>{
     const m=text.match(pat);
@@ -760,25 +759,26 @@ function extrairEscalasSuino(text){
 }
 
 function extrairTotalizacaoSisAtak(text){
-  // Busca "** Totalização Geral **" e pega "Animais Abatidos : N PESO MEDIA" logo depois
-  const idx=text.indexOf('** Totalização Geral **');
+  // RABT505: usa lastIndexOf para pegar ULTIMA Totalizacao Geral
+  const idx=text.lastIndexOf('** Totalização Geral **');
   if(idx>=0){
-    const depois=text.slice(idx,idx+300);
-    const m=depois.match(/Animais\s+Abatidos\s*:\s*(\d+)\s+([\d.]+,\d+)\s+([\d]+,\d+)/);
-    if(m){
-      const cab=parseInt(m[1]);
-      const peso=parseFloat(m[2].replace(/\./g,'').replace(',','.'));
-      const media=parseFloat(m[3].replace(',','.'));
+    const depois=text.slice(idx,idx+400);
+    const all=[...depois.matchAll(/Animais\s+Abatidos\s*:\s*(\d+)\s+([\d.]+,\d+)\s+([\d]+,\d+)/gi)];
+    if(all.length>0){
+      const last=all[all.length-1];
+      const cab=parseInt(last[1]);
+      const peso=parseFloat(last[2].replace(/\./g,'').replace(',','.'));
+      const media=parseFloat(last[3].replace(',','.'));
       if(cab>0&&peso>0) return{cabecas:cab,peso_total_kg:peso,media_kg:media};
     }
   }
-  // RABT502 Seali: "MACHO 128cabeça(s) 11.493,00kg 89,79kg/Cab."
-  const m2=text.match(/MACHO\s+(\d+)cabeça\(s\)\s+([\d.]+,\d+)kg\s+([\d.]+,\d+)kg/);
-  if(m2) return{
-    cabecas:parseInt(m2[1]),
-    peso_total_kg:parseFloat(m2[2].replace(/\./g,'').replace(',','.')),
-    media_kg:parseFloat(m2[3].replace(',','.'))
-  };
+  // RABT502 Seali - duas possibilidades de formato pdf.js:
+  // 1) "MACHO 128cabeça(s) 11.493,00kg 89,79kg" (itens unidos)
+  // 2) "cabeça(s) 128 Peso kg 11.493,00 Kg Cab kg/Cab. 89,79" (itens separados)
+  const m2=text.match(/MACHO\s+(\d+)\s*cabe[cç]a\(s\)\s*([\d.]+,\d+)\s*kg\s*([\d.]+,\d+)\s*kg/i);
+  if(m2) return{cabecas:parseInt(m2[1]),peso_total_kg:parseFloat(m2[2].replace(/\./g,'').replace(',','.')),media_kg:parseFloat(m2[3].replace(',','.'))};
+  const m3=text.match(/cabe[cç]a\(s\)\s+(\d+)[^0-9]+([\d.]+,\d{2})[^0-9]+([\d]+,\d{2})/i);
+  if(m3) return{cabecas:parseInt(m3[1]),peso_total_kg:parseFloat(m3[2].replace(/\./g,'').replace(',','.')),media_kg:parseFloat(m3[3].replace(',','.'))};
   return null;
 }
 
@@ -805,7 +805,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
 });
 
 // ── LOGIN ──
-
 function abrirOperacao(){if(operacaoLiberada){showTab('upload');return;}const o=document.getElementById('login-overlay');o.style.display='flex';document.getElementById('login-input').value='';document.getElementById('login-error').style.display='none';setTimeout(()=>document.getElementById('login-input').focus(),100);}
 function verificarSenha(){const v=document.getElementById('login-input').value;if(v===SENHA){operacaoLiberada=true;fecharLogin();showTab('upload');}else{document.getElementById('login-error').style.display='block';document.getElementById('login-input').value='';document.getElementById('login-input').focus();}}
 function fecharLogin(){document.getElementById('login-overlay').style.display='none';}
