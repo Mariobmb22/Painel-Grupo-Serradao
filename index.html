@@ -709,14 +709,14 @@ async function processarPDFs(){
 function extrairEscalasBovino(text){
   const acum={};
   const pats=[
-    [/(\d+)\s+FRIGORIFICO\s+SERRAD[A\xc3\x83O]+\s+LTDA\.\s+(\d+)\s+FRIGORIFICO\s+SERRAD/i,'SerradÃ£o'],
+    [/(\d+)\s+FRIGORIFICO\s+SERRAD\s+Ã\s+O\s+LTDA\.\s+(\d+)\s+FRIGORIFICO\s+SERRAD/i,'Serradão'],
     [/(\d+)\s+IND\.\s+COM\.\s+FRIGO\s+VITTA\.\s+(\d+)\s+IND\./i,'Frigovitta'],
     [/(\d+)\s+FRIGORIFICO\s+TOURINO\s+COM\.\s+(\d+)\s+FRIGORIFICO\s+TOURINO/i,'Frigomatos'],
-    [/(\d+)\s+FRIGORIFICO\s+COSTA\s+LTDA[^0-9]{2,60}?(\d+)\s+FRIGORIFICO\s+COSTA/i,'Frigocosta'],
-    [/(\d+)\s+FR\.\s+DIAMANTE\s+LTDA[^0-9]{2,60}?(\d+)\s+FR\.\s+DIAMANTE/i,'Frigocosta'],
-    [/(\d+)\s+FRIGORIFICO\s+GUATU\s+LTDA[^0-9]{2,60}?(\d+)\s+FRIGORIFICO\s+GUATU/i,'Guatu'],
-    [/(\d+)\s+FR\.\s+HORT\s+SUL\s+LTDA[^0-9]{2,60}?(\d+)\s+FR\.\s+HORT\s+SUL/i,'Hortsul'],
-    [/(\d+)\s+FRIGORIFICO\s+PRETA\s+LTDA[^0-9]{2,60}?(\d+)\s+FRIGORIFICO\s+PRETA/i,'Hortsul'],
+    [/(\d+)\s+FRIGORIFICO\s+COSTA\s+LTDA\s+(\d+)\s+FRIGORIFICO\s+COSTA/i,'Frigocosta'],
+    [/(\d+)\s+FR\.\s+DIAMANTE\s+LTDA\s+(\d+)\s+FR\.\s+DIAMANTE/i,'Frigocosta'],
+    [/(\d+)\s+FRIGORIFICO\s+GUATU\s+LTDA\s+(\d+)\s+FRIGORIFICO\s+GUATU/i,'Guatu'],
+    [/(\d+)\s+FR\.\s+HORT\s+SUL\s+LTDA\.\s+(\d+)\s+FR\.\s+HORT\s+SUL/i,'Hortsul'],
+    [/(\d+)\s+FRIGORIFICO\s+PRETA\s+LTDA\s+(\d+)\s+FRIGORIFICO\s+PRETA/i,'Hortsul'],
     [/(\d+)\s+FRIGORIFICO\s+MARBOI[^0-9]{2,60}?(\d+)\s+FRIGORIFICO\s+MARBOI/i,'Marboi'],
   ];
   pats.forEach(([pat,emp])=>{
@@ -734,13 +734,13 @@ function extrairEscalasBovino(text){
 function extrairEscalasSuino(text){
   const acum={};
   const pats=[
-    [/(\d+)\s+FRIGORIFICO\s+SERRAD[A\xc3\x83O]+\.\s+MARCA\s+-A\s+(\d+)\s+FRIGORIFICO\s+SERRAD/i,'SerradÃ£o'],
-    [/(\d+)\s+FRIGORIFICO\s+TOURINO\s*\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+TOURINO/i,'Frigomatos'],
-    [/(\d+)\s+FRIGORIFICO\s+FRIGOVITTA\.\s+MARCA\s+-FS\s+(\d+)\s+FRIGORIFICO\s+FRIGOVITTA/i,'Frigovitta'],
-    [/(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA\.\s+MARCA\s+-IB\s+(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA/i,'Frigocosta'],
-    [/(\d+)\s+FRIGORIFICO\s+FRIGOGUATU\.\s+MARCA\s+-FG\s+(\d+)\s+FRIGORIFICO\s+FRIGOGUATU/i,'Guatu'],
-    [/(\d+)\s+FRIGORIFICO\s+HORTISU\.\s+MARCA\s+-L\s+(\d+)\s+FRIGORIFICO\s+HORTISU/i,'Hortsul'],
-    [/(\d+)\s+FRIGORIFICO\s+MARBOI\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+MARBOI/i,'Marboi'],
+    [/(\d+)\s+FRIGORIFICO\s+SERRAD\s+Ã\s+O\.\s+MARCA\s+-\s+A\s+(\d+)\s+FRIGORIFICO\s+SERRAD/i,'Serradão'],
+    [/(\d+)\s+FRIGORIFICO\s+TOURINO\s+\.\s+MARCA\s+-\s+MB\s+(\d+)\s+FRIGORIFICO\s+TOURINO/i,'Frigomatos'],
+    [/(\d+)\s+FRIGORIFICO\s+FRIGOVITTA\.\s+MARCA\s+-\s+FS\s+(\d+)\s+FRIGORIFICO\s+FRIGOVITTA/i,'Frigovitta'],
+    [/(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA\.\s+MARCA\s+-\s+IB\s+(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA/i,'Frigocosta'],
+    [/(\d+)\s+FRIGORIFICO\s+FRIGOGUATU\.\s+MARCA\s+-\s+FG\s+(\d+)\s+FRIGORIFICO\s+FRIGOGUATU/i,'Guatu'],
+    [/(\d+)\s+FRIGORIFICO\s+HORTISU\.\s+MARCA\s+-\s+L\s+(\d+)\s+FRIGORIFICO\s+HORTISU/i,'Hortsul'],
+    [/(\d+)\s+FRIGORIFICO\s+MARBOI\.\s+MARCA\s+-\s+MB\s+(\d+)\s+FRIGORIFICO\s+MARBOI/i,'Marboi'],
     [/(\d+)\s+FRIGORIFICO\s+DIAMANTE\.\s+IB\s+(\d+)\s+FRIGORIFICO\s+DIAMANTE/i,'Frigocosta'],
     [/(\d+)\s+SEALI\s+FOODS\s+B\s+(\d+)\s+SEALI\s+FOODS/i,'Seali'],
   ];
@@ -759,26 +759,32 @@ function extrairEscalasSuino(text){
 }
 
 function extrairTotalizacaoSisAtak(text){
-  // RABT505: usa lastIndexOf para pegar ULTIMA Totalizacao Geral
+  // RABT505: total (CAB PESO) fica ANTES de ** Totalização Geral **
+  // media fica DEPOIS do marcador
   const idx=text.lastIndexOf('** Totalização Geral **');
   if(idx>=0){
-    const depois=text.slice(idx,idx+400);
-    const all=[...depois.matchAll(/Animais\s+Abatidos\s*:\s*(\d+)\s+([\d.]+,\d+)\s+([\d]+,\d+)/gi)];
-    if(all.length>0){
-      const last=all[all.length-1];
-      const cab=parseInt(last[1]);
-      const peso=parseFloat(last[2].replace(/\./g,'').replace(',','.'));
-      const media=parseFloat(last[3].replace(',','.'));
-      if(cab>0&&peso>0) return{cabecas:cab,peso_total_kg:peso,media_kg:media};
+    const before=text.slice(0,idx);
+    const after=text.slice(idx);
+    // Último par CAB PESO_GRANDE antes do marcador
+    const pairs=[...before.matchAll(/(\d+)\s+([\d.]+,\d{2})/g)];
+    for(let i=pairs.length-1;i>=0;i--){
+      const cab=parseInt(pairs[i][1]);
+      const peso=parseFloat(pairs[i][2].replace(/\./g,'').replace(',','.'));
+      if(cab>0&&peso>1000){
+        const mMedia=after.match(/Animais\s+Abatidos\s*:\s*([\d]+,\d{2})/);
+        const media=mMedia?parseFloat(mMedia[1].replace(',','.')):0;
+        return{cabecas:cab,peso_total_kg:peso,media_kg:media};
+      }
     }
   }
-  // RABT502 Seali - duas possibilidades de formato pdf.js:
-  // 1) "MACHO 128cabeça(s) 11.493,00kg 89,79kg" (itens unidos)
-  // 2) "cabeça(s) 128 Peso kg 11.493,00 Kg Cab kg/Cab. 89,79" (itens separados)
-  const m2=text.match(/MACHO\s+(\d+)\s*cabe[cç]a\(s\)\s*([\d.]+,\d+)\s*kg\s*([\d.]+,\d+)\s*kg/i);
-  if(m2) return{cabecas:parseInt(m2[1]),peso_total_kg:parseFloat(m2[2].replace(/\./g,'').replace(',','.')),media_kg:parseFloat(m2[3].replace(',','.'))};
-  const m3=text.match(/cabe[cç]a\(s\)\s+(\d+)[^0-9]+([\d.]+,\d{2})[^0-9]+([\d]+,\d{2})/i);
-  if(m3) return{cabecas:parseInt(m3[1]),peso_total_kg:parseFloat(m3[2].replace(/\./g,'').replace(',','.')),media_kg:parseFloat(m3[3].replace(',','.'))};
+  // RABT502 Seali: "cabeça(s) kg PESO MEDIA ... CAB ... MACHO"
+  // Ordem: peso e media vêm ANTES das cabeças
+  const m2=text.match(/cabeça\(s\)\s+kg[^0-9]+([\d.]+,\d{2})\s+([\d]+,\d{2})[^0-9]+([\d]+,\d{2})[^0-9]+(\d+)[^0-9]+[\d.,]+\s+MACHO/i);
+  if(m2) return{
+    cabecas:parseInt(m2[4]),
+    peso_total_kg:parseFloat(m2[1].replace(/\./g,'').replace(',','.')),
+    media_kg:parseFloat(m2[2].replace(',','.'))
+  };
   return null;
 }
 
