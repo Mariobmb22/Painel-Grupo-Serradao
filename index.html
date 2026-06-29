@@ -707,26 +707,25 @@ async function processarPDFs(){
 // ── EXTRAÇÃO LOCAL DE PDF (sem API) ──
 
 function extrairEscalasBovino(text){
-  const t=text.replace(/\s+/g,' ');
+  // Funciona com \n ou espaços (pdf.js colapsa linhas)
   const acum={};
   const pats=[
-    [/([0-9]+)\s+FRIGORIFICO\s+SERRAD[AÃ]O[^0-9]{2,80}?([0-9]+)\s+FRIGORIFICO\s+SERRAD[AÃ]O/i,'Serradão'],
-    [/([0-9]+)\s+IND[^0-9]{0,5}COM[^0-9]{0,5}FRIGO\s*VITTA[^0-9]{0,20}?([0-9]+)\s+IND/i,'Frigovitta'],
-    [/([0-9]+)\s+FRIGORIFICO\s+TOURINO[^0-9]{2,80}?([0-9]+)\s+FRIGORIFICO\s+TOURINO/i,'Frigomatos'],
-    [/([0-9]+)\s+FRIGORIFICO\s+COSTA[^0-9]{2,80}?([0-9]+)\s+FRIGORIFICO\s+COSTA/i,'Frigocosta'],
-    [/([0-9]+)\s+FR[^0-9]{0,5}DIAMANTE[^0-9]{2,80}?([0-9]+)\s+FR[^0-9]{0,5}DIAMANTE/i,'Frigocosta'],
-    [/([0-9]+)\s+FRIGORIFICO\s+GUATU[^0-9]{2,80}?([0-9]+)\s+FRIGORIFICO\s+GUATU/i,'Guatu'],
-    [/([0-9]+)\s+FR[^0-9]{0,5}HORT\s*SUL[^0-9]{2,80}?([0-9]+)\s+FR[^0-9]{0,5}HORT\s*SUL/i,'Hortsul'],
-    [/([0-9]+)\s+FRIGORIFICO\s+PRETA[^0-9]{2,80}?([0-9]+)\s+FRIGORIFICO\s+PRETA/i,'Hortsul'],
-    [/([0-9]+)\s+FRIGORIFICO\s+MARBOI[^0-9]{2,80}?([0-9]+)\s+FRIGORIFICO\s+MARBOI/i,'Marboi'],
+    [/(\d+)\s+FRIGORIFICO\s+SERRAD[AÃO]{1,2}\s+LTDA[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+SERRAD/is,'Serradão'],
+    [/(\d+)\s+IND\.\s*COM\.\s*FRIGO\s*VITTA\.[^0-9]{0,30}?(\d+)\s+IND\.\s*COM\.\s*FRIGO\s*VITTA/is,'Frigovitta'],
+    [/(\d+)\s+FRIGORIFICO\s+TOURINO\s+COM\.[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+TOURINO/is,'Frigomatos'],
+    [/(\d+)\s+FRIGORIFICO\s+COSTA\s+LTDA[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+COSTA/is,'Frigocosta'],
+    [/(\d+)\s+FR\.\s+DIAMANTE\s+LTDA[^0-9]{2,80}?(\d+)\s+FR\.\s+DIAMANTE/is,'Frigocosta'],
+    [/(\d+)\s+FRIGORIFICO\s+GUATU\s+LTDA[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+GUATU/is,'Guatu'],
+    [/(\d+)\s+FR\.\s+HORT\s+SUL\s+LTDA[^0-9]{2,80}?(\d+)\s+FR\.\s+HORT\s+SUL/is,'Hortsul'],
+    [/(\d+)\s+FRIGORIFICO\s+PRETA\s+LTDA[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+PRETA/is,'Hortsul'],
+    [/(\d+)\s+FRIGORIFICO\s+MARBOI[^0-9]{2,80}?(\d+)\s+FRIGORIFICO\s+MARBOI/is,'Marboi'],
   ];
   pats.forEach(([pat,emp])=>{
-    const m=t.match(pat);
+    const m=text.match(pat);
     if(m){
       const prev=parseInt(m[1]),abat=parseInt(m[2]);
       if(!acum[emp]) acum[emp]={abatidos:0,previsto:0};
-      acum[emp].abatidos+=abat;
-      acum[emp].previsto+=prev;
+      acum[emp].abatidos+=abat; acum[emp].previsto+=prev;
     }
   });
   return Object.entries(acum).filter(([,v])=>v.abatidos>0||v.previsto>0)
@@ -734,27 +733,25 @@ function extrairEscalasBovino(text){
 }
 
 function extrairEscalasSuino(text){
-  const t=text.replace(/\s+/g,' ');
   const acum={};
   const pats=[
-    [/([0-9]+)\s+FRIGORIFICO\s+SERRAD[AÃ]O\.\s+MARCA\s+-A\s+([0-9]+)\s+FRIGORIFICO\s+SERRAD[AÃ]O/i,'Serradão'],
-    [/([0-9]+)\s+FRIGORIFICO\s+TOURINO\s*\.?\s+MARCA\s+-MB\s+([0-9]+)\s+FRIGORIFICO\s+TOURINO/i,'Frigomatos'],
-    [/([0-9]+)\s+FRIGORIFICO\s+FRIGOVITTA\.?\s+MARCA\s+-FS\s+([0-9]+)\s+FRIGORIFICO\s+FRIGOVITTA/i,'Frigovitta'],
-    [/([0-9]+)\s+FRIGORIFICO\s+FRIGOCOSTA\.?\s+MARCA\s+-IB\s+([0-9]+)\s+FRIGORIFICO\s+FRIGOCOSTA/i,'Frigocosta'],
-    [/([0-9]+)\s+FRIGORIFICO\s+FRIGOGUATU\.?\s+MARCA\s+-FG\s+([0-9]+)\s+FRIGORIFICO\s+FRIGOGUATU/i,'Guatu'],
-    [/([0-9]+)\s+FRIGORIFICO\s+HORTISU\.?\s+MARCA\s+-L\s+([0-9]+)\s+FRIGORIFICO\s+HORTISU/i,'Hortsul'],
-    [/([0-9]+)\s+FRIGORIFICO\s+MARBOI\.?\s+MARCA\s+-MB\s+([0-9]+)\s+FRIGORIFICO\s+MARBOI/i,'Marboi'],
-    [/([0-9]+)\s+FRIGORIFICO\s+DIAMANTE\.?\s+IB\s+([0-9]+)\s+FRIGORIFICO\s+DIAMANTE/i,'Frigocosta'],
-    [/([0-9]+)\s+SEALI\s+FOODS?\s+B\s+([0-9]+)\s+SEALI\s+FOODS?/i,'Seali'],
+    [/(\d+)\s+FRIGORIFICO\s+SERRAD[AÃO]{1,2}\.\s+MARCA\s+-A\s+(\d+)\s+FRIGORIFICO\s+SERRAD/is,'Serradão'],
+    [/(\d+)\s+FRIGORIFICO\s+TOURINO\s*\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+TOURINO/is,'Frigomatos'],
+    [/(\d+)\s+FRIGORIFICO\s+FRIGOVITTA\.\s+MARCA\s+-FS\s+(\d+)\s+FRIGORIFICO\s+FRIGOVITTA/is,'Frigovitta'],
+    [/(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA\.\s+MARCA\s+-IB\s+(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA/is,'Frigocosta'],
+    [/(\d+)\s+FRIGORIFICO\s+FRIGOGUATU\.\s+MARCA\s+-FG\s+(\d+)\s+FRIGORIFICO\s+FRIGOGUATU/is,'Guatu'],
+    [/(\d+)\s+FRIGORIFICO\s+HORTISU\.\s+MARCA\s+-L\s+(\d+)\s+FRIGORIFICO\s+HORTISU/is,'Hortsul'],
+    [/(\d+)\s+FRIGORIFICO\s+MARBOI\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+MARBOI/is,'Marboi'],
+    [/(\d+)\s+FRIGORIFICO\s+DIAMANTE\.\s+IB\s+(\d+)\s+FRIGORIFICO\s+DIAMANTE/is,'Frigocosta'],
+    [/(\d+)\s+SEALI\s+FOODS\s+B\s+(\d+)\s+SEALI\s+FOODS/is,'Seali'],
   ];
   pats.forEach(([pat,emp])=>{
-    const m=t.match(pat);
+    const m=text.match(pat);
     if(m){
       const prev=parseInt(m[1]),abat=parseInt(m[2]);
       if(abat>0){
         if(!acum[emp]) acum[emp]={abatidos:0,previsto:0};
-        acum[emp].abatidos+=abat;
-        acum[emp].previsto+=prev;
+        acum[emp].abatidos+=abat; acum[emp].previsto+=prev;
       }
     }
   });
@@ -763,22 +760,24 @@ function extrairEscalasSuino(text){
 }
 
 function extrairTotalizacaoSisAtak(text){
-  const t=text.replace(/\s+/g,' ');
-  // RABT505: último "Animais Abatidos : N PESO MEDIA"
-  const all=[...t.matchAll(/Animais\s+Abatidos\s*:\s*([0-9]+)\s+([0-9.]+,[0-9]+)\s+([0-9]+,[0-9]+)/gi)];
-  if(all.length>0){
-    const last=all[all.length-1];
-    const cab=parseInt(last[1]);
-    const peso=parseFloat(last[2].replace(/\./g,'').replace(',','.'));
-    const media=parseFloat(last[3].replace(',','.'));
-    if(cab>0&&peso>0) return{cabecas:cab,peso_total_kg:peso,media_kg:media};
+  // Busca "** Totalização Geral **" e pega "Animais Abatidos : N PESO MEDIA" logo depois
+  const idx=text.indexOf('** Totalização Geral **');
+  if(idx>=0){
+    const depois=text.slice(idx,idx+300);
+    const m=depois.match(/Animais\s+Abatidos\s*:\s*(\d+)\s+([\d.]+,\d+)\s+([\d]+,\d+)/);
+    if(m){
+      const cab=parseInt(m[1]);
+      const peso=parseFloat(m[2].replace(/\./g,'').replace(',','.'));
+      const media=parseFloat(m[3].replace(',','.'));
+      if(cab>0&&peso>0) return{cabecas:cab,peso_total_kg:peso,media_kg:media};
+    }
   }
-  // RABT502 Seali
-  const m=t.match(/MACHO\s+([0-9]+)\s*cabeça[^0-9]{0,10}([0-9.]+,[0-9]+)\s*kg\s*([0-9]+,[0-9]+)/i);
-  if(m) return{
-    cabecas:parseInt(m[1]),
-    peso_total_kg:parseFloat(m[2].replace(/\./g,'').replace(',','.')),
-    media_kg:parseFloat(m[3].replace(',','.'))
+  // RABT502 Seali: "MACHO 128cabeça(s) 11.493,00kg 89,79kg/Cab."
+  const m2=text.match(/MACHO\s+(\d+)cabeça\(s\)\s+([\d.]+,\d+)kg\s+([\d.]+,\d+)kg/);
+  if(m2) return{
+    cabecas:parseInt(m2[1]),
+    peso_total_kg:parseFloat(m2[2].replace(/\./g,'').replace(',','.')),
+    media_kg:parseFloat(m2[3].replace(',','.'))
   };
   return null;
 }
@@ -806,7 +805,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 });
 
 // ── LOGIN ──
-operacaoLiberada=false;
+
 function abrirOperacao(){if(operacaoLiberada){showTab('upload');return;}const o=document.getElementById('login-overlay');o.style.display='flex';document.getElementById('login-input').value='';document.getElementById('login-error').style.display='none';setTimeout(()=>document.getElementById('login-input').focus(),100);}
 function verificarSenha(){const v=document.getElementById('login-input').value;if(v===SENHA){operacaoLiberada=true;fecharLogin();showTab('upload');}else{document.getElementById('login-error').style.display='block';document.getElementById('login-input').value='';document.getElementById('login-input').focus();}}
 function fecharLogin(){document.getElementById('login-overlay').style.display='none';}
@@ -913,94 +912,6 @@ async function processarPDFs(){
   }catch(err){showAlert('upload-alert','err','Erro: '+err.message);}
 }
 // ── EXTRAÇÃO LOCAL DE PDF (sem API) ──
-
-function extrairEscalasBovino(text){
-  const acum={};
-  const pats=[
-    [/(\d+)\s+FRIGORIFICO\s+SERRAD[AÃ]O[^0-9]{2,50}?(\d+)\s+FRIGORIFICO\s+SERRAD[AÃ]O/is,'Serradão'],
-    [/(\d+)\s+IND\.?\s*COM\.?\s*FRIGO\s*VITTA[^0-9]{0,15}?(\d+)\s+IND\.?\s*COM\.?\s*FRIGO/is,'Frigovitta'],
-    [/(\d+)\s+FRIGORIFICO\s+TOURINO[^0-9]{2,50}?(\d+)\s+FRIGORIFICO\s+TOURINO/is,'Frigomatos'],
-    [/(\d+)\s+FRIGORIFICO\s+COSTA[^0-9]{2,50}?(\d+)\s+FRIGORIFICO\s+COSTA/is,'Frigocosta'],
-    [/(\d+)\s+FR\.\s*DIAMANTE[^0-9]{2,50}?(\d+)\s+FR\.\s*DIAMANTE/is,'Frigocosta'],
-    [/(\d+)\s+FRIGORIFICO\s+GUATU[^0-9]{2,50}?(\d+)\s+FRIGORIFICO\s+GUATU/is,'Guatu'],
-    [/(\d+)\s+FR\.\s*HORT\s*SUL[^0-9]{2,50}?(\d+)\s+FR\.\s*HORT\s*SUL/is,'Hortsul'],
-    [/(\d+)\s+FRIGORIFICO\s+PRETA[^0-9]{2,50}?(\d+)\s+FRIGORIFICO\s+PRETA/is,'Hortsul'],
-    [/(\d+)\s+FRIGORIFICO\s+MARBOI[^0-9]{2,50}?(\d+)\s+FRIGORIFICO\s+MARBOI/is,'Marboi'],
-  ];
-  pats.forEach(([pat,emp])=>{
-    const m=text.match(pat);
-    if(m){
-      const prev=parseInt(m[1]), abat=parseInt(m[2]);
-      if(!acum[emp]) acum[emp]={abatidos:0,previsto:0};
-      acum[emp].abatidos+=abat;
-      acum[emp].previsto+=prev;
-    }
-  });
-  return Object.entries(acum)
-    .filter(([,v])=>v.abatidos>0||v.previsto>0)
-    .map(([empresa,v])=>({empresa,abatidos:v.abatidos,previsto:v.previsto}));
-}
-
-function extrairEscalasSuino(text){
-  const acum={};
-  const pats=[
-    [/(\d+)\s+FRIGORIFICO\s+SERRAD[AÃ]O\.\s+MARCA\s+-A\s+(\d+)\s+FRIGORIFICO\s+SERRAD/is,'Serradão'],
-    [/(\d+)\s+FRIGORIFICO\s+TOURINO\s*\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+TOURINO/is,'Frigomatos'],
-    [/(\d+)\s+FRIGORIFICO\s+FRIGOVITTA\.\s+MARCA\s+-FS\s+(\d+)\s+FRIGORIFICO\s+FRIGOVITTA/is,'Frigovitta'],
-    [/(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA\.\s+MARCA\s+-IB\s+(\d+)\s+FRIGORIFICO\s+FRIGOCOSTA/is,'Frigocosta'],
-    [/(\d+)\s+FRIGORIFICO\s+FRIGOGUATU\.\s+MARCA\s+-FG\s+(\d+)\s+FRIGORIFICO\s+FRIGOGUATU/is,'Guatu'],
-    [/(\d+)\s+FRIGORIFICO\s+HORTISU\.\s+MARCA\s+-L\s+(\d+)\s+FRIGORIFICO\s+HORTISU/is,'Hortsul'],
-    [/(\d+)\s+FRIGORIFICO\s+MARBOI\.\s+MARCA\s+-MB\s+(\d+)\s+FRIGORIFICO\s+MARBOI/is,'Marboi'],
-    [/(\d+)\s+FRIGORIFICO\s+DIAMANTE\.\s+IB\s+(\d+)\s+FRIGORIFICO\s+DIAMANTE/is,'Frigocosta'],
-    [/(\d+)\s+SEALI\s+FOODS?\s+B\s+(\d+)\s+SEALI\s+FOODS?/is,'Seali'],
-  ];
-  pats.forEach(([pat,emp])=>{
-    const m=text.match(pat);
-    if(m){
-      const prev=parseInt(m[1]), abat=parseInt(m[2]);
-      if(!acum[emp]) acum[emp]={abatidos:0,previsto:0};
-      acum[emp].abatidos+=abat;
-      acum[emp].previsto+=prev;
-    }
-  });
-  return Object.entries(acum)
-    .filter(([,v])=>v.abatidos>0||v.previsto>0)
-    .map(([empresa,v])=>({empresa,abatidos:v.abatidos,previsto:v.previsto}));
-}
-
-function extrairTotalizacaoSisAtak(text){
-  // Normaliza: remove acentos problemáticos, colapsa espaços
-  const t = text.replace(/\r/g,'').replace(/[ \t]+/g,' ');
-  
-  // Estratégia: pega o ÚLTIMO número seguido de peso (ex: "66 18.995,50 287,81")
-  // que aparece depois de qualquer forma de "Totaliza" no texto
-  const idxTotal = t.search(/Totaliz/i);
-  if(idxTotal >= 0){
-    const depois = t.slice(idxTotal);
-    // Procura padrão: número inteiro + número decimal grande (peso) + número decimal pequeno (média)
-    const all = [...depois.matchAll(/(\d+)\s+([\d.]+,[\d]+)\s+([\d]+,[\d]+)/g)];
-    // Pega o último match com peso razoável (> 1000 kg)
-    for(let i = all.length-1; i >= 0; i--){
-      const cab = parseInt(all[i][1]);
-      const peso = parseFloat(all[i][2].replace(/\./g,'').replace(',','.'));
-      const media = parseFloat(all[i][3].replace(',','.'));
-      if(cab > 0 && peso > 1000 && media > 10){
-        return {cabecas:cab, peso_total_kg:peso, media_kg:media};
-      }
-    }
-  }
-  
-  // Fallback RABT502 Seali: "MACHO 128cabeça" ou "MACHO 128 cabeça"
-  const m = t.match(/MACHO\s+(\d+)\s*cabe[çc]a[^0-9]{0,10}([\d.]+,[\d]+)\s*kg[^0-9]{0,5}([\d]+,[\d]+)/i);
-  if(m){
-    return {
-      cabecas: parseInt(m[1]),
-      peso_total_kg: parseFloat(m[2].replace(/\./g,'').replace(',','.')),
-      media_kg: parseFloat(m[3].replace(',','.'))
-    };
-  }
-  return null;
-}
 
 function normEmp(text){
   const t=text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
