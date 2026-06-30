@@ -166,7 +166,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-7</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-8</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1290,7 +1290,7 @@ async function renderRendimentoReal(tB,tS){
     const kgReal=pesoTotal;
     const diffKg=kgReal-kgEsperado;
     const perdaR=diffKg<0?diffKg*preco:0;
-    return{nome:m.nomeOriginal,meta:m.meta,real:parseFloat(pctMedioReal.toFixed(2)),pesoKg:pesoTotal,perda:perdaR};
+    return{nome:m.nomeOriginal,meta:m.meta,real:parseFloat(pctMedioReal.toFixed(2)),pesoKg:pesoTotal,perda:perdaR,baseVol:baseEsperado};
   });
 
   const perdaTotal=linhas.reduce((a,l)=>a+(l.perda<0?l.perda:0),0);
@@ -1324,7 +1324,7 @@ function renderDemoRendimento(tB,tS){
   const sp=[{nome:'Bolsas sangue fetal',meta:60,s1:40,s2:29,acum:94},{nome:'Couro tapete',meta:117,s1:0,s2:33,acum:58},{nome:'Bolsas fita rompidas',meta:0,s1:25,s2:33,acum:58}];
   const tb=document.querySelector('#tbl-subprod tbody');tb.innerHTML='';sp.forEach(r=>{const f=r.acum>=r.meta&&r.meta>0?'<span class="f f-g"></span>':'<span class="f f-r"></span>';tb.innerHTML+=`<tr><td>${r.nome}</td><td class="r">${r.meta}</td><td class="r">${r.s1}</td><td class="r">${r.s2}</td><td class="r"><b>${r.acum}</b></td><td class="r">${r.meta>0?f:'—'}</td></tr>`;});
 }
-function renderMiudosTable(id,rows,totalAbt){const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';rows.forEach(r=>{const diff=r.real-r.meta;const f=diff>=0?'<span class="f f-g"></span>':diff>-0.3?'<span class="f f-y"></span>':'<span class="f f-r"></span>';const p=r.perda<0?`<span style="color:var(--red)">R$${Math.abs(r.perda/1000).toFixed(1)}k</span>`:'—';tbody.innerHTML+=`<tr><td>${r.nome}</td><td class="r">${r.meta.toFixed(2)}</td><td class="r">${r.real.toFixed(2)}</td><td class="r">${fmt(totalAbt)}</td><td class="r">${p}</td><td class="r">${f}</td></tr>`;});}
+function renderMiudosTable(id,rows,totalAbtPadrao){const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';rows.forEach(r=>{const diff=r.real-r.meta;const f=diff>=0?'<span class="f f-g"></span>':diff>-0.3?'<span class="f f-y"></span>':'<span class="f f-r"></span>';const p=r.perda<0?`<span style="color:var(--red)">R$${Math.abs(r.perda/1000).toFixed(1)}k</span>`:'—';const vol=r.baseVol!==undefined?r.baseVol:totalAbtPadrao;tbody.innerHTML+=`<tr><td>${r.nome}</td><td class="r">${r.meta.toFixed(2)}</td><td class="r">${r.real.toFixed(2)}</td><td class="r">${fmt(Math.round(vol))}</td><td class="r">${p}</td><td class="r">${f}</td></tr>`;});}
 
 // ── CHARTS ──
 const CI={};
