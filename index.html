@@ -158,6 +158,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-1</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -654,7 +655,7 @@ function onFiltroChange(origem){
   const anoMudou=filtroAtual.ano!==novoAno;
   const mesMudou=filtroAtual.mes!==novoMes;
   filtroAtual.ano=novoAno;
-  if(origem==='ano')popularMesesDoAno();
+  popularMesesDoAno();
   filtroAtual.mes=document.getElementById('filtro-mes')?.value||null;
   popularDiasDoMes();
   // Só reseta o dia se quem mudou foi Ano ou Mês — selecionar o próprio Dia não deve resetar nada
@@ -948,7 +949,12 @@ function agregarDias(dias){
 function renderDashboard(){
   if(!historico.length)return;
   const diasFiltrados=getHistoricoFiltrado();
-  if(!diasFiltrados.length)return;
+  if(!diasFiltrados.length){
+    atualizarResumoFiltro();
+    const el=document.getElementById('filtro-resumo');
+    if(el)el.innerHTML+=' <span style="color:var(--red-bg);font-weight:700">— sem dados para esse período</span>';
+    return;
+  }
   const agregado=agregarDias(diasFiltrados);
   const d={
     bovino:filtrarPorEmpresa(agregado.bovino),
