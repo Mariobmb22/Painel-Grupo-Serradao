@@ -759,13 +759,11 @@ function extrairEscalasSuino(text){
 }
 
 function extrairTotalizacaoSisAtak(text){
-  // RABT505: total (CAB PESO) fica ANTES de ** Totalização Geral **
-  // media fica DEPOIS do marcador
+  // RABT505: CAB e PESO ficam ANTES de "** Totalização Geral **", MEDIA vem depois
   const idx=text.lastIndexOf('** Totalização Geral **');
   if(idx>=0){
     const before=text.slice(0,idx);
     const after=text.slice(idx);
-    // Último par CAB PESO_GRANDE antes do marcador
     const pairs=[...before.matchAll(/(\d+)\s+([\d.]+,\d{2})/g)];
     for(let i=pairs.length-1;i>=0;i--){
       const cab=parseInt(pairs[i][1]);
@@ -777,11 +775,10 @@ function extrairTotalizacaoSisAtak(text){
       }
     }
   }
-  // RABT502 Seali: "cabeça(s) kg PESO MEDIA ... CAB ... MACHO"
-  // Ordem: peso e media vêm ANTES das cabeças
-  const m2=text.match(/cabeça\(s\)\s+kg[^0-9]+([\d.]+,\d{2})\s+([\d]+,\d{2})[^0-9]+([\d]+,\d{2})[^0-9]+(\d+)[^0-9]+[\d.,]+\s+MACHO/i);
+  // RABT502 Seali: "Total : cabeça(s) kg 11.493,00 89,79 128"
+  const m2=text.match(/Total\s*:\s*cabeça\(s\)\s+kg\s+([\d.]+,\d{2})\s+([\d]+,\d{2})\s+(\d+)/i);
   if(m2) return{
-    cabecas:parseInt(m2[4]),
+    cabecas:parseInt(m2[3]),
     peso_total_kg:parseFloat(m2[1].replace(/\./g,'').replace(',','.')),
     media_kg:parseFloat(m2[2].replace(',','.'))
   };
@@ -811,6 +808,117 @@ document.addEventListener('DOMContentLoaded',async()=>{
 });
 
 // ── LOGIN ──
+;
+function abrirOperacao(){if(operacaoLiberada){showTab('upload');return;}const o=document.getElementById('login-overlay');o.style.display='flex';document.getElementById('login-input').value='';document.getElementById('login-error').style.display='none';setTimeout(()=>document.getElementById('login-input').focus(),100);}
+function verificarSenha(){const v=document.getElementById('login-input').value;if(v===SENHA){operacaoLiberada=true;fecharLogin();showTab('upload');}else{document.getElementById('login-error').style.display='block';document.getElementById('login-input').value='';document.getElementById('login-input').focus();}}
+function fecharLogin(){document.getElementById('login-overlay').style.display='none';}
+function abrirMiudos(){const o=document.getElementById('login-miudos-overlay');if(o)o.style.display='flex';setTimeout(()=>document.getElementById('login-miudos-input')?.focus(),100);}
+function verificarSenhaMiudos(){const v=document.getElementById('login-miudos-input').value;if(v==='Frigobet2026'){fecharLoginMiudos();showTab('miudos');document.getElementById('login-miudos-input').value='';}else{document.getElementById('login-miudos-error').style.display='block';document.getElementById('login-miudos-input').value='';document.getElementById('login-miudos-input').focus();}}
+function fecharLoginMiudos(){const o=document.getElementById('login-miudos-overlay');if(o)o.style.display='none';}
+
+// ── TABS ──
+function showTab(t){document.querySelectorAll('.panel').forEach(p=>{p.classList.remove('active');p.style.display='none';});document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));const panel=document.getElementById('panel-'+t);const tab=document.getElementById('tab-'+t);if(panel){panel.classList.add('active');panel.style.display='block';}if(tab)tab.classList.add('active');}
+
+// ── CÓDIGO ──
+function copiarCodigo(){const html=document.documentElement.outerHTML;navigator.clipboard.writeText(html).then(()=>{const btn=document.getElementById('btn-copiar-codigo');const orig=btn.innerHTML;btn.textContent='✓ Copiado!';setTimeout(()=>{btn.innerHTML=orig;},2500);}).catch(()=>mostrarCodigo());}
+function mostrarCodigo(){const area=document.getElementById('codigo-area');const box=document.getElementById('codigo-box');if(!area||!box)return;if(area.style.display==='none'||!area.style.display){box.textContent=document.documentElement.outerHTML;area.style.display='block';area.scrollIntoView({behavior:'smooth',block:'start'});}else{area.style.display='none';}}
+function copiarDaArea(){const box=document.getElementById('codigo-box');if(!box)return;box.select();navigator.clipboard.writeText(box.value).then(()=>{const btn=event.target.closest('button');const orig=btn.innerHTML;btn.textContent='✓ Copiado!';setTimeout(()=>{btn.innerHTML=orig;},2000);});}
+
+// ── PARAMS ──
+function buildParamsGrid(){
+  const g=document.getElementById('params-dias');if(!g)return;
+  const emps=['Próprio','Serradão','Frigovitta','Tourino','Frigocosta','Frigoguatu','Seali'];
+  g.innerHTML='';
+  let h='<div style="display:grid;grid-template-columns:120px repeat(7,1fr);gap:4px;margin-bottom:6px"><div style="font-size:10px;font-weight:700;color:var(--muted)">Empresa</div>';
+  DIAS.forEach(d=>{h+=`<div style="font-size:10px;font-weight:700;color:var(--muted);text-align:center">${d.slice(0,3)}</div>`;});
+  h+='</div>';g.innerHTML=h;
+  const sb=document.createElement('div');sb.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--bov);text-transform:uppercase;margin:8px 0 4px">Bovino</div>';g.appendChild(sb);
+  emps.forEach(emp=>{const row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:120px repeat(7,1fr);gap:4px;margin-bottom:4px';let h2=`<div style="font-size:11px;font-weight:500;padding:4px 0">${emp}</div>`;DIAS.forEach(dia=>{const v=(params.metasEmp&&params.metasEmp[emp]&&params.metasEmp[emp][dia])?params.metasEmp[emp][dia].bov:0;h2+=`<input type="number" id="meta-bov-${emp}-${dia}" value="${v}" style="padding:3px 4px;border:1px solid var(--border);border-radius:4px;font-size:11px;width:100%;text-align:center">`;});row.innerHTML=h2;g.appendChild(row);});
+  const ss=document.createElement('div');ss.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--sui);text-transform:uppercase;margin:10px 0 4px">Suíno</div>';g.appendChild(ss);
+  emps.forEach(emp=>{const row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:120px repeat(7,1fr);gap:4px;margin-bottom:4px';let h2=`<div style="font-size:11px;font-weight:500;padding:4px 0">${emp}</div>`;DIAS.forEach(dia=>{const v=(params.metasEmp&&params.metasEmp[emp]&&params.metasEmp[emp][dia])?params.metasEmp[emp][dia].sui:0;h2+=`<input type="number" id="meta-sui-${emp}-${dia}" value="${v}" style="padding:3px 4px;border:1px solid var(--border);border-radius:4px;font-size:11px;width:100%;text-align:center">`;});row.innerHTML=h2;g.appendChild(row);});
+  document.getElementById('cap-bov').value=params.capBov;
+  document.getElementById('cap-sui').value=params.capSui;
+  document.getElementById('colab-bov').value=params.colabBov;
+  document.getElementById('colab-sui').value=params.colabSui;
+}
+function salvarParametros(){
+  params.capBov=+document.getElementById('cap-bov').value;
+  params.capSui=+document.getElementById('cap-sui').value;
+  params.colabBov=+document.getElementById('colab-bov').value;
+  params.colabSui=+document.getElementById('colab-sui').value;
+  const emps=['Próprio','Serradão','Frigovitta','Tourino','Frigocosta','Frigoguatu','Seali'];
+  if(!params.metasEmp)params.metasEmp={};
+  emps.forEach(emp=>{if(!params.metasEmp[emp])params.metasEmp[emp]={};DIAS.forEach(dia=>{params.metasEmp[emp][dia]={bov:+(document.getElementById(`meta-bov-${emp}-${dia}`)||{value:0}).value,sui:+(document.getElementById(`meta-sui-${emp}-${dia}`)||{value:0}).value};});});
+  localStorage.setItem('frigobet-params',JSON.stringify(params));
+  salvarParametrosNoSheets(params.metasEmp);
+  if(dadosDia)renderDashboard();
+  showAlert('upload-alert','ok','Parâmetros salvos!');
+  setTimeout(()=>document.getElementById('upload-alert').classList.add('hidden'),3000);
+}
+function loadParams(){const s=localStorage.getItem('frigobet-params');if(s)try{params=JSON.parse(s);}catch(e){}}
+
+// ── PDF ──
+async function getPDFText(file){const ab=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:ab}).promise;let text='';for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const c=await page.getTextContent();text+=c.items.map(it=>it.str).join(' ')+'\n';}return text;}
+function extractDate(text){const dates=[];const p1=/(\d{2})\/(\d{2})\/(\d{4})/g;const p2=/(\d{2})\/(\d{2})\/(\d{2})\b/g;let m;while((m=p1.exec(text))!==null)dates.push(`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`);while((m=p2.exec(text))!==null)dates.push(`20${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`);if(!dates.length)return null;const freq={};dates.forEach(d=>{freq[d]=(freq[d]||0)+1;});return Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];}
+async function handleUpload(e,slot){const f=e.target.files[0];if(!f)return;pdfFiles[slot]=f;pdfTexts[slot]=null;pdfDates[slot]=null;document.getElementById('uname-'+slot).textContent=f.name;document.getElementById('udate-'+slot).textContent='Lendo...';document.getElementById('slot-'+slot).className='uslot';try{const text=await getPDFText(f);pdfTexts[slot]=text;console.log('PDF lido:',slot,'length:',text.length);const date=extractDate(text);pdfDates[slot]=date;const ref=document.getElementById('upload-date').value;const ok=date===ref;document.getElementById('slot-'+slot).className='uslot '+(ok?'ok':'err');document.getElementById('udate-'+slot).textContent=date?fmtBR(date):'Data não encontrada';document.getElementById('udate-'+slot).style.color=ok?'var(--green)':'var(--red)';}catch(err){document.getElementById('udate-'+slot).textContent='Erro ao ler';document.getElementById('slot-'+slot).className='uslot err';}checkUploadReady();}
+function checkUploadReady(){const ok=['bov-escala','sui-escala','peso-bov-serradao','peso-bov-frigovitta','peso-sui-serradao'].every(s=>pdfTexts[s]);document.getElementById('btn-processar').disabled=!ok;}
+
+// ── PROCESSAR ──
+async function processarPDFs(){
+  const ref=document.getElementById('upload-date').value;
+  const mm=Object.entries(pdfDates).filter(([,d])=>d&&d!==ref).map(([s])=>s);
+  if(mm.length){const ok=confirm('Atenção: data incorreta em alguns arquivos. Continuar?');if(!ok)return;}
+  showAlert('upload-alert','info','Processando PDFs...');
+  try{
+    // Extração local — sem API
+    showAlert('upload-alert','info','Lendo escalas de abate...');
+    const bovino=extrairEscalasBovino(pdfTexts['bov-escala']||'');
+    const suino=extrairEscalasSuino(pdfTexts['sui-escala']||'');
+    const escalas={bovino,suino};
+    console.log('Escalas bov:',bovino.map(e=>e.empresa+':'+e.abatidos).join(','));
+    console.log('Escalas sui:',suino.map(e=>e.empresa+':'+e.abatidos).join(','));
+
+    showAlert('upload-alert','info','Lendo PDFs de peso...');
+    const slots=[
+      {slot:'peso-bov-serradao',tipo:'bovino'},
+      {slot:'peso-bov-frigovitta',tipo:'bovino'},
+      {slot:'peso-sui-serradao',tipo:'suino'}
+    ];
+    if(pdfTexts['peso-sui-seali']) slots.push({slot:'peso-sui-seali',tipo:'suino'});
+    const slotEmpMap={'peso-bov-serradao':'Serradão','peso-bov-frigovitta':'Frigovitta','peso-sui-serradao':'Serradão','peso-sui-seali':'Seali'};
+    const pesoResults={};
+    slots.forEach(({slot,tipo})=>{
+      const texto=pdfTexts[slot]||'';
+      if(!texto){console.log('VAZIO:',slot);return;}
+      const r=extrairTotalizacaoSisAtak(texto);
+      const emp=slotEmpMap[slot];
+      console.log('Peso',slot,'→',emp,r);
+      if(r&&r.cabecas>0) pesoResults[slot]={...r,empresa:emp,tipo};
+    });
+
+    const debugMsg='Bov:['+escalas.bovino.map(e=>e.empresa+':'+e.abatidos).join(',')+'] '
+      +'Suí:['+escalas.suino.map(e=>e.empresa+':'+e.abatidos).join(',')+'] '
+      +'Pesos:['+Object.entries(pesoResults).map(([,v])=>v.empresa+':'+v.cabecas+'cab/'+v.peso_total_kg+'kg').join(',')+']';
+    console.log('Resultado final:', debugMsg);
+    showAlert('upload-alert','info',debugMsg);
+    const dow=new Date(ref+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long'});
+    const diaKey=DIAS.find(d=>dow.toLowerCase().startsWith(d.toLowerCase().slice(0,3)))||'Segunda';
+    const metaDia=params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>({bov:a.bov+(v[diaKey]?.bov||0),sui:a.sui+(v[diaKey]?.sui||0)}),{bov:0,sui:0}):{bov:params.metas[diaKey]?.bov||370,sui:params.metas[diaKey]?.sui||500};
+    dadosDia={data:ref,diaKey,metaBov:metaDia.bov,metaSui:metaDia.sui,capBov:params.capBov,capSui:params.capSui,bovino:escalas.bovino,suino:escalas.suino,pesosBov:Object.values(pesoResults).filter(p=>p.tipo==='bovino'),pesosSui:Object.values(pesoResults).filter(p=>p.tipo==='suino')};
+    historico.push({...dadosDia});renderDashboard();
+    showAlert('upload-alert','info','Salvando no Google Sheets...');
+    console.log('dadosDia:', JSON.stringify(dadosDia));
+    const saved=await salvarDiaNoSheets(dadosDia);
+    console.log('Saved to Sheets:', saved);
+    showAlert('upload-alert',saved?'ok':'warn',saved?'✓ Dados salvos no Sheets e dashboard atualizado!':'Dashboard atualizado, mas não salvou no Sheets. Verifique a URL do Apps Script.');
+    setTimeout(()=>showTab('volume'),2000);
+  }catch(err){showAlert('upload-alert','err','Erro: '+err.message);}
+}
+// ── EXTRAÇÃO LOCAL DE PDF (sem API) ──
+
+
+
+
 function abrirOperacao(){if(operacaoLiberada){showTab('upload');return;}const o=document.getElementById('login-overlay');o.style.display='flex';document.getElementById('login-input').value='';document.getElementById('login-error').style.display='none';setTimeout(()=>document.getElementById('login-input').focus(),100);}
 function verificarSenha(){const v=document.getElementById('login-input').value;if(v===SENHA){operacaoLiberada=true;fecharLogin();showTab('upload');}else{document.getElementById('login-error').style.display='block';document.getElementById('login-input').value='';document.getElementById('login-input').focus();}}
 function fecharLogin(){document.getElementById('login-overlay').style.display='none';}
