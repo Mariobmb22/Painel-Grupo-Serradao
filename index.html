@@ -176,19 +176,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="filterbar-row">
     <div class="filter-group">
       <label>Ano</label>
-      <select id="filtro-ano" onchange="onFiltroChange()"></select>
+      <select id="filtro-ano" onchange="onFiltroChange('ano')"></select>
     </div>
     <div class="filter-group">
       <label>Mês</label>
-      <select id="filtro-mes" onchange="onFiltroChange()"><option value="">Todos</option></select>
+      <select id="filtro-mes" onchange="onFiltroChange('mes')"><option value="">Todos</option></select>
     </div>
     <div class="filter-group">
       <label>Dia</label>
-      <select id="filtro-dia" onchange="onFiltroChange()"><option value="">Todos</option></select>
+      <select id="filtro-dia" onchange="onFiltroChange('dia')"><option value="">Todos</option></select>
     </div>
     <div class="filter-group">
       <label>Empresa</label>
-      <select id="filtro-empresa" onchange="onFiltroChange()"><option value="">Consolidado</option></select>
+      <select id="filtro-empresa" onchange="onFiltroChange('empresa')"><option value="">Consolidado</option></select>
     </div>
   </div>
   <div class="filter-label" id="filtro-resumo">Carregando…</div>
@@ -633,34 +633,33 @@ function popularMesesDoAno(){
   const ano=document.getElementById('filtro-ano')?.value||filtroAtual.ano;
   const meses=[...new Set(historico.filter(h=>h.data.slice(0,4)===ano).map(h=>h.data.slice(5,7)))].sort();
   const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const valorAtual=selMes.value;
   selMes.innerHTML='<option value="">Todos</option>'+meses.map(m=>`<option value="${m}">${nomesMeses[parseInt(m)]}</option>`).join('');
+  if(meses.includes(valorAtual)) selMes.value=valorAtual;
 }
 
-function popularDiasDoMes(manterSelecao){
+function popularDiasDoMes(){
   const selDia=document.getElementById('filtro-dia');
   if(!selDia)return;
   const ano=document.getElementById('filtro-ano')?.value;
   const mes=document.getElementById('filtro-mes')?.value;
-  if(!mes){selDia.innerHTML='<option value="">Todos</option>';selDia.disabled=true;return;}
-  selDia.disabled=false;
+  if(!ano||!mes){selDia.innerHTML='<option value="">Todos</option>';return;}
   const dias=historico.filter(h=>h.data.slice(0,4)===ano&&h.data.slice(5,7)===mes).map(h=>h.data.slice(8,10)).sort();
-  const valorAtual=selDia.value;
   selDia.innerHTML='<option value="">Todos</option>'+dias.map(d=>`<option value="${d}">${d}</option>`).join('');
-  if(manterSelecao&&dias.includes(valorAtual)) selDia.value=valorAtual;
 }
 
-function onFiltroChange(){
-  const anoMudou=filtroAtual.ano!==document.getElementById('filtro-ano')?.value;
-  const mesMudou=filtroAtual.mes!==document.getElementById('filtro-mes')?.value;
-  filtroAtual.ano=document.getElementById('filtro-ano')?.value||null;
-  popularMesesDoAno();
+function onFiltroChange(origem){
+  const novoAno=document.getElementById('filtro-ano')?.value||null;
+  const novoMes=document.getElementById('filtro-mes')?.value||null;
+  const anoMudou=filtroAtual.ano!==novoAno;
+  const mesMudou=filtroAtual.mes!==novoMes;
+  filtroAtual.ano=novoAno;
+  if(origem==='ano')popularMesesDoAno();
   filtroAtual.mes=document.getElementById('filtro-mes')?.value||null;
-  // Se ano ou mês mudaram (não foi o dropdown de dia que disparou o evento), limpa o dia selecionado
-  if(anoMudou||mesMudou){
-    popularDiasDoMes(false);
+  popularDiasDoMes();
+  // Só reseta o dia se quem mudou foi Ano ou Mês — selecionar o próprio Dia não deve resetar nada
+  if(origem!=='dia'&&(anoMudou||mesMudou)){
     document.getElementById('filtro-dia').value='';
-  }else{
-    popularDiasDoMes(true);
   }
   filtroAtual.dia=document.getElementById('filtro-dia')?.value||null;
   filtroAtual.empresa=document.getElementById('filtro-empresa')?.value||'';
@@ -1004,13 +1003,81 @@ function renderDashboard(){
   const horasTotal=8*diasFiltrados.length;
   set('prod-bov-h',(horasTotal>0?tB/horasTotal:0).toFixed(1));set('prod-sui-h',(horasTotal>0?tS/horasTotal:0).toFixed(1));
   set('prod-colab-bov',(tB/(params.colabBov||90)).toFixed(1));set('prod-colab-sui',(tS/(params.colabSui||80)).toFixed(1));
-  renderQualidadeReal();renderRendimentoReal(tB,tS);
+  renderQualidadeReal();renderRendimentoReal(tB,tS);renderProdutividadeReal();
 }
+function semanaCivilDoAno(dataISO){
+  const d=new Date(dataISO+'T12:00:00');
+  const inicioAno=new Date(d.getFullYear(),0,1);
+  const dias=Math.floor((d-inicioAno)/86400000);
+  return Math.ceil((dias+inicioAno.getDay()+1)/7);
+}
+function renderProdutividadeReal(){
+  const diasFiltrados=getHistoricoFiltrado();
+  if(!diasFiltrados.length)return;
+  const porSemana={};
+  diasFiltrados.forEach(h=>{
+    const sem=h.data.slice(0,4)+'-S'+String(semanaCivilDoAno(h.data)).padStart(2,'0');
+    if(!porSemana[sem])porSemana[sem]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,datas:[]};
+    porSemana[sem].bov+=h.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
+    porSemana[sem].sui+=h.suino.reduce((a,r)=>a+(r.abatidos||0),0);
+    porSemana[sem].metaBov+=h.metaBov||0;porSemana[sem].metaSui+=h.metaSui||0;
+    porSemana[sem].dias+=1;porSemana[sem].datas.push(h.data);
+  });
+  const semanasOrd=Object.keys(porSemana).sort();
+  const labelsBov=[],bovH=[],bovHMeta=[],suiH=[],suiHMeta=[];
+  const linhasTabela=[];
+  semanasOrd.forEach((sem,i)=>{
+    const s=porSemana[sem];
+    const horas=8*s.dias;
+    const abateHBov=horas>0?s.bov/horas:0;
+    const abateHSui=horas>0?s.sui/horas:0;
+    const metaHBov=horas>0?s.metaBov/horas:0;
+    const metaHSui=horas>0?s.metaSui/horas:0;
+    const cabColBov=s.bov/(params.colabBov||90);
+    const cabColSui=s.sui/(params.colabSui||80);
+    labelsBov.push('Sem '+(i+1));
+    bovH.push(parseFloat(abateHBov.toFixed(1)));bovHMeta.push(parseFloat(metaHBov.toFixed(1)));
+    suiH.push(parseFloat(abateHSui.toFixed(1)));suiHMeta.push(parseFloat(metaHSui.toFixed(1)));
+    const dataIni=s.datas[0]?.slice(8,10)+'/'+s.datas[0]?.slice(5,7);
+    const dataFim=s.datas[s.datas.length-1]?.slice(8,10)+'/'+s.datas[s.datas.length-1]?.slice(5,7);
+    linhasTabela.push([dataIni+'-'+dataFim,abateHBov.toFixed(1),metaHBov.toFixed(1),farol(metaHBov>0?(abateHBov-metaHBov)/metaHBov*100:0),abateHSui.toFixed(1),metaHSui.toFixed(1),farol(metaHSui>0?(abateHSui-metaHSui)/metaHSui*100:0),cabColBov.toFixed(1),cabColSui.toFixed(1)]);
+  });
+  if(labelsBov.length){
+    renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8');
+    renderBarChartLine('chart-prod-sui',labelsBov,suiH,suiHMeta,'#b45309');
+  }
+  const tb=document.getElementById('tbody-prod-semanal');
+  if(tb){
+    tb.innerHTML=linhasTabela.map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r">${r[3]}</td><td class="r">${r[4]}</td><td class="r" style="color:var(--muted)">${r[5]}</td><td class="r">${r[6]}</td><td class="r">${r[7]}</td><td class="r">${r[8]}</td></tr>`).join('');
+  }
+}
+const EMPRESAS_PROPRIAS=['Serradão','Frigovitta'];
 function renderVolTable(id,rows,metaTotal,total){
   const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';
   const mPE=rows.length>0?Math.round(metaTotal/rows.length):0;
-  rows.forEach(r=>{const pct=mPE>0?(r.abatidos-mPE)/mPE*100:0;const tr=document.createElement('tr');tr.innerHTML=`<td>${r.empresa}</td><td class="r"><b>${fmt(r.abatidos)}</b></td><td class="r" style="color:var(--muted)">${fmt(r.previsto||mPE)}</td><td class="r">${farol(pct)}</td>`;tbody.appendChild(tr);});
-  if(rows.length>1){const tr=document.createElement('tr');tr.className='total';tr.innerHTML=`<td>Total</td><td class="r">${fmt(total)}</td><td class="r">${fmt(metaTotal)}</td><td class="r">${farol(metaTotal>0?(total-metaTotal)/metaTotal*100:0)}</td>`;tbody.appendChild(tr);}
+  const proprias=rows.filter(r=>EMPRESAS_PROPRIAS.includes(r.empresa));
+  const terceiros=rows.filter(r=>!EMPRESAS_PROPRIAS.includes(r.empresa));
+  const linhaEmp=(r,bold)=>{
+    const pct=mPE>0?(r.abatidos-mPE)/mPE*100:0;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td${bold?' style="font-weight:700"':''}>${r.empresa}</td><td class="r"><b>${fmt(r.abatidos)}</b></td><td class="r" style="color:var(--muted)">${fmt(r.previsto||mPE)}</td><td class="r">${farol(pct)}</td>`;
+    return tr;
+  };
+  if(proprias.length){
+    const tP=proprias.reduce((a,r)=>a+r.abatidos,0);const mP=proprias.reduce((a,r)=>a+(r.previsto||mPE),0);
+    const trH=document.createElement('tr');trH.className='total';
+    trH.innerHTML=`<td>Próprio</td><td class="r">${fmt(tP)}</td><td class="r">${fmt(mP)}</td><td class="r">${farol(mP>0?(tP-mP)/mP*100:0)}</td>`;
+    tbody.appendChild(trH);
+    proprias.forEach(r=>tbody.appendChild(linhaEmp(r,false)));
+  }
+  if(terceiros.length){
+    const tT=terceiros.reduce((a,r)=>a+r.abatidos,0);const mT=terceiros.reduce((a,r)=>a+(r.previsto||mPE),0);
+    const trH=document.createElement('tr');trH.className='total';
+    trH.innerHTML=`<td>Terceiros</td><td class="r">${fmt(tT)}</td><td class="r">${fmt(mT)}</td><td class="r">${farol(mT>0?(tT-mT)/mT*100:0)}</td>`;
+    tbody.appendChild(trH);
+    terceiros.forEach(r=>tbody.appendChild(linhaEmp(r,false)));
+  }
+  if(rows.length>1){const tr=document.createElement('tr');tr.className='total';tr.style.borderTop='2px solid var(--border)';tr.innerHTML=`<td>Total</td><td class="r">${fmt(total)}</td><td class="r">${fmt(metaTotal)}</td><td class="r">${farol(metaTotal>0?(total-metaTotal)/metaTotal*100:0)}</td>`;tbody.appendChild(tr);}
 }
 let qualidadeCache=null;
 async function carregarQualidadeDoSheets(){
@@ -1118,8 +1185,10 @@ function renderMiudosTable(id,rows,totalAbt){const tbody=document.querySelector(
 
 // ── CHARTS ──
 const CI={};
-function renderBarChart(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>v>=(meta[i]||0)?color+'cc':color+'66'),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});}
-function renderBarChartW(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map(v=>v>=(meta||0)?color+'cc':color+'66'),borderRadius:4,borderSkipped:false},{label:'Meta',data:labels.map(()=>meta),type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});}
+function corFarolBarra(v,m){if(!m||m<=0)return'#9ca3af';const pct=(v-m)/m*100;if(pct>=-5)return'#16a34a';if(pct>=-10)return'#ca8a04';return'#dc2626';}
+function renderBarChart(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});}
+function renderBarChartLine(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});}
+function renderBarChartW(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},{label:'Meta',data:labels.map(()=>meta),type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});}
 
 // ── DEMO ──
 function loadDemoData(){
