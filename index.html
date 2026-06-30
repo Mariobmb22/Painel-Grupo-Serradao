@@ -323,6 +323,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="card-hdr"><div class="card-title">Cabeças e carcaça por categoria</div><div style="font-size:11px;color:var(--muted)">Conferência cruzada com Abates/Pesos</div></div>
     <div class="card-body card-body-0"><table class="tbl" id="tbl-carcaca-form"><thead><tr><th style="width:40%">Categoria</th><th class="r" style="width:30%">Cabeças</th><th class="r" style="width:30%">Kg Carcaça</th></tr></thead><tbody id="tbody-carcaca-form"></tbody></table></div>
   </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-hdr"><div class="card-title">Condenação IMA</div><div style="font-size:11px;color:var(--muted)">Peças condenadas por contaminação ou doença</div></div>
+    <div class="card-body card-body-0"><table class="tbl" id="tbl-condenacao-form"><thead><tr><th style="width:34%">Produto</th><th class="r" style="width:22%">Contaminação</th><th class="r" style="width:22%">Doença</th><th class="r" style="width:22%">Total</th></tr></thead><tbody id="tbody-condenacao-form"></tbody></table></div>
+  </div>
   <div class="card">
     <div class="card-hdr"><div class="card-title">Miúdos — nº de peças e peso</div><div style="font-size:11px;color:var(--muted)">Preencha e clique "Salvar no Sheets"</div></div>
     <div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-form"><thead><tr><th style="width:30%">Miúdo</th><th class="r" style="width:15%">Nº Peças</th><th class="r" style="width:15%">Peso (kg)</th><th class="r" style="width:12%">% Real</th><th class="r" style="width:12%">% Meta</th><th class="r" style="width:16%">Diferença</th></tr></thead><tbody id="tbody-miudos-form"></tbody></table></div>
@@ -529,7 +533,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const ud=document.getElementById('upload-date');if(ud)ud.value=today;
   const md=document.getElementById('miudos-date');if(md)md.value=today;
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
-  loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();
+  loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();buildCondenacaoForm();
   try{
     const hist=await carregarHistoricoDoSheets();
     if(hist.length){
@@ -799,10 +803,31 @@ function buildCarcacaForm(){
   });
 }
 
+// ── CONDENAÇÃO IMA ──
+const CONDENADOS=['Cabeça','Língua','Coração','Pulmão','Fígado','Rins','Intestino'];
+function buildCondenacaoForm(){
+  const tb=document.getElementById('tbody-condenacao-form');if(!tb)return;tb.innerHTML='';
+  CONDENADOS.forEach(p=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-weight:500">${p}</td><td class="r"><input type="number" step="1" min="0" id="cd-${p}-cont" placeholder="0" style="width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcCondenacao('${p}')"></td><td class="r"><input type="number" step="1" min="0" id="cd-${p}-doe" placeholder="0" style="width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcCondenacao('${p}')"></td><td class="r" id="cd-${p}-total" style="color:var(--muted);font-weight:600">0</td>`;
+    tb.appendChild(tr);
+  });
+}
+function calcCondenacao(p){const c=parseFloat(document.getElementById(`cd-${p}-cont`)?.value)||0;const d=parseFloat(document.getElementById(`cd-${p}-doe`)?.value)||0;const el=document.getElementById(`cd-${p}-total`);if(el)el.textContent=c+d;}
+async function salvarCondenacaoNoSheets(date){
+  const rows=CONDENADOS.map(p=>{
+    const c=parseFloat(document.getElementById(`cd-${p}-cont`)?.value)||0;
+    const d=parseFloat(document.getElementById(`cd-${p}-doe`)?.value)||0;
+    return[date,p,c,d,c+d];
+  }).filter(r=>r[2]>0||r[3]>0);
+  if(!rows.length) return true;
+  try{await sheetsAppend('Condenacao',rows);return true;}catch(e){console.error(e);return false;}
+}
+
 // ── MIÚDOS ──
 const MIUDOS=[{nome:'Aorta',meta:0.08},{nome:'Bucho',meta:1.45},{nome:'Carne Industrial',meta:0.65},{nome:'Colmeia',meta:0.23},{nome:'Coração',meta:0.57},{nome:'Couro',meta:17.50},{nome:'Diafragma',meta:0.48},{nome:'Esôfago',meta:0.14},{nome:'Fígado',meta:2.08},{nome:'Língua',meta:0.36},{nome:'Lombinho',meta:0.25},{nome:'Mocotó',meta:0.54},{nome:'Omaso',meta:0.36},{nome:'Pulmão',meta:0.00},{nome:'Rabo',meta:0.57},{nome:'Recortes',meta:0.55},{nome:'Rins',meta:0.00},{nome:'Sangria',meta:1.17},{nome:'Tendão',meta:0.30},{nome:'Traqueia',meta:0.12},{nome:'Vergalho',meta:0.15}];
-function buildMiudosForm(){const tb=document.getElementById('tbody-miudos-form');if(!tb)return;tb.innerHTML='';MIUDOS.forEach(m=>{const tr=document.createElement('tr');tr.innerHTML=`<td style="font-weight:500">${m.nome}</td><td class="r"><input type="number" step="1" min="0" id="mp-${m.nome}-pec" placeholder="0" style="width:80px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r"><input type="number" step="0.01" min="0" id="mp-${m.nome}-kg" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-pct">—</td><td class="r" style="color:var(--muted)">${m.meta.toFixed(2)}%</td><td class="r" id="mp-${m.nome}-dif">—</td>`;tb.appendChild(tr);});}
-function calcML(nome){const kg=parseFloat(document.getElementById(`mp-${nome}-kg`)?.value)||0;const tp=parseFloat(document.getElementById('m-total-peso')?.textContent?.replace(/\./g,'').replace(',','.'))||0;const pr=tp>0?(kg/tp*100):0;const meta=MIUDOS.find(m=>m.nome===nome)?.meta||0;const dif=pr-meta;const pe=document.getElementById(`mp-${nome}-pct`);const de=document.getElementById(`mp-${nome}-dif`);if(pe)pe.textContent=pr.toFixed(2)+'%';if(de){de.textContent=(dif>=0?'+':'') +dif.toFixed(2)+'%';de.style.color=dif>=0?'var(--green)':'var(--red-bg)';}checkMR();}
+function buildMiudosForm(){const tb=document.getElementById('tbody-miudos-form');if(!tb)return;tb.innerHTML='';MIUDOS.forEach(m=>{const tr=document.createElement('tr');tr.innerHTML=`<td style="font-weight:500">${m.nome}</td><td class="r"><input type="number" step="1" min="0" id="mp-${m.nome}-pec" placeholder="0" style="width:80px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r"><input type="number" step="0.01" min="0" id="mp-${m.nome}-kg" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-pct">—</td><td class="r"><input type="number" step="0.01" min="0" value="${m.meta.toFixed(2)}" id="mp-${m.nome}-meta" style="width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-dif">—</td>`;tb.appendChild(tr);});}
+function calcML(nome){const kg=parseFloat(document.getElementById(`mp-${nome}-kg`)?.value)||0;const tp=parseFloat(document.getElementById('m-total-peso')?.textContent?.replace(/\./g,'').replace(',','.'))||0;const pr=tp>0?(kg/tp*100):0;const meta=parseFloat(document.getElementById(`mp-${nome}-meta`)?.value)||0;const dif=pr-meta;const pe=document.getElementById(`mp-${nome}-pct`);const de=document.getElementById(`mp-${nome}-dif`);if(pe)pe.textContent=pr.toFixed(2)+'%';if(de){de.textContent=(dif>=0?'+':'') +dif.toFixed(2)+'%';de.style.color=dif>=0?'var(--green)':'var(--red-bg)';}checkMR();}
 function calcMiudosTotais(){const mac=parseFloat(document.getElementById('m-machos')?.value)||0;const fem=parseFloat(document.getElementById('m-femeas')?.value)||0;const pm=parseFloat(document.getElementById('m-peso-machos')?.value)||0;const pf=parseFloat(document.getElementById('m-peso-femeas')?.value)||0;const tc=mac+fem;const tp=pm+pf;const me=tc>0?(tp/tc):0;const fn=n=>n.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:2});set('m-total-cab',fn(tc));set('m-total-peso',fn(tp));set('m-media',fn(me));MIUDOS.forEach(m=>calcML(m.nome));checkMR();}
 function checkMR(){const date=document.getElementById('miudos-date')?.value;const tp=parseFloat(document.getElementById('m-total-peso')?.textContent?.replace(/\./g,'').replace(',','.'))||0;const btn=document.getElementById('btn-salvar-miudos');if(btn)btn.disabled=!date||tp<=0;}
 function onMiudosDateChange(){const date=document.getElementById('miudos-date')?.value;const lbl=document.getElementById('miudos-date-label');if(lbl&&date){const[y,m,d]=date.split('-');lbl.textContent=`${d}/${m}/${y}`;}checkMR();atualizarStatusDia(date);}
@@ -816,7 +841,7 @@ async function salvarCarcacaNoSheets(date){
   if(!rows.length) return true;
   try{await sheetsAppend('Carcaca',rows);return true;}catch(e){console.error(e);return false;}
 }
-async function salvarMiudos(){const date=document.getElementById('miudos-date')?.value;const tps=document.getElementById('m-total-peso')?.textContent||'0';const tp=parseFloat(tps.replace(/\./g,'').replace(',','.'))||0;if(!date||tp<=0)return;const btn=document.getElementById('btn-salvar-miudos');const al=document.getElementById('miudos-alert');btn.disabled=true;btn.textContent='Salvando...';const mm=MIUDOS.map(m=>{const nr=parseFloat(document.getElementById(`mp-${m.nome}-pec`)?.value)||0;const kg=parseFloat(document.getElementById(`mp-${m.nome}-kg`)?.value)||0;const pr=tp>0?(kg/tp*100):0;return{miudo:m.nome,nrPecas:nr,pesoKg:kg,pctReal:parseFloat(pr.toFixed(4)),pctMeta:m.meta};}).filter(m=>m.pesoKg>0||m.nrPecas>0);const okM=await salvarMiudosNoSheets(date,mm,tp);const okC=await salvarCarcacaNoSheets(date);const ok=okM&&okC;al.className='alert '+(ok?'ok':'err');al.textContent=ok?`✓ ${mm.length} miúdos e carcaça salvos no Sheets!`:'✕ Erro ao salvar.';btn.disabled=false;btn.textContent='Salvar no Sheets';setTimeout(()=>{al.className='alert hidden';},4000);atualizarStatusDia(date);}
+async function salvarMiudos(){const date=document.getElementById('miudos-date')?.value;const tps=document.getElementById('m-total-peso')?.textContent||'0';const tp=parseFloat(tps.replace(/\./g,'').replace(',','.'))||0;if(!date||tp<=0)return;const btn=document.getElementById('btn-salvar-miudos');const al=document.getElementById('miudos-alert');btn.disabled=true;btn.textContent='Salvando...';const mm=MIUDOS.map(m=>{const nr=parseFloat(document.getElementById(`mp-${m.nome}-pec`)?.value)||0;const kg=parseFloat(document.getElementById(`mp-${m.nome}-kg`)?.value)||0;const pr=tp>0?(kg/tp*100):0;const metaEdit=parseFloat(document.getElementById(`mp-${m.nome}-meta`)?.value)||m.meta;return{miudo:m.nome,nrPecas:nr,pesoKg:kg,pctReal:parseFloat(pr.toFixed(4)),pctMeta:metaEdit};}).filter(m=>m.pesoKg>0||m.nrPecas>0);const okM=await salvarMiudosNoSheets(date,mm,tp);const okC=await salvarCarcacaNoSheets(date);const okCd=await salvarCondenacaoNoSheets(date);const ok=okM&&okC&&okCd;al.className='alert '+(ok?'ok':'err');al.textContent=ok?`✓ ${mm.length} miúdos, carcaça e condenação salvos no Sheets!`:'✕ Erro ao salvar.';btn.disabled=false;btn.textContent='Salvar no Sheets';setTimeout(()=>{al.className='alert hidden';},4000);atualizarStatusDia(date);}
 
 // ── IMPORTAÇÃO ──
 function handleImport(e,slot){const f=e.target.files[0];if(!f)return;importFiles[slot]=f;const el=document.getElementById(`iname-${slot}`);if(el)el.textContent=f.name;document.getElementById(`slot-import-${slot}`)?.classList.add('ok');}
