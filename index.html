@@ -296,12 +296,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="panel" id="panel-qualidade">
   <div class="sec-hdr">Qualidade &amp; perdas — acompanhamento semanal</div>
   <div class="two-col">
-    <div class="card"><div class="card-hdr"><div class="card-title">Contaminação de carcaça (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-contam-carcaca"><thead><tr><th>Região/tipo</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Contaminação na entrada do abate (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-contam-entrada"><thead><tr><th>Peça</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Contaminação de carcaça (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-contam-carcaca-disp"><thead><tr><th>Região/tipo</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Contaminação na entrada do abate (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-contam-entrada-disp"><thead><tr><th>Peça</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
   </div>
   <div class="two-col">
-    <div class="card"><div class="card-hdr"><div class="card-title">Peças depreciadas (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-deprec"><thead><tr><th>Corte</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Lesões na carcaça (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-lesoes"><thead><tr><th>Corte</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Peças depreciadas (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-deprec-disp"><thead><tr><th>Corte</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Lesões na carcaça (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-lesoes-disp"><thead><tr><th>Corte</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
   </div>
 </div>
 
@@ -353,6 +353,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="card" style="margin-bottom:12px">
     <div class="card-hdr"><div class="card-title">Condenação IMA</div><div style="font-size:11px;color:var(--muted)">Peças condenadas por contaminação ou doença</div></div>
     <div class="card-body card-body-0"><table class="tbl" id="tbl-condenacao-form"><thead><tr><th style="width:34%">Produto</th><th class="r" style="width:22%">Contaminação</th><th class="r" style="width:22%">Doença</th><th class="r" style="width:22%">Total</th></tr></thead><tbody id="tbody-condenacao-form"></tbody></table></div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-hdr"><div class="card-title">Qualidade & perdas</div><div style="font-size:11px;color:var(--muted)">% sobre o total de peças/carcaças do dia</div></div>
+    <div class="card-body">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:4px 0 6px">Contaminação de carcaça</div>
+      <table class="tbl" id="tbl-q-contam-carcaca"><thead><tr><th style="width:46%">Região/tipo</th><th class="r" style="width:54%">%</th></tr></thead><tbody></tbody></table>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Contaminação na entrada do abate</div>
+      <table class="tbl" id="tbl-q-contam-entrada"><thead><tr><th style="width:46%">Peça</th><th class="r" style="width:54%">%</th></tr></thead><tbody></tbody></table>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Peças depreciadas</div>
+      <table class="tbl" id="tbl-q-deprec"><thead><tr><th style="width:46%">Corte</th><th class="r" style="width:54%">%</th></tr></thead><tbody></tbody></table>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Lesões na carcaça</div>
+      <table class="tbl" id="tbl-q-lesoes"><thead><tr><th style="width:46%">Corte</th><th class="r" style="width:54%">%</th></tr></thead><tbody></tbody></table>
+    </div>
   </div>
   <div class="card">
     <div class="card-hdr"><div class="card-title">Miúdos — nº de peças e peso</div><div style="font-size:11px;color:var(--muted)">Preencha e clique "Salvar no Sheets"</div></div>
@@ -424,6 +437,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Metas de abate por dia da semana (cabeças)</div>
       <div id="params-dias"></div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Preço de venda por kg — miúdos (R$/kg)</div>
+      <div id="params-precos" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
     </div>
   </div>
 
@@ -692,7 +707,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const ud=document.getElementById('upload-date');if(ud)ud.value=today;
   const md=document.getElementById('miudos-date');if(md)md.value=today;
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
-  loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();buildCondenacaoForm();
+  loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();buildCondenacaoForm();buildQualidadeForm();
   try{
     const hist=await carregarHistoricoCompleto();
     if(hist.length){
@@ -746,6 +761,18 @@ function buildParamsGrid(){
   document.getElementById('cap-sui').value=params.capSui;
   document.getElementById('colab-bov').value=params.colabBov;
   document.getElementById('colab-sui').value=params.colabSui;
+  buildPrecosGrid();
+}
+function buildPrecosGrid(){
+  const g=document.getElementById('params-precos');if(!g)return;g.innerHTML='';
+  if(!params.precosMiudos)params.precosMiudos={};
+  MIUDOS.forEach(m=>{
+    const v=params.precosMiudos[m.nome]??0;
+    const div=document.createElement('div');
+    div.className='param-field';
+    div.innerHTML=`<label>${m.nome}</label><input type="number" step="0.01" min="0" id="preco-${m.nome}" value="${v}">`;
+    g.appendChild(div);
+  });
 }
 function salvarParametros(){
   params.capBov=+document.getElementById('cap-bov').value;
@@ -755,6 +782,8 @@ function salvarParametros(){
   const emps=['Próprio','Serradão','Frigovitta','Tourino','Frigocosta','Frigoguatu','Seali'];
   if(!params.metasEmp)params.metasEmp={};
   emps.forEach(emp=>{if(!params.metasEmp[emp])params.metasEmp[emp]={};DIAS.forEach(dia=>{params.metasEmp[emp][dia]={bov:+(document.getElementById(`meta-bov-${emp}-${dia}`)||{value:0}).value,sui:+(document.getElementById(`meta-sui-${emp}-${dia}`)||{value:0}).value};});});
+  if(!params.precosMiudos)params.precosMiudos={};
+  MIUDOS.forEach(m=>{params.precosMiudos[m.nome]=+(document.getElementById(`preco-${m.nome}`)||{value:0}).value;});
   localStorage.setItem('frigobet-params',JSON.stringify(params));
   salvarParametrosNoSheets(params.metasEmp);
   if(historico.length)renderDashboard();
@@ -975,7 +1004,7 @@ function renderDashboard(){
   const horasTotal=8*diasFiltrados.length;
   set('prod-bov-h',(horasTotal>0?tB/horasTotal:0).toFixed(1));set('prod-sui-h',(horasTotal>0?tS/horasTotal:0).toFixed(1));
   set('prod-colab-bov',(tB/(params.colabBov||90)).toFixed(1));set('prod-colab-sui',(tS/(params.colabSui||80)).toFixed(1));
-  renderDemoQualidade();renderDemoRendimento(tB,tS);
+  renderQualidadeReal();renderRendimentoReal(tB,tS);
 }
 function renderVolTable(id,rows,metaTotal,total){
   const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';
@@ -983,13 +1012,99 @@ function renderVolTable(id,rows,metaTotal,total){
   rows.forEach(r=>{const pct=mPE>0?(r.abatidos-mPE)/mPE*100:0;const tr=document.createElement('tr');tr.innerHTML=`<td>${r.empresa}</td><td class="r"><b>${fmt(r.abatidos)}</b></td><td class="r" style="color:var(--muted)">${fmt(r.previsto||mPE)}</td><td class="r">${farol(pct)}</td>`;tbody.appendChild(tr);});
   if(rows.length>1){const tr=document.createElement('tr');tr.className='total';tr.innerHTML=`<td>Total</td><td class="r">${fmt(total)}</td><td class="r">${fmt(metaTotal)}</td><td class="r">${farol(metaTotal>0?(total-metaTotal)/metaTotal*100:0)}</td>`;tbody.appendChild(tr);}
 }
+let qualidadeCache=null;
+async function carregarQualidadeDoSheets(){
+  try{const rows=await sheetsRead('Qualidade');return rows.slice(1).filter(r=>r[0]).map(r=>({data:String(r[0]).slice(0,10),categoria:r[1],item:r[2],valor:+r[3]||0}));}catch(e){return[];}
+}
+function semanaDoMes(dataISO){const d=new Date(dataISO+'T12:00:00');return Math.ceil(d.getDate()/7);}
+async function renderQualidadeReal(){
+  if(!qualidadeCache) qualidadeCache=await carregarQualidadeDoSheets();
+  const diasFiltrados=getHistoricoFiltrado();
+  if(!diasFiltrados.length){renderDemoQualidade();return;}
+  const datasSet=new Set(diasFiltrados.map(d=>d.data));
+  const registros=qualidadeCache.filter(q=>datasSet.has(q.data));
+
+  Object.entries(QUALIDADE_ITENS).forEach(([cat,itens])=>{
+    const porItemSemana={};
+    itens.forEach(item=>{porItemSemana[item]={1:[],2:[],3:[],4:[],5:[]};});
+    registros.filter(r=>r.categoria===cat).forEach(r=>{
+      const sem=Math.min(semanaDoMes(r.data),5);
+      if(porItemSemana[r.item]) porItemSemana[r.item][sem].push(r.valor);
+    });
+    const rows=itens.map(item=>{
+      const med=s=>{const arr=porItemSemana[item][s];return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;};
+      const s1=med(1),s2=med(2),s3=med(3),s4=med(4)+med(5);
+      return{nome:item,s1:parseFloat(s1.toFixed(2)),s2:parseFloat(s2.toFixed(2)),s3:parseFloat(s3.toFixed(2)),s4:parseFloat(s4.toFixed(2))};
+    });
+    renderQualTable('tbl-'+cat+'-disp',rows);
+  });
+}
 function renderDemoQualidade(){
-  renderQualTable('tbl-contam-carcaca',[{nome:'DIANTEIRO — Pelo',s1:3,s2:4,s3:6,s4:2},{nome:'DIANTEIRO — Gastro',s1:9,s2:7,s3:3,s4:1},{nome:'DIANTEIRO — Couro',s1:12,s2:10,s3:8,s4:7},{nome:'TRASEIRO — Pelo',s1:23,s2:22,s3:20,s4:16},{nome:'TRASEIRO — Castro',s1:5,s2:7,s3:4,s4:7},{nome:'TRASEIRO — Couro',s1:8,s2:9,s3:10,s4:3}]);
-  renderQualTable('tbl-contam-entrada',[{nome:'Mocotó dianteiro',s1:68,s2:59,s3:38,s4:32},{nome:'Mocotó traseiro',s1:18,s2:18,s3:24,s4:26},{nome:'Matambre',s1:32,s2:13,s3:14,s4:26},{nome:'Pelto',s1:23,s2:13,s3:16,s4:25}]);
-  renderQualTable('tbl-deprec',[{nome:'Dianteiro',s1:15,s2:0,s3:25,s4:17},{nome:'Costela',s1:0,s2:25,s3:17,s4:10},{nome:'Traseiro',s1:27,s2:20,s3:34,s4:13}]);
-  renderQualTable('tbl-lesoes',[{nome:'Dianteiro',s1:1,s2:2,s3:4,s4:2},{nome:'Costela',s1:1,s2:1,s3:2,s4:2},{nome:'Lombo',s1:0,s2:1,s3:2,s4:1},{nome:'Traseiro',s1:3,s2:5,s3:4,s4:3}]);
+  renderQualTable('tbl-q-contam-carcaca-disp',[{nome:'DIANTEIRO — Pelo',s1:3,s2:4,s3:6,s4:2},{nome:'DIANTEIRO — Gastro',s1:9,s2:7,s3:3,s4:1},{nome:'DIANTEIRO — Couro',s1:12,s2:10,s3:8,s4:7},{nome:'TRASEIRO — Pelo',s1:23,s2:22,s3:20,s4:16},{nome:'TRASEIRO — Gastro',s1:5,s2:7,s3:4,s4:7},{nome:'TRASEIRO — Couro',s1:8,s2:9,s3:10,s4:3}]);
+  renderQualTable('tbl-q-contam-entrada-disp',[{nome:'Mocotó dianteiro',s1:68,s2:59,s3:38,s4:32},{nome:'Mocotó traseiro',s1:18,s2:18,s3:24,s4:26},{nome:'Matambre',s1:32,s2:13,s3:14,s4:26},{nome:'Peito',s1:23,s2:13,s3:16,s4:25}]);
+  renderQualTable('tbl-q-deprec-disp',[{nome:'Dianteiro',s1:15,s2:0,s3:25,s4:17},{nome:'Costela',s1:0,s2:25,s3:17,s4:10},{nome:'Traseiro',s1:27,s2:20,s3:34,s4:13}]);
+  renderQualTable('tbl-q-lesoes-disp',[{nome:'Dianteiro',s1:1,s2:2,s3:4,s4:2},{nome:'Costela',s1:1,s2:1,s3:2,s4:2},{nome:'Lombo',s1:0,s2:1,s3:2,s4:1},{nome:'Traseiro',s1:3,s2:5,s3:4,s4:3}]);
 }
 function renderQualTable(id,rows){const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';rows.forEach(r=>{const tr=document.createElement('tr');const tc=r.s4<r.s3?'var(--green)':'var(--red)';tr.innerHTML=`<td>${r.nome}</td><td class="r">${r.s1}%</td><td class="r">${r.s2}%</td><td class="r">${r.s3}%</td><td class="r">${r.s4}%</td><td class="r" style="color:${tc};font-weight:700">${r.s4<r.s3?'↓':'↑'}</td>`;tbody.appendChild(tr);});}
+let miudosCache=null;
+async function carregarMiudosCompletoDoSheets(){
+  try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]).map(r=>({data:String(r[0]).slice(0,10),miudo:r[1],nrPecas:+r[2]||0,pesoKg:+r[3]||0,kgTotalAbate:+r[4]||0,pctReal:+r[5]||0,pctMeta:+r[6]||0}));}catch(e){return[];}
+}
+async function renderRendimentoReal(tB,tS){
+  if(!miudosCache) miudosCache=await carregarMiudosCompletoDoSheets();
+  const diasFiltrados=getHistoricoFiltrado();
+  if(!diasFiltrados.length){renderDemoRendimento(tB,tS);return;}
+  const datasSet=new Set(diasFiltrados.map(d=>d.data));
+  const registros=miudosCache.filter(m=>datasSet.has(m.data));
+
+  const porMiudo={};
+  MIUDOS.forEach(m=>{porMiudo[m.nome.toUpperCase()]={pesos:[],pctReais:[],meta:m.meta,nomeOriginal:m.nome};});
+  registros.forEach(r=>{
+    const key=String(r.miudo||'').toUpperCase().trim();
+    // tenta achar correspondência direta ou por aproximação simples
+    let match=porMiudo[key];
+    if(!match){
+      match=Object.values(porMiudo).find(m=>m.nomeOriginal.toUpperCase()===key||key.includes(m.nomeOriginal.toUpperCase())||m.nomeOriginal.toUpperCase().includes(key));
+    }
+    if(match){match.pesos.push(r.pesoKg);match.pctReais.push(r.pctReal);}
+  });
+
+  const precos=params.precosMiudos||{};
+  const linhas=Object.values(porMiudo).map(m=>{
+    const pesoTotal=m.pesos.reduce((a,b)=>a+b,0);
+    const pctMedioReal=m.pctReais.length?m.pctReais.reduce((a,b)=>a+b,0)/m.pctReais.length:0;
+    const preco=precos[m.nomeOriginal]||0;
+    // Perda: diferença entre o % real e a meta, aplicada sobre o total abatido e o preço/kg
+    const totalAbatePeriodo=tB+tS;
+    const kgEsperado=totalAbatePeriodo*(m.meta/100);
+    const kgReal=pesoTotal;
+    const diffKg=kgReal-kgEsperado;
+    const perdaR=diffKg<0?diffKg*preco:0;
+    return{nome:m.nomeOriginal,meta:m.meta,real:parseFloat(pctMedioReal.toFixed(2)),pesoKg:pesoTotal,perda:perdaR};
+  });
+
+  const perdaTotal=linhas.reduce((a,l)=>a+(l.perda<0?l.perda:0),0);
+  const maiorPerda=linhas.reduce((a,l)=>l.perda<(a?.perda||0)?l:a,null);
+
+  set('rend-perda-bov',fmtMoeda(perdaTotal));
+  set('rend-perda-sui','—');
+  if(maiorPerda){set('rend-maior-nome',maiorPerda.nome);set('rend-maior-val',fmtMoeda(maiorPerda.perda)+' acumulado');}
+
+  const rank=linhas.filter(l=>l.perda<0).sort((a,b)=>a.perda-b.perda).slice(0,5);
+  const re=document.getElementById('ranking-bov');
+  if(re){
+    re.innerHTML='';
+    const maxVal=Math.abs(rank[0]?.perda||1);
+    rank.forEach((r,i)=>{
+      const pct=Math.round(Math.abs(r.perda)/maxVal*100);
+      re.innerHTML+=`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>${i+1}. ${r.nome}</span><span style="color:var(--red);font-weight:700">${fmtMoeda(r.perda)}</span></div><div style="height:4px;background:var(--border);border-radius:2px"><div style="height:4px;background:var(--red);border-radius:2px;width:${pct}%"></div></div></div>`;
+    });
+  }
+
+  renderMiudosTable('tbl-miudos-bov',linhas,tB+tS);
+  document.querySelector('#tbl-miudos-sui tbody')?.closest('table')?.parentElement?.parentElement?.style&&(document.getElementById('tbl-miudos-sui').closest('.card').style.display='none');
+}
+function fmtMoeda(v){const abs=Math.abs(v);const sinal=v<0?'-':'';if(abs>=1000)return`${sinal}R$${(abs/1000).toFixed(1)}k`;return`${sinal}R$${abs.toFixed(0)}`;}
 function renderDemoRendimento(tB,tS){
   set('rend-perda-bov','R$ 94k');set('rend-perda-sui','R$ 36k');set('rend-maior-nome','Língua');set('rend-maior-val','R$ 7,26 acumulado');
   const rankBov=[{nome:'Língua bovina congelada',val:97600},{nome:'Rúmen bovino congelado',val:36000},{nome:'Fígado bovino congelado',val:17000},{nome:'Retículo congelado',val:11500},{nome:'Sebo (Res.) bov.',val:10200}];
@@ -1050,6 +1165,35 @@ async function salvarCondenacaoNoSheets(date){
   try{await sheetsAppend('Condenacao',rows);return true;}catch(e){console.error(e);return false;}
 }
 
+// ── QUALIDADE ──
+const QUALIDADE_ITENS={
+  'q-contam-carcaca':['Dianteiro — Pelo','Dianteiro — Gastro','Dianteiro — Couro','Traseiro — Pelo','Traseiro — Gastro','Traseiro — Couro'],
+  'q-contam-entrada':['Mocotó dianteiro','Mocotó traseiro','Matambre','Peito'],
+  'q-deprec':['Dianteiro','Costela','Traseiro'],
+  'q-lesoes':['Dianteiro','Costela','Lombo','Traseiro']
+};
+function buildQualidadeForm(){
+  Object.entries(QUALIDADE_ITENS).forEach(([cat,itens])=>{
+    const tb=document.querySelector(`#tbl-${cat} tbody`);if(!tb)return;tb.innerHTML='';
+    itens.forEach(item=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td style="font-weight:500">${item}</td><td class="r"><input type="number" step="0.01" min="0" id="ql-${cat}-${item}" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td>`;
+      tb.appendChild(tr);
+    });
+  });
+}
+async function salvarQualidadeNoSheets(date){
+  const rows=[];
+  Object.entries(QUALIDADE_ITENS).forEach(([cat,itens])=>{
+    itens.forEach(item=>{
+      const v=parseFloat(document.getElementById(`ql-${cat}-${item}`)?.value)||0;
+      if(v>0) rows.push([date,cat,item,v]);
+    });
+  });
+  if(!rows.length) return true;
+  try{await sheetsAppend('Qualidade',rows);return true;}catch(e){console.error(e);return false;}
+}
+
 // ── MIÚDOS ──
 const MIUDOS=[{nome:'Aorta',meta:0.08},{nome:'Bucho',meta:1.45},{nome:'Carne Industrial',meta:0.65},{nome:'Colmeia',meta:0.23},{nome:'Coração',meta:0.57},{nome:'Couro',meta:17.50},{nome:'Diafragma',meta:0.48},{nome:'Esôfago',meta:0.14},{nome:'Fígado',meta:2.08},{nome:'Língua',meta:0.36},{nome:'Lombinho',meta:0.25},{nome:'Mocotó',meta:0.54},{nome:'Omaso',meta:0.36},{nome:'Pulmão',meta:0.00},{nome:'Rabo',meta:0.57},{nome:'Recortes',meta:0.55},{nome:'Rins',meta:0.00},{nome:'Sangria',meta:1.17},{nome:'Tendão',meta:0.30},{nome:'Traqueia',meta:0.12},{nome:'Vergalho',meta:0.15}];
 function buildMiudosForm(){const tb=document.getElementById('tbody-miudos-form');if(!tb)return;tb.innerHTML='';MIUDOS.forEach(m=>{const tr=document.createElement('tr');tr.innerHTML=`<td style="font-weight:500">${m.nome}</td><td class="r"><input type="number" step="1" min="0" id="mp-${m.nome}-pec" placeholder="0" style="width:80px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r"><input type="number" step="0.01" min="0" id="mp-${m.nome}-kg" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-pct">—</td><td class="r"><input type="number" step="0.01" min="0" value="${m.meta.toFixed(2)}" id="mp-${m.nome}-meta" style="width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-dif">—</td>`;tb.appendChild(tr);});}
@@ -1067,7 +1211,7 @@ async function salvarCarcacaNoSheets(date){
   if(!rows.length) return true;
   try{await sheetsAppend('Carcaca',rows);return true;}catch(e){console.error(e);return false;}
 }
-async function salvarMiudos(){const date=document.getElementById('miudos-date')?.value;const tps=document.getElementById('m-total-peso')?.textContent||'0';const tp=parseFloat(tps.replace(/\./g,'').replace(',','.'))||0;if(!date||tp<=0)return;const btn=document.getElementById('btn-salvar-miudos');const al=document.getElementById('miudos-alert');btn.disabled=true;btn.textContent='Salvando...';const mm=MIUDOS.map(m=>{const nr=parseFloat(document.getElementById(`mp-${m.nome}-pec`)?.value)||0;const kg=parseFloat(document.getElementById(`mp-${m.nome}-kg`)?.value)||0;const pr=tp>0?(kg/tp*100):0;const metaEdit=parseFloat(document.getElementById(`mp-${m.nome}-meta`)?.value)||m.meta;return{miudo:m.nome,nrPecas:nr,pesoKg:kg,pctReal:parseFloat(pr.toFixed(4)),pctMeta:metaEdit};}).filter(m=>m.pesoKg>0||m.nrPecas>0);const okM=await salvarMiudosNoSheets(date,mm,tp);const okC=await salvarCarcacaNoSheets(date);const okCd=await salvarCondenacaoNoSheets(date);const ok=okM&&okC&&okCd;al.className='alert '+(ok?'ok':'err');al.textContent=ok?`✓ ${mm.length} miúdos, carcaça e condenação salvos no Sheets!`:'✕ Erro ao salvar.';btn.disabled=false;btn.textContent='Salvar no Sheets';setTimeout(()=>{al.className='alert hidden';},4000);atualizarStatusDia(date);}
+async function salvarMiudos(){const date=document.getElementById('miudos-date')?.value;const tps=document.getElementById('m-total-peso')?.textContent||'0';const tp=parseFloat(tps.replace(/\./g,'').replace(',','.'))||0;if(!date||tp<=0)return;const btn=document.getElementById('btn-salvar-miudos');const al=document.getElementById('miudos-alert');btn.disabled=true;btn.textContent='Salvando...';const mm=MIUDOS.map(m=>{const nr=parseFloat(document.getElementById(`mp-${m.nome}-pec`)?.value)||0;const kg=parseFloat(document.getElementById(`mp-${m.nome}-kg`)?.value)||0;const pr=tp>0?(kg/tp*100):0;const metaEdit=parseFloat(document.getElementById(`mp-${m.nome}-meta`)?.value)||m.meta;return{miudo:m.nome,nrPecas:nr,pesoKg:kg,pctReal:parseFloat(pr.toFixed(4)),pctMeta:metaEdit};}).filter(m=>m.pesoKg>0||m.nrPecas>0);const okM=await salvarMiudosNoSheets(date,mm,tp);const okC=await salvarCarcacaNoSheets(date);const okCd=await salvarCondenacaoNoSheets(date);const okQ=await salvarQualidadeNoSheets(date);const ok=okM&&okC&&okCd&&okQ;al.className='alert '+(ok?'ok':'err');al.textContent=ok?`✓ ${mm.length} miúdos, carcaça, condenação e qualidade salvos no Sheets!`:'✕ Erro ao salvar.';btn.disabled=false;btn.textContent='Salvar no Sheets';setTimeout(()=>{al.className='alert hidden';},4000);atualizarStatusDia(date);}
 
 // ── IMPORTAÇÃO ──
 function handleImport(e,slot){const f=e.target.files[0];if(!f)return;importFiles[slot]=f;const el=document.getElementById(`iname-${slot}`);if(el)el.textContent=f.name;document.getElementById(`slot-import-${slot}`)?.classList.add('ok');}
