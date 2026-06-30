@@ -621,7 +621,7 @@ function popularMesesDoAno(){
   selMes.innerHTML='<option value="">Todos</option>'+meses.map(m=>`<option value="${m}">${nomesMeses[parseInt(m)]}</option>`).join('');
 }
 
-function popularDiasDoMes(){
+function popularDiasDoMes(manterSelecao){
   const selDia=document.getElementById('filtro-dia');
   if(!selDia)return;
   const ano=document.getElementById('filtro-ano')?.value;
@@ -629,14 +629,24 @@ function popularDiasDoMes(){
   if(!mes){selDia.innerHTML='<option value="">Todos</option>';selDia.disabled=true;return;}
   selDia.disabled=false;
   const dias=historico.filter(h=>h.data.slice(0,4)===ano&&h.data.slice(5,7)===mes).map(h=>h.data.slice(8,10)).sort();
+  const valorAtual=selDia.value;
   selDia.innerHTML='<option value="">Todos</option>'+dias.map(d=>`<option value="${d}">${d}</option>`).join('');
+  if(manterSelecao&&dias.includes(valorAtual)) selDia.value=valorAtual;
 }
 
 function onFiltroChange(){
+  const anoMudou=filtroAtual.ano!==document.getElementById('filtro-ano')?.value;
+  const mesMudou=filtroAtual.mes!==document.getElementById('filtro-mes')?.value;
   filtroAtual.ano=document.getElementById('filtro-ano')?.value||null;
   popularMesesDoAno();
   filtroAtual.mes=document.getElementById('filtro-mes')?.value||null;
-  popularDiasDoMes();
+  // Se ano ou mês mudaram (não foi o dropdown de dia que disparou o evento), limpa o dia selecionado
+  if(anoMudou||mesMudou){
+    popularDiasDoMes(false);
+    document.getElementById('filtro-dia').value='';
+  }else{
+    popularDiasDoMes(true);
+  }
   filtroAtual.dia=document.getElementById('filtro-dia')?.value||null;
   filtroAtual.empresa=document.getElementById('filtro-empresa')?.value||'';
   atualizarResumoFiltro();
