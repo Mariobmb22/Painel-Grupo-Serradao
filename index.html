@@ -50,6 +50,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .subtab.active{background:var(--bov-light);color:var(--bov);border-color:var(--bov)}
 .subpanel{display:none}
 .subpanel.active{display:block}
+body.site-locked > *:not(#login-site-overlay){display:none !important}
 .tab-lock{margin-left:auto}
 .main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .panel{display:none}
@@ -159,13 +160,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @media(max-width:900px){.two-col,.three-col,.four-col,.sum-cards,.perda-cards{grid-template-columns:1fr}.resumo-grid{grid-template-columns:1fr 1fr}.upload-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
-<body>
+<body class="site-locked">
 
 <header class="topbar">
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-3</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-5</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -294,10 +295,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="sum-card"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">Meta: <span id="prod-colab-sui-meta">—</span></div></div>
   </div>
   <div class="two-col">
-    <div class="card"><div class="card-hdr"><div class="card-title">Abate/h — bovino <span class="badge badge-bov">Bovino</span></div><span class="badge badge-mensal">mensal</span></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Abate/h — suíno <span class="badge badge-sui">Suíno</span></div><span class="badge badge-mensal">mensal</span></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-sui"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abate/h — bovino <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abate/h — suíno <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-sui"></canvas></div></div></div>
   </div>
-  <div class="card"><div class="card-hdr"><div class="card-title">Tabela semanal de produtividade</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Semana</th><th class="r">Abate/h Bov</th><th class="r">Meta</th><th class="r">Farol</th><th class="r">Abate/h Suí</th><th class="r">Meta</th><th class="r">Farol</th><th class="r">Cab/Col Bov</th><th class="r">Cab/Col Suí</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
+  <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Abate/h Bov</th><th class="r">Meta</th><th class="r">Farol</th><th class="r">Abate/h Suí</th><th class="r">Meta</th><th class="r">Farol</th><th class="r">Cab/Col Bov</th><th class="r">Cab/Col Suí</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
 </div>
 
 <!-- QUALIDADE -->
@@ -505,6 +506,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 </main>
+
+<!-- LOGIN GERAL DO SITE -->
+<div class="overlay" id="login-site-overlay" style="display:flex;z-index:500;background:var(--bg)">
+  <div class="login-box">
+    <div class="login-title">Dashboard Frigobet</div>
+    <div class="login-sub">Acesso restrito — digite a senha para continuar</div>
+    <div class="login-err" id="login-site-error">Senha incorreta. Tente novamente.</div>
+    <input type="password" class="login-input" id="login-site-input" placeholder="Senha" onkeydown="if(event.key==='Enter')verificarSenhaSite()">
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:8px" onclick="verificarSenhaSite()">Entrar</button>
+  </div>
+</div>
 
 <!-- LOGIN OPERAÇÃO -->
 <div class="overlay" id="login-overlay">
@@ -784,6 +796,28 @@ document.addEventListener('DOMContentLoaded',async()=>{
 });
 
 // ── LOGIN ──
+// ── SENHA GERAL DO SITE ──
+// Troque aqui quando precisar revogar acesso de alguém ou divulgar o site
+const SENHA_SITE='123';
+function verificarSenhaSite(){
+  const v=document.getElementById('login-site-input')?.value;
+  if(v===SENHA_SITE){
+    sessionStorage.setItem('frigobet-site-ok','1');
+    document.body.classList.remove('site-locked');
+    document.getElementById('login-site-overlay').style.display='none';
+  }else{
+    document.getElementById('login-site-error').style.display='block';
+    document.getElementById('login-site-input').value='';
+    document.getElementById('login-site-input').focus();
+  }
+}
+(function checarAcessoSite(){
+  if(sessionStorage.getItem('frigobet-site-ok')==='1'){
+    document.body.classList.remove('site-locked');
+    const ov=document.getElementById('login-site-overlay');if(ov)ov.style.display='none';
+  }
+})();
+
 const SENHA='Aquila123';let operacaoLiberada=false;
 function abrirOperacao(){if(operacaoLiberada){showTab('upload');return;}const o=document.getElementById('login-overlay');o.style.display='flex';document.getElementById('login-input').value='';document.getElementById('login-error').style.display='none';setTimeout(()=>document.getElementById('login-input').focus(),100);}
 function verificarSenha(){const v=document.getElementById('login-input').value;if(v===SENHA){operacaoLiberada=true;fecharLogin();showTab('upload');}else{document.getElementById('login-error').style.display='block';document.getElementById('login-input').value='';document.getElementById('login-input').focus();}}
@@ -1070,42 +1104,49 @@ function renderDashboard(){
   set('prod-colab-bov',(tB/(params.colabBov||90)).toFixed(1));set('prod-colab-sui',(tS/(params.colabSui||80)).toFixed(1));
   renderQualidadeReal();renderRendimentoReal(tB,tS);renderProdutividadeReal();
 }
-function semanaCivilDoAno(dataISO){
-  const d=new Date(dataISO+'T12:00:00');
-  const inicioAno=new Date(d.getFullYear(),0,1);
-  const dias=Math.floor((d-inicioAno)/86400000);
-  return Math.ceil((dias+inicioAno.getDay()+1)/7);
-}
 function renderProdutividadeReal(){
   const diasFiltrados=getHistoricoFiltrado();
   if(!diasFiltrados.length)return;
-  const porSemana={};
-  diasFiltrados.forEach(h=>{
-    const sem=h.data.slice(0,4)+'-S'+String(semanaCivilDoAno(h.data)).padStart(2,'0');
-    if(!porSemana[sem])porSemana[sem]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,datas:[]};
-    porSemana[sem].bov+=h.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
-    porSemana[sem].sui+=h.suino.reduce((a,r)=>a+(r.abatidos||0),0);
-    porSemana[sem].metaBov+=h.metaBov||0;porSemana[sem].metaSui+=h.metaSui||0;
-    porSemana[sem].dias+=1;porSemana[sem].datas.push(h.data);
-  });
-  const semanasOrd=Object.keys(porSemana).sort();
+
+  // Mesma lógica de agregação das outras abas: só ano agrupa por mês, senão mostra dia a dia
+  let grupos; // array de {label, bov, sui, metaBov, metaSui, dias}
+  if(filtroAtual.ano&&!filtroAtual.mes){
+    const porMes={};
+    const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    diasFiltrados.forEach(h=>{
+      const m=h.data.slice(5,7);
+      if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,labelIni:h.data,labelFim:h.data};
+      porMes[m].bov+=h.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
+      porMes[m].sui+=h.suino.reduce((a,r)=>a+(r.abatidos||0),0);
+      porMes[m].metaBov+=h.metaBov||0;porMes[m].metaSui+=h.metaSui||0;
+      porMes[m].dias+=1;porMes[m].labelFim=h.data;
+    });
+    const mesesOrd=Object.keys(porMes).sort();
+    grupos=mesesOrd.map(m=>({label:nomesMeses[parseInt(m)],...porMes[m]}));
+  }else{
+    grupos=diasFiltrados.map(h=>({
+      label:fmtBR(h.data),
+      bov:h.bovino.reduce((a,r)=>a+(r.abatidos||0),0),
+      sui:h.suino.reduce((a,r)=>a+(r.abatidos||0),0),
+      metaBov:h.metaBov||0,metaSui:h.metaSui||0,
+      dias:1
+    }));
+  }
+
   const labelsBov=[],bovH=[],bovHMeta=[],suiH=[],suiHMeta=[];
   const linhasTabela=[];
-  semanasOrd.forEach((sem,i)=>{
-    const s=porSemana[sem];
-    const horas=8*s.dias;
-    const abateHBov=horas>0?s.bov/horas:0;
-    const abateHSui=horas>0?s.sui/horas:0;
-    const metaHBov=horas>0?s.metaBov/horas:0;
-    const metaHSui=horas>0?s.metaSui/horas:0;
-    const cabColBov=s.bov/(params.colabBov||90);
-    const cabColSui=s.sui/(params.colabSui||80);
-    labelsBov.push('Sem '+(i+1));
+  grupos.forEach(g=>{
+    const horas=8*g.dias;
+    const abateHBov=horas>0?g.bov/horas:0;
+    const abateHSui=horas>0?g.sui/horas:0;
+    const metaHBov=horas>0?g.metaBov/horas:0;
+    const metaHSui=horas>0?g.metaSui/horas:0;
+    const cabColBov=g.bov/(params.colabBov||90);
+    const cabColSui=g.sui/(params.colabSui||80);
+    labelsBov.push(g.label);
     bovH.push(parseFloat(abateHBov.toFixed(1)));bovHMeta.push(parseFloat(metaHBov.toFixed(1)));
     suiH.push(parseFloat(abateHSui.toFixed(1)));suiHMeta.push(parseFloat(metaHSui.toFixed(1)));
-    const dataIni=s.datas[0]?.slice(8,10)+'/'+s.datas[0]?.slice(5,7);
-    const dataFim=s.datas[s.datas.length-1]?.slice(8,10)+'/'+s.datas[s.datas.length-1]?.slice(5,7);
-    linhasTabela.push([dataIni+'-'+dataFim,abateHBov.toFixed(1),metaHBov.toFixed(1),farol(metaHBov>0?(abateHBov-metaHBov)/metaHBov*100:0),abateHSui.toFixed(1),metaHSui.toFixed(1),farol(metaHSui>0?(abateHSui-metaHSui)/metaHSui*100:0),cabColBov.toFixed(1),cabColSui.toFixed(1)]);
+    linhasTabela.push([g.label,abateHBov.toFixed(1),metaHBov.toFixed(1),farol(metaHBov>0?(abateHBov-metaHBov)/metaHBov*100:0),abateHSui.toFixed(1),metaHSui.toFixed(1),farol(metaHSui>0?(abateHSui-metaHSui)/metaHSui*100:0),cabColBov.toFixed(1),cabColSui.toFixed(1)]);
   });
   if(labelsBov.length){
     renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8');
