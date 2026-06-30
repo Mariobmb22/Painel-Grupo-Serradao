@@ -166,7 +166,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-5</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-6</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1074,15 +1074,30 @@ function renderDashboard(){
   renderVolTable('tbl-bov',d.bovino,d.metaBov,tB);renderVolTable('tbl-sui',d.suino,d.metaSui,tS);
 
   // Gráficos: se filtrado por ano sem mês, agrupa por mês; se filtrado por mês, mostra dia a dia
+  // Respeita o filtro de empresa: se houver empresa selecionada, soma só os valores daquela empresa
+  const empAtual=filtroAtual.empresa;
+  const bovDoDia=h=>filtrarPorEmpresa(h.bovino).reduce((a,r)=>a+(r.abatidos||0),0);
+  const suiDoDia=h=>filtrarPorEmpresa(h.suino).reduce((a,r)=>a+(r.abatidos||0),0);
+  const metaBovDoDia=h=>{
+    if(!empAtual)return h.metaBov||0;
+    const linha=(h.bovino||[]).find(r=>r.empresa===empAtual);
+    return linha?(linha.previsto||0):0;
+  };
+  const metaSuiDoDia=h=>{
+    if(!empAtual)return h.metaSui||0;
+    const linha=(h.suino||[]).find(r=>r.empresa===empAtual);
+    return linha?(linha.previsto||0):0;
+  };
+
   let labelsChart,bovChart,metaBovChart,suiChart,metaSuiChart;
   if(filtroAtual.ano&&!filtroAtual.mes){
     const porMes={};
     diasFiltrados.forEach(h=>{
       const m=h.data.slice(5,7);
       if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0};
-      porMes[m].bov+=h.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
-      porMes[m].sui+=h.suino.reduce((a,r)=>a+(r.abatidos||0),0);
-      porMes[m].metaBov+=h.metaBov||0;porMes[m].metaSui+=h.metaSui||0;
+      porMes[m].bov+=bovDoDia(h);
+      porMes[m].sui+=suiDoDia(h);
+      porMes[m].metaBov+=metaBovDoDia(h);porMes[m].metaSui+=metaSuiDoDia(h);
     });
     const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     const mesesOrd=Object.keys(porMes).sort();
@@ -1091,10 +1106,10 @@ function renderDashboard(){
     suiChart=mesesOrd.map(m=>porMes[m].sui);metaSuiChart=mesesOrd.map(m=>porMes[m].metaSui);
   }else{
     labelsChart=diasFiltrados.map(h=>fmtBR(h.data));
-    bovChart=diasFiltrados.map(h=>h.bovino.reduce((a,r)=>a+(r.abatidos||0),0));
-    metaBovChart=diasFiltrados.map(h=>h.metaBov);
-    suiChart=diasFiltrados.map(h=>h.suino.reduce((a,r)=>a+(r.abatidos||0),0));
-    metaSuiChart=diasFiltrados.map(h=>h.metaSui);
+    bovChart=diasFiltrados.map(bovDoDia);
+    metaBovChart=diasFiltrados.map(metaBovDoDia);
+    suiChart=diasFiltrados.map(suiDoDia);
+    metaSuiChart=diasFiltrados.map(metaSuiDoDia);
   }
   renderBarChart('chart-bov',labelsChart,bovChart,metaBovChart,'#1a5ca8');
   renderBarChart('chart-sui',labelsChart,suiChart,metaSuiChart,'#b45309');
@@ -1108,6 +1123,20 @@ function renderProdutividadeReal(){
   const diasFiltrados=getHistoricoFiltrado();
   if(!diasFiltrados.length)return;
 
+  const empAtual=filtroAtual.empresa;
+  const bovDoDia=h=>filtrarPorEmpresa(h.bovino).reduce((a,r)=>a+(r.abatidos||0),0);
+  const suiDoDia=h=>filtrarPorEmpresa(h.suino).reduce((a,r)=>a+(r.abatidos||0),0);
+  const metaBovDoDia=h=>{
+    if(!empAtual)return h.metaBov||0;
+    const linha=(h.bovino||[]).find(r=>r.empresa===empAtual);
+    return linha?(linha.previsto||0):0;
+  };
+  const metaSuiDoDia=h=>{
+    if(!empAtual)return h.metaSui||0;
+    const linha=(h.suino||[]).find(r=>r.empresa===empAtual);
+    return linha?(linha.previsto||0):0;
+  };
+
   // Mesma lógica de agregação das outras abas: só ano agrupa por mês, senão mostra dia a dia
   let grupos; // array de {label, bov, sui, metaBov, metaSui, dias}
   if(filtroAtual.ano&&!filtroAtual.mes){
@@ -1116,9 +1145,9 @@ function renderProdutividadeReal(){
     diasFiltrados.forEach(h=>{
       const m=h.data.slice(5,7);
       if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,labelIni:h.data,labelFim:h.data};
-      porMes[m].bov+=h.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
-      porMes[m].sui+=h.suino.reduce((a,r)=>a+(r.abatidos||0),0);
-      porMes[m].metaBov+=h.metaBov||0;porMes[m].metaSui+=h.metaSui||0;
+      porMes[m].bov+=bovDoDia(h);
+      porMes[m].sui+=suiDoDia(h);
+      porMes[m].metaBov+=metaBovDoDia(h);porMes[m].metaSui+=metaSuiDoDia(h);
       porMes[m].dias+=1;porMes[m].labelFim=h.data;
     });
     const mesesOrd=Object.keys(porMes).sort();
@@ -1126,9 +1155,9 @@ function renderProdutividadeReal(){
   }else{
     grupos=diasFiltrados.map(h=>({
       label:fmtBR(h.data),
-      bov:h.bovino.reduce((a,r)=>a+(r.abatidos||0),0),
-      sui:h.suino.reduce((a,r)=>a+(r.abatidos||0),0),
-      metaBov:h.metaBov||0,metaSui:h.metaSui||0,
+      bov:bovDoDia(h),
+      sui:suiDoDia(h),
+      metaBov:metaBovDoDia(h),metaSui:metaSuiDoDia(h),
       dias:1
     }));
   }
