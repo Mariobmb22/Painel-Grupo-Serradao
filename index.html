@@ -319,6 +319,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div class="card"><div class="card-hdr"><div class="card-title">Status do dia</div></div><div class="card-body"><div id="miudos-status-dia" style="font-size:12px;color:var(--muted);text-align:center;padding:20px 0">Selecione uma data para ver o status</div></div></div>
   </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-hdr"><div class="card-title">Cabeças e carcaça por categoria</div><div style="font-size:11px;color:var(--muted)">Conferência cruzada com Abates/Pesos</div></div>
+    <div class="card-body card-body-0"><table class="tbl" id="tbl-carcaca-form"><thead><tr><th style="width:40%">Categoria</th><th class="r" style="width:30%">Cabeças</th><th class="r" style="width:30%">Kg Carcaça</th></tr></thead><tbody id="tbody-carcaca-form"></tbody></table></div>
+  </div>
   <div class="card">
     <div class="card-hdr"><div class="card-title">Miúdos — nº de peças e peso</div><div style="font-size:11px;color:var(--muted)">Preencha e clique "Salvar no Sheets"</div></div>
     <div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-form"><thead><tr><th style="width:30%">Miúdo</th><th class="r" style="width:15%">Nº Peças</th><th class="r" style="width:15%">Peso (kg)</th><th class="r" style="width:12%">% Real</th><th class="r" style="width:12%">% Meta</th><th class="r" style="width:16%">Diferença</th></tr></thead><tbody id="tbody-miudos-form"></tbody></table></div>
@@ -525,7 +529,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const ud=document.getElementById('upload-date');if(ud)ud.value=today;
   const md=document.getElementById('miudos-date');if(md)md.value=today;
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
-  loadParams();buildParamsGrid();buildMiudosForm();
+  loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();
   try{
     const hist=await carregarHistoricoDoSheets();
     if(hist.length){
@@ -784,6 +788,17 @@ function loadDemoData(){
   setTimeout(()=>{renderBarChartW('chart-prod-bov',['Sem 1','Sem 2','Sem 3','Sem 4'],[38,46,41,44],45,'#1a5ca8');renderBarChartW('chart-prod-sui',['Sem 1','Sem 2','Sem 3','Sem 4'],[74,99,119,103],100,'#b45309');const tb=document.getElementById('tbody-prod-semanal');if(tb)tb.innerHTML=[['01-07/jun',38,45,74,100,4.2,6.1],['08-14/jun',46,45,99,100,4.4,7.0],['15-21/jun',41,45,110,100,3.8,7.4],['22-28/jun',44,45,103,100,4.1,6.9]].map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r">${farol((r[1]-r[2])/r[2]*100)}</td><td class="r">${r[3]}</td><td class="r" style="color:var(--muted)">${r[4]}</td><td class="r">${farol((r[3]-r[4])/r[4]*100)}</td><td class="r">${r[5]}</td><td class="r">${r[6]}</td></tr>`).join('');},300);
 }
 
+// ── CARCAÇA ──
+const CATEGORIAS=['Boi Frigobet','Vaca Frigobet','Boi Serradão','Vaca Serradão','Boi Frigovitta','Vaca Frigovitta'];
+function buildCarcacaForm(){
+  const tb=document.getElementById('tbody-carcaca-form');if(!tb)return;tb.innerHTML='';
+  CATEGORIAS.forEach(cat=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-weight:500">${cat}</td><td class="r"><input type="number" step="1" min="0" id="cc-${cat}-cab" placeholder="0" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td><td class="r"><input type="number" step="0.01" min="0" id="cc-${cat}-kg" placeholder="0,00" style="width:100px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td>`;
+    tb.appendChild(tr);
+  });
+}
+
 // ── MIÚDOS ──
 const MIUDOS=[{nome:'Aorta',meta:0.08},{nome:'Bucho',meta:1.45},{nome:'Carne Industrial',meta:0.65},{nome:'Colmeia',meta:0.23},{nome:'Coração',meta:0.57},{nome:'Couro',meta:17.50},{nome:'Diafragma',meta:0.48},{nome:'Esôfago',meta:0.14},{nome:'Fígado',meta:2.08},{nome:'Língua',meta:0.36},{nome:'Lombinho',meta:0.25},{nome:'Mocotó',meta:0.54},{nome:'Omaso',meta:0.36},{nome:'Pulmão',meta:0.00},{nome:'Rabo',meta:0.57},{nome:'Recortes',meta:0.55},{nome:'Rins',meta:0.00},{nome:'Sangria',meta:1.17},{nome:'Tendão',meta:0.30},{nome:'Traqueia',meta:0.12},{nome:'Vergalho',meta:0.15}];
 function buildMiudosForm(){const tb=document.getElementById('tbody-miudos-form');if(!tb)return;tb.innerHTML='';MIUDOS.forEach(m=>{const tr=document.createElement('tr');tr.innerHTML=`<td style="font-weight:500">${m.nome}</td><td class="r"><input type="number" step="1" min="0" id="mp-${m.nome}-pec" placeholder="0" style="width:80px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r"><input type="number" step="0.01" min="0" id="mp-${m.nome}-kg" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-pct">—</td><td class="r" style="color:var(--muted)">${m.meta.toFixed(2)}%</td><td class="r" id="mp-${m.nome}-dif">—</td>`;tb.appendChild(tr);});}
@@ -792,7 +807,16 @@ function calcMiudosTotais(){const mac=parseFloat(document.getElementById('m-mach
 function checkMR(){const date=document.getElementById('miudos-date')?.value;const tp=parseFloat(document.getElementById('m-total-peso')?.textContent?.replace(/\./g,'').replace(',','.'))||0;const btn=document.getElementById('btn-salvar-miudos');if(btn)btn.disabled=!date||tp<=0;}
 function onMiudosDateChange(){const date=document.getElementById('miudos-date')?.value;const lbl=document.getElementById('miudos-date-label');if(lbl&&date){const[y,m,d]=date.split('-');lbl.textContent=`${d}/${m}/${y}`;}checkMR();atualizarStatusDia(date);}
 async function atualizarStatusDia(date){const el=document.getElementById('miudos-status-dia');if(!el||!date)return;el.textContent='Verificando...';try{const mm=await carregarMiudosDoSheets(date);if(mm.length){el.innerHTML=`<span style="color:var(--green);font-weight:700">✓ ${mm.length} miúdos registrados</span><br><span style="color:var(--muted);font-size:11px">Clique Salvar para sobrescrever</span>`;}else{el.innerHTML='<span style="color:var(--muted)">Nenhum lançamento para esta data</span>';}}catch(e){el.textContent='Não foi possível verificar';}}
-async function salvarMiudos(){const date=document.getElementById('miudos-date')?.value;const tps=document.getElementById('m-total-peso')?.textContent||'0';const tp=parseFloat(tps.replace(/\./g,'').replace(',','.'))||0;if(!date||tp<=0)return;const btn=document.getElementById('btn-salvar-miudos');const al=document.getElementById('miudos-alert');btn.disabled=true;btn.textContent='Salvando...';const mm=MIUDOS.map(m=>{const nr=parseFloat(document.getElementById(`mp-${m.nome}-pec`)?.value)||0;const kg=parseFloat(document.getElementById(`mp-${m.nome}-kg`)?.value)||0;const pr=tp>0?(kg/tp*100):0;return{miudo:m.nome,nrPecas:nr,pesoKg:kg,pctReal:parseFloat(pr.toFixed(4)),pctMeta:m.meta};}).filter(m=>m.pesoKg>0||m.nrPecas>0);const ok=await salvarMiudosNoSheets(date,mm,tp);al.className='alert '+(ok?'ok':'err');al.textContent=ok?`✓ ${mm.length} miúdos salvos no Sheets!`:'✕ Erro ao salvar.';btn.disabled=false;btn.textContent='Salvar no Sheets';setTimeout(()=>{al.className='alert hidden';},4000);atualizarStatusDia(date);}
+async function salvarCarcacaNoSheets(date){
+  const rows=CATEGORIAS.map(cat=>{
+    const cab=parseFloat(document.getElementById(`cc-${cat}-cab`)?.value)||0;
+    const kg=parseFloat(document.getElementById(`cc-${cat}-kg`)?.value)||0;
+    return[date,cat,cab,kg];
+  }).filter(r=>r[2]>0||r[3]>0);
+  if(!rows.length) return true;
+  try{await sheetsAppend('Carcaca',rows);return true;}catch(e){console.error(e);return false;}
+}
+async function salvarMiudos(){const date=document.getElementById('miudos-date')?.value;const tps=document.getElementById('m-total-peso')?.textContent||'0';const tp=parseFloat(tps.replace(/\./g,'').replace(',','.'))||0;if(!date||tp<=0)return;const btn=document.getElementById('btn-salvar-miudos');const al=document.getElementById('miudos-alert');btn.disabled=true;btn.textContent='Salvando...';const mm=MIUDOS.map(m=>{const nr=parseFloat(document.getElementById(`mp-${m.nome}-pec`)?.value)||0;const kg=parseFloat(document.getElementById(`mp-${m.nome}-kg`)?.value)||0;const pr=tp>0?(kg/tp*100):0;return{miudo:m.nome,nrPecas:nr,pesoKg:kg,pctReal:parseFloat(pr.toFixed(4)),pctMeta:m.meta};}).filter(m=>m.pesoKg>0||m.nrPecas>0);const okM=await salvarMiudosNoSheets(date,mm,tp);const okC=await salvarCarcacaNoSheets(date);const ok=okM&&okC;al.className='alert '+(ok?'ok':'err');al.textContent=ok?`✓ ${mm.length} miúdos e carcaça salvos no Sheets!`:'✕ Erro ao salvar.';btn.disabled=false;btn.textContent='Salvar no Sheets';setTimeout(()=>{al.className='alert hidden';},4000);atualizarStatusDia(date);}
 
 // ── IMPORTAÇÃO ──
 function handleImport(e,slot){const f=e.target.files[0];if(!f)return;importFiles[slot]=f;const el=document.getElementById(`iname-${slot}`);if(el)el.textContent=f.name;document.getElementById(`slot-import-${slot}`)?.classList.add('ok');}
