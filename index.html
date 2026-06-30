@@ -6,6 +6,7 @@
 <title>Dashboard Operacional — Frigobet</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 :root{
   --bov:#1a5ca8; --bov-light:#e8f0fb;
@@ -158,7 +159,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-1</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-2</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -373,6 +374,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-form"><thead><tr><th style="width:30%">Miúdo</th><th class="r" style="width:15%">Nº Peças</th><th class="r" style="width:15%">Peso (kg)</th><th class="r" style="width:12%">% Real</th><th class="r" style="width:12%">% Meta</th><th class="r" style="width:16%">Diferença</th></tr></thead><tbody id="tbody-miudos-form"></tbody></table></div>
   </div>
   <div class="card" style="margin-top:12px">
+    <div class="card-hdr"><div class="card-title">Preço de venda por kg — miúdos</div><div style="font-size:11px;color:var(--muted)">Usado para calcular perdas em R$ no Rendimento de subprodutos</div></div>
+    <div class="card-body"><div id="params-precos" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div></div>
+  </div>
+  <div class="card" style="margin-top:12px">
     <div class="card-hdr"><div class="card-title">Importar histórico (Excel .xlsx)</div></div>
     <div class="card-body">
       <div id="import-alert" class="alert hidden"></div>
@@ -438,8 +443,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Metas de abate por dia da semana (cabeças)</div>
       <div id="params-dias"></div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Preço de venda por kg — miúdos (R$/kg)</div>
-      <div id="params-precos" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
     </div>
   </div>
 
@@ -644,9 +647,11 @@ function popularDiasDoMes(){
   if(!selDia)return;
   const ano=document.getElementById('filtro-ano')?.value;
   const mes=document.getElementById('filtro-mes')?.value;
+  const valorAtual=selDia.value;
   if(!ano||!mes){selDia.innerHTML='<option value="">Todos</option>';return;}
   const dias=historico.filter(h=>h.data.slice(0,4)===ano&&h.data.slice(5,7)===mes).map(h=>h.data.slice(8,10)).sort();
   selDia.innerHTML='<option value="">Todos</option>'+dias.map(d=>`<option value="${d}">${d}</option>`).join('');
+  if(dias.includes(valorAtual)) selDia.value=valorAtual;
 }
 
 function onFiltroChange(origem){
@@ -782,8 +787,6 @@ function salvarParametros(){
   const emps=['Próprio','Serradão','Frigovitta','Tourino','Frigocosta','Frigoguatu','Seali'];
   if(!params.metasEmp)params.metasEmp={};
   emps.forEach(emp=>{if(!params.metasEmp[emp])params.metasEmp[emp]={};DIAS.forEach(dia=>{params.metasEmp[emp][dia]={bov:+(document.getElementById(`meta-bov-${emp}-${dia}`)||{value:0}).value,sui:+(document.getElementById(`meta-sui-${emp}-${dia}`)||{value:0}).value};});});
-  if(!params.precosMiudos)params.precosMiudos={};
-  MIUDOS.forEach(m=>{params.precosMiudos[m.nome]=+(document.getElementById(`preco-${m.nome}`)||{value:0}).value;});
   localStorage.setItem('frigobet-params',JSON.stringify(params));
   salvarParametrosNoSheets(params.metasEmp);
   if(historico.length)renderDashboard();
@@ -1192,9 +1195,28 @@ function renderMiudosTable(id,rows,totalAbt){const tbody=document.querySelector(
 // ── CHARTS ──
 const CI={};
 function corFarolBarra(v,m){if(!m||m<=0)return'#9ca3af';const pct=(v-m)/m*100;if(pct>=-5)return'#16a34a';if(pct>=-10)return'#ca8a04';return'#dc2626';}
-function renderBarChart(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});}
-function renderBarChartLine(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});}
-function renderBarChartW(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},{label:'Meta',data:labels.map(()=>meta),type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});}
+const CHART_OPTS_BASE={
+  responsive:true,maintainAspectRatio:false,
+  plugins:{
+    legend:{
+      display:true,position:'top',align:'end',
+      labels:{
+        boxWidth:10,boxHeight:10,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
+        generateLabels:()=>[
+          {text:'Dentro da meta',fillStyle:'#16a34a',strokeStyle:'#16a34a',pointStyle:'rectRounded'},
+          {text:'Tolerância',fillStyle:'#ca8a04',strokeStyle:'#ca8a04',pointStyle:'rectRounded'},
+          {text:'Fora da meta',fillStyle:'#dc2626',strokeStyle:'#dc2626',pointStyle:'rectRounded'},
+          {text:'Meta',fillStyle:'#374151',strokeStyle:'#374151',pointStyle:'line'}
+        ]
+      }
+    },
+    datalabels:{display:ctx=>ctx.dataset.type!=='line',anchor:'end',align:'top',font:{size:10,weight:'600'},color:'#374151',formatter:v=>v?fmt(Math.round(v)):''}
+  },
+  scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}
+};
+function renderBarChart(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
+function renderBarChartLine(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
+function renderBarChartW(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},{label:'Meta',data:labels.map(()=>meta),type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
 
 // ── DEMO ──
 function loadDemoData(){
@@ -1286,7 +1308,12 @@ async function salvarCarcacaNoSheets(date){
   if(!rows.length) return true;
   try{await sheetsAppend('Carcaca',rows);return true;}catch(e){console.error(e);return false;}
 }
-async function salvarMiudos(){const date=document.getElementById('miudos-date')?.value;const tps=document.getElementById('m-total-peso')?.textContent||'0';const tp=parseFloat(tps.replace(/\./g,'').replace(',','.'))||0;if(!date||tp<=0)return;const btn=document.getElementById('btn-salvar-miudos');const al=document.getElementById('miudos-alert');btn.disabled=true;btn.textContent='Salvando...';const mm=MIUDOS.map(m=>{const nr=parseFloat(document.getElementById(`mp-${m.nome}-pec`)?.value)||0;const kg=parseFloat(document.getElementById(`mp-${m.nome}-kg`)?.value)||0;const pr=tp>0?(kg/tp*100):0;const metaEdit=parseFloat(document.getElementById(`mp-${m.nome}-meta`)?.value)||m.meta;return{miudo:m.nome,nrPecas:nr,pesoKg:kg,pctReal:parseFloat(pr.toFixed(4)),pctMeta:metaEdit};}).filter(m=>m.pesoKg>0||m.nrPecas>0);const okM=await salvarMiudosNoSheets(date,mm,tp);const okC=await salvarCarcacaNoSheets(date);const okCd=await salvarCondenacaoNoSheets(date);const okQ=await salvarQualidadeNoSheets(date);const ok=okM&&okC&&okCd&&okQ;al.className='alert '+(ok?'ok':'err');al.textContent=ok?`✓ ${mm.length} miúdos, carcaça, condenação e qualidade salvos no Sheets!`:'✕ Erro ao salvar.';btn.disabled=false;btn.textContent='Salvar no Sheets';setTimeout(()=>{al.className='alert hidden';},4000);atualizarStatusDia(date);}
+function salvarPrecos(){
+  if(!params.precosMiudos)params.precosMiudos={};
+  MIUDOS.forEach(m=>{params.precosMiudos[m.nome]=+(document.getElementById(`preco-${m.nome}`)||{value:0}).value;});
+  localStorage.setItem('frigobet-params',JSON.stringify(params));
+}
+async function salvarMiudos(){const date=document.getElementById('miudos-date')?.value;const tps=document.getElementById('m-total-peso')?.textContent||'0';const tp=parseFloat(tps.replace(/\./g,'').replace(',','.'))||0;if(!date||tp<=0)return;const btn=document.getElementById('btn-salvar-miudos');const al=document.getElementById('miudos-alert');btn.disabled=true;btn.textContent='Salvando...';salvarPrecos();const mm=MIUDOS.map(m=>{const nr=parseFloat(document.getElementById(`mp-${m.nome}-pec`)?.value)||0;const kg=parseFloat(document.getElementById(`mp-${m.nome}-kg`)?.value)||0;const pr=tp>0?(kg/tp*100):0;const metaEdit=parseFloat(document.getElementById(`mp-${m.nome}-meta`)?.value)||m.meta;return{miudo:m.nome,nrPecas:nr,pesoKg:kg,pctReal:parseFloat(pr.toFixed(4)),pctMeta:metaEdit};}).filter(m=>m.pesoKg>0||m.nrPecas>0);const okM=await salvarMiudosNoSheets(date,mm,tp);const okC=await salvarCarcacaNoSheets(date);const okCd=await salvarCondenacaoNoSheets(date);const okQ=await salvarQualidadeNoSheets(date);const ok=okM&&okC&&okCd&&okQ;al.className='alert '+(ok?'ok':'err');al.textContent=ok?`✓ ${mm.length} miúdos, carcaça, condenação e qualidade salvos no Sheets!`:'✕ Erro ao salvar.';btn.disabled=false;btn.textContent='Salvar no Sheets';setTimeout(()=>{al.className='alert hidden';},4000);atualizarStatusDia(date);}
 
 // ── IMPORTAÇÃO ──
 function handleImport(e,slot){const f=e.target.files[0];if(!f)return;importFiles[slot]=f;const el=document.getElementById(`iname-${slot}`);if(el)el.textContent=f.name;document.getElementById(`slot-import-${slot}`)?.classList.add('ok');}
