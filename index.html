@@ -32,6 +32,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-top{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--text);transition:background .15s}
 .btn-top:hover{background:var(--bg)}
 .btn-top svg{width:13px;height:13px}
+.filterbar{background:var(--white);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.filterbar-row{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.filter-group{display:flex;flex-direction:column;gap:3px}
+.filter-group label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.filter-group select{padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;color:var(--text);background:var(--white);min-width:90px}
+.filter-label{font-size:11px;color:var(--muted);font-weight:500}
 .tabs{background:var(--white);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;gap:6px;flex-wrap:wrap}
 .tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--muted);transition:all .15s;white-space:nowrap}
 .tab:hover{color:var(--text);background:var(--bg)}
@@ -151,8 +157,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <header class="topbar">
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
-    <span class="brand-sub">Junho 2026 · Atualização diária</span>
-    <span class="brand-date" id="top-date"></span>
+    <span class="brand-sub">Atualização diária</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -166,6 +171,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </button>
   </div>
 </header>
+
+<div class="filterbar no-print">
+  <div class="filterbar-row">
+    <div class="filter-group">
+      <label>Ano</label>
+      <select id="filtro-ano" onchange="onFiltroChange()"></select>
+    </div>
+    <div class="filter-group">
+      <label>Mês</label>
+      <select id="filtro-mes" onchange="onFiltroChange()"><option value="">Todos</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Dia</label>
+      <select id="filtro-dia" onchange="onFiltroChange()"><option value="">Todos</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Empresa</label>
+      <select id="filtro-empresa" onchange="onFiltroChange()"><option value="">Consolidado</option></select>
+    </div>
+  </div>
+  <div class="filter-label" id="filtro-resumo">Carregando…</div>
+</div>
 
 <nav class="tabs no-print">
   <div class="tab active" onclick="showTab('volume')" id="tab-volume">
@@ -505,6 +532,43 @@ async function salvarMiudosNoSheets(data,miudos,kgTotal){
 async function carregarHistoricoDoSheets(){
   try{const rows=await sheetsRead('Historico_Diario');return rows.slice(1).filter(r=>r[0]).map(r=>({data:r[0]||'',totalBov:+r[1]||0,metaBov:+r[2]||0,totalSui:+r[3]||0,metaSui:+r[4]||0,eficBov:+r[5]||0,eficSui:+r[6]||0,mediaBov:+r[7]||0,mediaSui:+r[8]||0}));}catch(e){return[];}
 }
+
+// Reconstrói o histórico completo por empresa a partir da aba Abates
+// Formato Abates: Data | Empresa | Tipo | Bovino_Abatido | Bovino_Meta | Suino_Abatido | Suino_Meta | Dia_Semana
+async function carregarHistoricoCompleto(){
+  try{
+    const [abates,hist]=await Promise.all([sheetsRead('Abates'),carregarHistoricoDoSheets()]);
+    const metasPorData={};
+    hist.forEach(h=>{metasPorData[h.data]={metaBov:h.metaBov,metaSui:h.metaSui};});
+
+    const porData={};
+    abates.slice(1).forEach(r=>{
+      const data=String(r[0]||'').slice(0,10);
+      if(!data)return;
+      const empresa=r[1]||'';
+      const tipo=r[2]||'';
+      const bovAbat=+r[3]||0, bovMeta=+r[4]||0, suiAbat=+r[5]||0, suiMeta=+r[6]||0;
+      const diaKey=r[7]||'Segunda';
+      if(!porData[data]) porData[data]={data,bovino:[],suino:[],diaKey};
+      if(tipo==='bovino'&&(bovAbat>0||bovMeta>0)) porData[data].bovino.push({empresa,abatidos:bovAbat,previsto:bovMeta});
+      if(tipo==='suino'&&(suiAbat>0||suiMeta>0)) porData[data].suino.push({empresa,abatidos:suiAbat,previsto:suiMeta});
+    });
+
+    return Object.values(porData).map(d=>{
+      const m=metasPorData[d.data]||{};
+      const tBov=d.bovino.reduce((a,e)=>a+e.abatidos,0);
+      const tSui=d.suino.reduce((a,e)=>a+e.abatidos,0);
+      return{
+        data:d.data,diaKey:d.diaKey,
+        bovino:d.bovino,suino:d.suino,
+        metaBov:m.metaBov??d.bovino.reduce((a,e)=>a+e.previsto,0),
+        metaSui:m.metaSui??d.suino.reduce((a,e)=>a+e.previsto,0),
+        capBov:params.capBov,capSui:params.capSui,
+        pesosBov:[],pesosSui:[]
+      };
+    }).sort((a,b)=>a.data.localeCompare(b.data));
+  }catch(e){console.log('Erro ao carregar histórico completo:',e);return[];}
+}
 async function carregarMiudosDoSheets(data){
   try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]===data).map(r=>({miudo:r[1],nrPecas:+r[2]||0,pesoKg:+r[3]||0,kgTotalAbate:+r[4]||0,pctReal:+r[5]||0,pctMeta:+r[6]||0}));}catch(e){return[];}
 }
@@ -523,6 +587,91 @@ function salvarURLScript(){
 
 function getSemana(dataStr){const d=new Date(dataStr+'T12:00:00');const s=new Date(d.getFullYear(),d.getMonth(),1);return Math.ceil((d.getDate()+s.getDay())/7);}
 
+// ── FILTRO DE PERÍODO E EMPRESA ──
+let filtroAtual={ano:null,mes:null,dia:null,empresa:''};
+
+function popularFiltrosPeriodo(){
+  const selAno=document.getElementById('filtro-ano');
+  const selMes=document.getElementById('filtro-mes');
+  const selDia=document.getElementById('filtro-dia');
+  const selEmp=document.getElementById('filtro-empresa');
+  if(!selAno||!historico.length)return;
+
+  const anos=[...new Set(historico.map(h=>h.data.slice(0,4)))].sort((a,b)=>b-a);
+  selAno.innerHTML=anos.map(a=>`<option value="${a}">${a}</option>`).join('');
+  filtroAtual.ano=anos[0];
+
+  const empresas=new Set();
+  historico.forEach(h=>{
+    (h.bovino||[]).forEach(e=>empresas.add(e.empresa));
+    (h.suino||[]).forEach(e=>empresas.add(e.empresa));
+  });
+  selEmp.innerHTML='<option value="">Consolidado</option>'+[...empresas].sort().map(e=>`<option value="${e}">${e}</option>`).join('');
+
+  popularMesesDoAno();
+  selAno.value=filtroAtual.ano;
+}
+
+function popularMesesDoAno(){
+  const selMes=document.getElementById('filtro-mes');
+  if(!selMes)return;
+  const ano=document.getElementById('filtro-ano')?.value||filtroAtual.ano;
+  const meses=[...new Set(historico.filter(h=>h.data.slice(0,4)===ano).map(h=>h.data.slice(5,7)))].sort();
+  const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  selMes.innerHTML='<option value="">Todos</option>'+meses.map(m=>`<option value="${m}">${nomesMeses[parseInt(m)]}</option>`).join('');
+}
+
+function popularDiasDoMes(){
+  const selDia=document.getElementById('filtro-dia');
+  if(!selDia)return;
+  const ano=document.getElementById('filtro-ano')?.value;
+  const mes=document.getElementById('filtro-mes')?.value;
+  if(!mes){selDia.innerHTML='<option value="">Todos</option>';selDia.disabled=true;return;}
+  selDia.disabled=false;
+  const dias=historico.filter(h=>h.data.slice(0,4)===ano&&h.data.slice(5,7)===mes).map(h=>h.data.slice(8,10)).sort();
+  selDia.innerHTML='<option value="">Todos</option>'+dias.map(d=>`<option value="${d}">${d}</option>`).join('');
+}
+
+function onFiltroChange(){
+  filtroAtual.ano=document.getElementById('filtro-ano')?.value||null;
+  popularMesesDoAno();
+  filtroAtual.mes=document.getElementById('filtro-mes')?.value||null;
+  popularDiasDoMes();
+  filtroAtual.dia=document.getElementById('filtro-dia')?.value||null;
+  filtroAtual.empresa=document.getElementById('filtro-empresa')?.value||'';
+  atualizarResumoFiltro();
+  renderDashboard();
+}
+
+function atualizarResumoFiltro(){
+  const el=document.getElementById('filtro-resumo');if(!el)return;
+  const {ano,mes,dia,empresa}=filtroAtual;
+  const nomesMeses=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  let texto='';
+  if(dia&&mes&&ano) texto=`${dia}/${mes}/${ano}`;
+  else if(mes&&ano) texto=`${nomesMeses[parseInt(mes)]} de ${ano}`;
+  else if(ano) texto=`Ano de ${ano} (visão mensal)`;
+  texto+=empresa?` · ${empresa}`:' · Consolidado';
+  el.textContent=texto;
+}
+
+// Retorna os registros do histórico filtrados por ano/mês/dia
+function getHistoricoFiltrado(){
+  const {ano,mes,dia}=filtroAtual;
+  return historico.filter(h=>{
+    if(ano&&h.data.slice(0,4)!==ano)return false;
+    if(mes&&h.data.slice(5,7)!==mes)return false;
+    if(dia&&h.data.slice(8,10)!==dia)return false;
+    return true;
+  });
+}
+
+// Filtra um array de empresas (bovino/suino) pela empresa selecionada
+function filtrarPorEmpresa(arr){
+  if(!filtroAtual.empresa)return arr;
+  return (arr||[]).filter(e=>e.empresa===filtroAtual.empresa);
+}
+
 // ── INIT ──
 document.addEventListener('DOMContentLoaded',async()=>{
   document.querySelectorAll('.panel').forEach(p=>{p.style.display='none';});
@@ -535,10 +684,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
   loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();buildCondenacaoForm();
   try{
-    const hist=await carregarHistoricoDoSheets();
+    const hist=await carregarHistoricoCompleto();
     if(hist.length){
-      historico=hist.map(h=>({data:h.data,metaBov:h.metaBov,metaSui:h.metaSui,bovino:[{empresa:'Total',abatidos:h.totalBov}],suino:[{empresa:'Total',abatidos:h.totalSui}],pesosBov:[{empresa:'Total',media_kg:h.mediaBov}],pesosSui:[{empresa:'Total',media_kg:h.mediaSui}],capBov:params.capBov,capSui:params.capSui,diaKey:'Segunda'}));
-      dadosDia=historico[historico.length-1];renderDashboard();
+      historico=hist;
+      dadosDia=historico[historico.length-1];
+      popularFiltrosPeriodo();
+      // Seleciona automaticamente o último dia disponível
+      const ultimaData=historico[historico.length-1].data;
+      document.getElementById('filtro-ano').value=ultimaData.slice(0,4);
+      popularMesesDoAno();
+      document.getElementById('filtro-mes').value=ultimaData.slice(5,7);
+      popularDiasDoMes();
+      document.getElementById('filtro-dia').value=ultimaData.slice(8,10);
+      filtroAtual={ano:ultimaData.slice(0,4),mes:ultimaData.slice(5,7),dia:ultimaData.slice(8,10),empresa:''};
+      atualizarResumoFiltro();
+      renderDashboard();
     }else{loadDemoData();}
   }catch(e){console.log('Sheets offline:',e);loadDemoData();}
 });
@@ -587,7 +747,7 @@ function salvarParametros(){
   emps.forEach(emp=>{if(!params.metasEmp[emp])params.metasEmp[emp]={};DIAS.forEach(dia=>{params.metasEmp[emp][dia]={bov:+(document.getElementById(`meta-bov-${emp}-${dia}`)||{value:0}).value,sui:+(document.getElementById(`meta-sui-${emp}-${dia}`)||{value:0}).value};});});
   localStorage.setItem('frigobet-params',JSON.stringify(params));
   salvarParametrosNoSheets(params.metasEmp);
-  if(dadosDia)renderDashboard();
+  if(historico.length)renderDashboard();
   showAlert('upload-alert','ok','Parâmetros salvos!');
   setTimeout(()=>document.getElementById('upload-alert').classList.add('hidden'),3000);
 }
@@ -721,7 +881,12 @@ async function processarPDFs(){
     const diaKey=DIAS.find(d=>dow.toLowerCase().startsWith(d.toLowerCase().slice(0,3)))||'Segunda';
     const metaDia=params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>({bov:a.bov+(v[diaKey]?.bov||0),sui:a.sui+(v[diaKey]?.sui||0)}),{bov:0,sui:0}):{bov:params.metas[diaKey]?.bov||370,sui:params.metas[diaKey]?.sui||500};
     dadosDia={data:ref,diaKey,metaBov:metaDia.bov,metaSui:metaDia.sui,capBov:params.capBov,capSui:params.capSui,bovino:escalas.bovino,suino:escalas.suino,pesosBov:Object.values(pesoResults).filter(p=>p.tipo==='bovino'),pesosSui:Object.values(pesoResults).filter(p=>p.tipo==='suino')};
-    historico.push({...dadosDia});renderDashboard();
+    historico.push({...dadosDia});popularFiltrosPeriodo();
+    document.getElementById('filtro-ano').value=ref.slice(0,4);popularMesesDoAno();
+    document.getElementById('filtro-mes').value=ref.slice(5,7);popularDiasDoMes();
+    document.getElementById('filtro-dia').value=ref.slice(8,10);
+    filtroAtual={ano:ref.slice(0,4),mes:ref.slice(5,7),dia:ref.slice(8,10),empresa:''};
+    atualizarResumoFiltro();renderDashboard();
     showAlert('upload-alert','info','Salvando no Google Sheets...');
     const saved=await salvarDiaNoSheets(dadosDia);
     showAlert('upload-alert',saved?'ok':'warn',saved?'✓ Dados salvos no Sheets e dashboard atualizado!':'Dashboard atualizado, mas não salvou no Sheets. Verifique a URL do Apps Script.');
@@ -730,16 +895,36 @@ async function processarPDFs(){
 }
 
 // ── DASHBOARD ──
+// Agrega uma lista de dias (do histórico filtrado) em um único objeto consolidado
+function agregarDias(dias){
+  const bovMap={},suiMap={};
+  let metaBov=0,metaSui=0;
+  dias.forEach(d=>{
+    metaBov+=d.metaBov||0;metaSui+=d.metaSui||0;
+    (d.bovino||[]).forEach(e=>{if(!bovMap[e.empresa])bovMap[e.empresa]={empresa:e.empresa,abatidos:0,previsto:0};bovMap[e.empresa].abatidos+=e.abatidos||0;bovMap[e.empresa].previsto+=e.previsto||0;});
+    (d.suino||[]).forEach(e=>{if(!suiMap[e.empresa])suiMap[e.empresa]={empresa:e.empresa,abatidos:0,previsto:0};suiMap[e.empresa].abatidos+=e.abatidos||0;suiMap[e.empresa].previsto+=e.previsto||0;});
+  });
+  return{bovino:Object.values(bovMap),suino:Object.values(suiMap),metaBov,metaSui,capBov:params.capBov,capSui:params.capSui};
+}
+
 function renderDashboard(){
-  if(!dadosDia)return;const d=dadosDia;
-  const dl=fmtBR(d.data);
+  if(!historico.length)return;
+  const diasFiltrados=getHistoricoFiltrado();
+  if(!diasFiltrados.length)return;
+  const agregado=agregarDias(diasFiltrados);
+  const d={
+    bovino:filtrarPorEmpresa(agregado.bovino),
+    suino:filtrarPorEmpresa(agregado.suino),
+    metaBov:agregado.metaBov,metaSui:agregado.metaSui,
+    capBov:agregado.capBov*diasFiltrados.length,capSui:agregado.capSui*diasFiltrados.length,
+    data:diasFiltrados[diasFiltrados.length-1].data
+  };
+  const dl=filtroAtual.dia?fmtBR(d.data):document.getElementById('filtro-resumo')?.textContent||fmtBR(d.data);
   ['top-date','vol-date-label','vol-bov-date','vol-sui-date'].forEach(id=>set(id,dl));
   const tB=d.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
   const tS=d.suino.reduce((a,r)=>a+(r.abatidos||0),0);
   const eB=d.capBov>0?Math.round(tB/d.capBov*100):0;
   const eS=d.capSui>0?Math.round(tS/d.capSui*100):0;
-  const mB=d.pesosBov.length?d.pesosBov.reduce((a,p)=>a+(p.media_kg||0),0)/d.pesosBov.length:0;
-  const mS=d.pesosSui.length?d.pesosSui.reduce((a,p)=>a+(p.media_kg||0),0)/d.pesosSui.length:0;
   const fiBov=document.getElementById('fi-bov');const fiSui=document.getElementById('fi-sui');
   if(fiBov)fiBov.className='f '+(tB>=d.metaBov*0.95?'f-g':tB>=d.metaBov*0.90?'f-y':'f-r');
   if(fiSui)fiSui.className='f '+(tS>=d.metaSui*0.95?'f-g':tS>=d.metaSui*0.90?'f-y':'f-r');
@@ -750,9 +935,35 @@ function renderDashboard(){
   setEfic('efic-bov-dia','efic-bov-dia-bar',eB,'bov');setEfic('efic-bov-acum','efic-bov-acum-bar',eB,'bov');
   setEfic('efic-sui-dia','efic-sui-dia-bar',eS,'sui');setEfic('efic-sui-acum','efic-sui-acum-bar',eS,'sui');
   renderVolTable('tbl-bov',d.bovino,d.metaBov,tB);renderVolTable('tbl-sui',d.suino,d.metaSui,tS);
-  renderBarChart('chart-bov',historico.map(h=>fmtBR(h.data)),historico.map(h=>h.bovino.reduce((a,r)=>a+(r.abatidos||0),0)),historico.map(h=>h.metaBov),'#1a5ca8');
-  renderBarChart('chart-sui',historico.map(h=>fmtBR(h.data)),historico.map(h=>h.suino.reduce((a,r)=>a+(r.abatidos||0),0)),historico.map(h=>h.metaSui),'#b45309');
-  set('prod-bov-h',(d.capBov>0?tB/8:0).toFixed(1));set('prod-sui-h',(d.capSui>0?tS/8:0).toFixed(1));
+
+  // Gráficos: se filtrado por ano sem mês, agrupa por mês; se filtrado por mês, mostra dia a dia
+  let labelsChart,bovChart,metaBovChart,suiChart,metaSuiChart;
+  if(filtroAtual.ano&&!filtroAtual.mes){
+    const porMes={};
+    diasFiltrados.forEach(h=>{
+      const m=h.data.slice(5,7);
+      if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0};
+      porMes[m].bov+=h.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
+      porMes[m].sui+=h.suino.reduce((a,r)=>a+(r.abatidos||0),0);
+      porMes[m].metaBov+=h.metaBov||0;porMes[m].metaSui+=h.metaSui||0;
+    });
+    const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const mesesOrd=Object.keys(porMes).sort();
+    labelsChart=mesesOrd.map(m=>nomesMeses[parseInt(m)]);
+    bovChart=mesesOrd.map(m=>porMes[m].bov);metaBovChart=mesesOrd.map(m=>porMes[m].metaBov);
+    suiChart=mesesOrd.map(m=>porMes[m].sui);metaSuiChart=mesesOrd.map(m=>porMes[m].metaSui);
+  }else{
+    labelsChart=diasFiltrados.map(h=>fmtBR(h.data));
+    bovChart=diasFiltrados.map(h=>h.bovino.reduce((a,r)=>a+(r.abatidos||0),0));
+    metaBovChart=diasFiltrados.map(h=>h.metaBov);
+    suiChart=diasFiltrados.map(h=>h.suino.reduce((a,r)=>a+(r.abatidos||0),0));
+    metaSuiChart=diasFiltrados.map(h=>h.metaSui);
+  }
+  renderBarChart('chart-bov',labelsChart,bovChart,metaBovChart,'#1a5ca8');
+  renderBarChart('chart-sui',labelsChart,suiChart,metaSuiChart,'#b45309');
+
+  const horasTotal=8*diasFiltrados.length;
+  set('prod-bov-h',(horasTotal>0?tB/horasTotal:0).toFixed(1));set('prod-sui-h',(horasTotal>0?tS/horasTotal:0).toFixed(1));
   set('prod-colab-bov',(tB/(params.colabBov||90)).toFixed(1));set('prod-colab-sui',(tS/(params.colabSui||80)).toFixed(1));
   renderDemoQualidade();renderDemoRendimento(tB,tS);
 }
@@ -788,7 +999,12 @@ function renderBarChartW(id,labels,data,meta,color){if(CI[id])CI[id].destroy();c
 // ── DEMO ──
 function loadDemoData(){
   historico=[{data:'2026-06-16',metaBov:370,metaSui:500,bovino:[{empresa:'Serradão',abatidos:91},{empresa:'Frigovitta',abatidos:96},{empresa:'Tourino',abatidos:39}],suino:[{empresa:'Serradão',abatidos:166},{empresa:'Seali',abatidos:128}],pesosBov:[{empresa:'Serradão',media_kg:298},{empresa:'Frigovitta',media_kg:233}],pesosSui:[{empresa:'Serradão',media_kg:80},{empresa:'Seali',media_kg:89}],capBov:370,capSui:580,diaKey:'Segunda'},{data:'2026-06-17',metaBov:370,metaSui:500,bovino:[{empresa:'Serradão',abatidos:91},{empresa:'Frigovitta',abatidos:96},{empresa:'Tourino',abatidos:39}],suino:[{empresa:'Serradão',abatidos:166},{empresa:'Tourino',abatidos:119}],pesosBov:[{empresa:'Serradão',media_kg:298},{empresa:'Frigovitta',media_kg:234}],pesosSui:[{empresa:'Serradão',media_kg:80}],capBov:370,capSui:580,diaKey:'Terça'}];
-  dadosDia=historico[historico.length-1];renderDashboard();
+  dadosDia=historico[historico.length-1];popularFiltrosPeriodo();
+  document.getElementById('filtro-ano').value='2026';popularMesesDoAno();
+  document.getElementById('filtro-mes').value='06';popularDiasDoMes();
+  document.getElementById('filtro-dia').value='';
+  filtroAtual={ano:'2026',mes:'06',dia:'',empresa:''};
+  atualizarResumoFiltro();renderDashboard();
   setTimeout(()=>{renderBarChartW('chart-prod-bov',['Sem 1','Sem 2','Sem 3','Sem 4'],[38,46,41,44],45,'#1a5ca8');renderBarChartW('chart-prod-sui',['Sem 1','Sem 2','Sem 3','Sem 4'],[74,99,119,103],100,'#b45309');const tb=document.getElementById('tbody-prod-semanal');if(tb)tb.innerHTML=[['01-07/jun',38,45,74,100,4.2,6.1],['08-14/jun',46,45,99,100,4.4,7.0],['15-21/jun',41,45,110,100,3.8,7.4],['22-28/jun',44,45,103,100,4.1,6.9]].map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r">${farol((r[1]-r[2])/r[2]*100)}</td><td class="r">${r[3]}</td><td class="r" style="color:var(--muted)">${r[4]}</td><td class="r">${farol((r[3]-r[4])/r[4]*100)}</td><td class="r">${r[5]}</td><td class="r">${r[6]}</td></tr>`).join('');},300);
 }
 
@@ -855,7 +1071,7 @@ async function importarHistorico(){
     if(importFiles['pesos']){al.textContent='Importando pesos...';const rows=await readXLSX(importFiles['pesos']);const sr=rows.slice(1).filter(r=>r[1]).map(r=>[excelDateToISO(r[1]),'Consolidado','ambos',+r[2]||0,+r[4]||0,0,+r[3]||0,+r[5]||0,0]);if(sr.length){await sheetsAppend('Pesos',sr);total+=sr.length;}}
     if(importFiles['miudos']){al.textContent='Importando miúdos...';const rows=await readXLSX(importFiles['miudos']);const sr=rows.slice(1).filter(r=>r[0]&&r[4]).map(r=>{const data=excelDateToISO(r[0]);const kt=+r[6]||0;const pk=+r[5]||0;const pr=kt>0?(pk/kt*100):0;return[data,r[4]||'',0,pk,kt,parseFloat(pr.toFixed(4)),+r[7]||0,+r[9]||0,+r[10]||0];});if(sr.length){await sheetsAppend('Miudos',sr);total+=sr.length;}}
     al.className='alert ok';al.textContent=`✓ ${total} linhas importadas!`;
-    historico=await carregarHistoricoDoSheets();if(dadosDia)renderDashboard();
+    historico=await carregarHistoricoCompleto();if(historico.length){popularFiltrosPeriodo();renderDashboard();}
   }catch(e){al.className='alert err';al.textContent='✕ Erro: '+e.message;}
   btn.disabled=false;
 }
