@@ -166,7 +166,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-8</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-13</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -321,10 +321,11 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     <div class="perda-card"><div class="perda-card-label">Perda total estimada · bovino</div><div class="perda-card-val" id="rend-perda-bov">—</div><div class="perda-card-sub">Acumulado junho</div></div>
     <div class="perda-card"><div class="perda-card-label">Perda total estimada · suíno</div><div class="perda-card-val" id="rend-perda-sui">—</div><div class="perda-card-sub">Acumulado junho</div></div>
     <div class="perda-card"><div class="perda-card-label">Maior perda unitária</div><div class="perda-card-val lingua" id="rend-maior-nome">—</div><div class="perda-card-sub" id="rend-maior-val">—</div></div>
+    <div class="perda-card"><div class="perda-card-label">Vs benchmark do setor</div><div class="perda-card-val" id="rend-bench-acima" style="font-size:18px">—</div><div class="perda-card-sub" id="rend-bench-sub">miúdos acima do benchmark</div></div>
   </div>
   <div class="two-col">
     <div class="card"><div class="card-hdr"><div class="card-title">Ranking — top 5 maiores perdas (R$) <span class="badge badge-bov">Bovino</span></div></div><div class="card-body" id="ranking-bov"></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Rendimento miúdos bovino <span class="badge badge-bov">Bovino</span></div><span class="card-date">dia</span></div><div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-bov"><thead><tr><th>Miúdo</th><th class="r">Meta%</th><th class="r">Real%</th><th class="r">Vol.Abt</th><th class="r">Perda (R$)</th><th class="r">F</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Rendimento miúdos bovino <span class="badge badge-bov">Bovino</span></div><span class="card-date">dia</span></div><div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-bov"><thead><tr><th>Miúdo</th><th class="r">Meta%</th><th class="r">Real%</th><th class="r" title="Benchmark do setor — mediana de empresas similares">Bench.%</th><th class="r">Vol.Abt</th><th class="r">Perda (R$)</th><th class="r">F</th></tr></thead><tbody></tbody></table></div></div>
   </div>
   <div class="two-col">
     <div class="card"><div class="card-hdr"><div class="card-title">Rendimento miúdos suíno <span class="badge badge-sui">Suíno</span></div><span class="card-date">dia</span></div><div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-sui"><thead><tr><th>Miúdo</th><th class="r">Meta%</th><th class="r">Real%</th><th class="r">Vol.Abt</th><th class="r">Perda (R$)</th><th class="r">F</th></tr></thead><tbody></tbody></table></div></div>
@@ -776,7 +777,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
   loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();buildCondenacaoForm();buildQualidadeForm();
   try{
-    const hist=await carregarHistoricoCompleto();
+    const [hist]=await Promise.all([carregarHistoricoCompleto(),carregarBenchmarkDoSheets()]);
     if(hist.length){
       historico=hist;
       dadosDia=historico[historico.length-1];
@@ -1263,8 +1264,8 @@ async function renderRendimentoReal(tB,tS){
   if(!diasFiltrados.length){renderDemoRendimento(tB,tS);return;}
   const datasSet=new Set(diasFiltrados.map(d=>d.data));
   const registros=miudosCache.filter(m=>datasSet.has(m.data));
-  // Peso de carcaça só de Boi (sem Vaca) no período — base para itens exclusivos de boi como Vergalho
-  const kgCarcacaBoiPeriodo=carcacaCache.filter(c=>datasSet.has(c.data)&&c.categoria.startsWith('Boi')).reduce((a,c)=>a+c.kgCarcaca,0);
+  // Peso de carcaça só de Boi (sem Vaca) — filtra por "BOI" ou "Boi" independente de capitalização
+  const kgCarcacaBoiPeriodo=carcacaCache.filter(c=>datasSet.has(c.data)&&c.categoria.toUpperCase().startsWith('BOI')).reduce((a,c)=>a+c.kgCarcaca,0);
 
   const porMiudo={};
   MIUDOS.forEach(m=>{porMiudo[m.nome.toUpperCase()]={pesos:[],pctReais:[],meta:m.meta,nomeOriginal:m.nome};});
@@ -1296,6 +1297,18 @@ async function renderRendimentoReal(tB,tS){
   const perdaTotal=linhas.reduce((a,l)=>a+(l.perda<0?l.perda:0),0);
   const maiorPerda=linhas.reduce((a,l)=>l.perda<(a?.perda||0)?l:a,null);
 
+  // Benchmark summary: how many miudos are above/below sector benchmark
+  const comBench=linhas.filter(l=>BENCHMARK_SETOR[l.nome]!==undefined&&l.real>0);
+  const acimaBench=comBench.filter(l=>l.real>=BENCHMARK_SETOR[l.nome]).length;
+  const totalComBench=comBench.length;
+  const benchEl=document.getElementById('rend-bench-acima');
+  const benchSub=document.getElementById('rend-bench-sub');
+  if(benchEl){
+    benchEl.textContent=totalComBench>0?`${acimaBench}/${totalComBench}`:'—';
+    benchEl.style.color=acimaBench>=totalComBench*0.7?'var(--green)':acimaBench>=totalComBench*0.5?'var(--yellow)':'var(--red)';
+  }
+  if(benchSub) benchSub.textContent=`miúdos acima do benchmark do setor`;
+
   set('rend-perda-bov',fmtMoeda(perdaTotal));
   set('rend-perda-sui','—');
   if(maiorPerda){set('rend-maior-nome',maiorPerda.nome);set('rend-maior-val',fmtMoeda(maiorPerda.perda)+' acumulado');}
@@ -1324,7 +1337,24 @@ function renderDemoRendimento(tB,tS){
   const sp=[{nome:'Bolsas sangue fetal',meta:60,s1:40,s2:29,acum:94},{nome:'Couro tapete',meta:117,s1:0,s2:33,acum:58},{nome:'Bolsas fita rompidas',meta:0,s1:25,s2:33,acum:58}];
   const tb=document.querySelector('#tbl-subprod tbody');tb.innerHTML='';sp.forEach(r=>{const f=r.acum>=r.meta&&r.meta>0?'<span class="f f-g"></span>':'<span class="f f-r"></span>';tb.innerHTML+=`<tr><td>${r.nome}</td><td class="r">${r.meta}</td><td class="r">${r.s1}</td><td class="r">${r.s2}</td><td class="r"><b>${r.acum}</b></td><td class="r">${r.meta>0?f:'—'}</td></tr>`;});
 }
-function renderMiudosTable(id,rows,totalAbtPadrao){const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';rows.forEach(r=>{const diff=r.real-r.meta;const f=diff>=0?'<span class="f f-g"></span>':diff>-0.3?'<span class="f f-y"></span>':'<span class="f f-r"></span>';const p=r.perda<0?`<span style="color:var(--red)">R$${Math.abs(r.perda/1000).toFixed(1)}k</span>`:'—';const vol=r.baseVol!==undefined?r.baseVol:totalAbtPadrao;tbody.innerHTML+=`<tr><td>${r.nome}</td><td class="r">${r.meta.toFixed(2)}</td><td class="r">${r.real.toFixed(2)}</td><td class="r">${fmt(Math.round(vol))}</td><td class="r">${p}</td><td class="r">${f}</td></tr>`;});}
+function renderMiudosTable(id,rows,totalAbtPadrao){
+  const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';
+  rows.forEach(r=>{
+    const diff=r.real-r.meta;
+    const f=diff>=0?'<span class="f f-g"></span>':diff>-0.3?'<span class="f f-y"></span>':'<span class="f f-r"></span>';
+    const p=r.perda<0?`<span style="color:var(--red)">R$${Math.abs(r.perda/1000).toFixed(1)}k</span>`:'—';
+    const vol=r.baseVol!==undefined?r.baseVol:totalAbtPadrao;
+    const bench=BENCHMARK_SETOR[r.nome];
+    let benchCell='<td class="r" style="color:var(--muted)">—</td>';
+    if(bench){
+      const diffB=r.real-bench;
+      const cor=diffB>=0?'var(--green)':diffB>=-bench*0.10?'var(--yellow)':'var(--red)';
+      const sinal=diffB>=0?'▲':'▼';
+      benchCell=`<td class="r"><span style="font-size:10px;color:${cor}" title="${sinal}${Math.abs(diffB).toFixed(2)}% vs benchmark">${bench.toFixed(2)}</span></td>`;
+    }
+    tbody.innerHTML+=`<tr><td>${r.nome}</td><td class="r">${r.meta.toFixed(2)}</td><td class="r">${r.real.toFixed(2)}</td>${benchCell}<td class="r">${fmt(Math.round(vol))}</td><td class="r">${p}</td><td class="r">${f}</td></tr>`;
+  });
+}
 
 // ── CHARTS ──
 const CI={};
@@ -1426,6 +1456,20 @@ async function salvarQualidadeNoSheets(date){
 }
 
 // ── MIÚDOS ──
+// Benchmark do setor — carregado da aba 'Benchmark' no Sheets
+// Fallback: mediana de 5 fontes (Hipercarnes 01+02/06/2026, Valencio Altamira 04+05/06/2026, xlsx não identificado)
+// Removidos: Carne Industrial (2.7x — metodologia diferente) e Mocotó (3.4x — fonte única, agrupamento diferente)
+const BENCHMARK_FALLBACK={"Aorta":0.08,"Bucho":1.81,"Coração":0.66,"Diafragma":0.41,"Esôfago":0.14,"Fígado":2.32,"Lombinho":0.31,"Língua":0.42,"Omaso":0.22,"Rabo":0.71,"Rins":0.29,"Sangria":1.0,"Tendão":0.29,"Traqueia":0.16,"Vergalho":0.2};
+let BENCHMARK_SETOR={...BENCHMARK_FALLBACK};
+async function carregarBenchmarkDoSheets(){
+  try{
+    const rows=await sheetsRead('Benchmark');
+    if(!rows||rows.length<2)return;
+    const novo={};
+    rows.slice(1).forEach(r=>{if(r[0]&&r[1]!=null)novo[r[0]]=parseFloat(r[1])||0;});
+    if(Object.keys(novo).length>0){BENCHMARK_SETOR=novo;console.log('Benchmark carregado do Sheets:',Object.keys(novo).length,'miúdos');}
+  }catch(e){console.log('Benchmark: usando fallback (Sheets indisponível)');}
+}
 const MIUDOS=[{nome:'Aorta',meta:0.08},{nome:'Bucho',meta:1.45},{nome:'Carne Industrial',meta:0.65},{nome:'Colmeia',meta:0.23},{nome:'Coração',meta:0.57},{nome:'Couro',meta:17.50},{nome:'Diafragma',meta:0.48},{nome:'Esôfago',meta:0.14},{nome:'Fígado',meta:2.08},{nome:'Língua',meta:0.36},{nome:'Lombinho',meta:0.25},{nome:'Mocotó',meta:0.54},{nome:'Omaso',meta:0.36},{nome:'Pulmão',meta:0.00},{nome:'Rabo',meta:0.57},{nome:'Recortes',meta:0.55},{nome:'Rins',meta:0.00},{nome:'Sangria',meta:1.17},{nome:'Tendão',meta:0.30},{nome:'Traqueia',meta:0.12},{nome:'Vergalho',meta:0.15}];
 function buildMiudosForm(){const tb=document.getElementById('tbody-miudos-form');if(!tb)return;tb.innerHTML='';MIUDOS.forEach(m=>{const tr=document.createElement('tr');tr.innerHTML=`<td style="font-weight:500">${m.nome}</td><td class="r"><input type="number" step="1" min="0" id="mp-${m.nome}-pec" placeholder="0" style="width:80px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r"><input type="number" step="0.01" min="0" id="mp-${m.nome}-kg" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-pct">—</td><td class="r"><input type="number" step="0.01" min="0" value="${m.meta.toFixed(2)}" id="mp-${m.nome}-meta" style="width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-dif">—</td>`;tb.appendChild(tr);});}
 function calcML(nome){
