@@ -173,7 +173,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-19</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-20</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -428,31 +428,38 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       </div>
     </div>
 
-    <!-- Seletores de período -->
-    <div class="two-col" style="margin-bottom:16px">
-      <div class="card" style="border:1px solid var(--border2)">
-        <div class="card-hdr"><div class="card-title">📅 Período base <span style="font-size:10px;color:var(--muted)">("antes")</span></div></div>
-        <div class="card-body">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-            <div class="filter-group"><label>Ano</label><select id="comp-base-ano" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"></select></div>
-            <div class="filter-group"><label>Mês</label><select id="comp-base-mes" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"><option value="">Todos</option></select></div>
-            <div class="filter-group"><label>Dia</label><select id="comp-base-dia" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"><option value="">Todos</option></select></div>
+    <!-- Seletores -->
+    <div style="display:grid;grid-template-columns:2fr 2fr 1fr;gap:12px;margin-bottom:16px;align-items:end">
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="card-hdr"><div class="card-title">📅 Período base ("antes")</div></div>
+        <div class="card-body" style="padding-top:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+            <div class="filter-group"><label>Ano</label><select id="comp-base-ano" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%"></select></div>
+            <div class="filter-group"><label>Mês</label><select id="comp-base-mes" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%"><option value="">Todos</option></select></div>
+            <div class="filter-group"><label>Dia</label><select id="comp-base-dia" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%"><option value="">Todos</option></select></div>
           </div>
-          <div style="margin-top:8px;font-size:11px;color:var(--muted)" id="comp-base-label">—</div>
+          <div style="font-size:11px;color:var(--muted)" id="comp-base-label">—</div>
         </div>
       </div>
-      <div class="card" style="border:1px solid var(--border2)">
-        <div class="card-hdr"><div class="card-title">📅 Período atual <span style="font-size:10px;color:var(--muted)">("depois")</span></div></div>
-        <div class="card-body">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Usa o filtro de período já selecionado no topo da página</div>
-          <div style="font-size:12px;font-weight:600;color:var(--text)" id="comp-atual-label">—</div>
-          <button class="btn btn-primary" style="margin-top:10px;width:100%;padding:8px" onclick="renderAnaliseComparativa()">▶ Calcular comparação</button>
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="card-hdr"><div class="card-title">📅 Período atual ("depois")</div></div>
+        <div class="card-body" style="padding-top:8px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Usa o filtro de período do topo da página</div>
+          <div style="font-size:12px;font-weight:600" id="comp-atual-label">—</div>
+          <div class="filter-group" style="margin-top:10px"><label>Filtrar miúdo específico</label>
+            <select id="comp-filtro-miudo" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
+              <option value="">Todos os miúdos</option>
+            </select>
+          </div>
         </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary" style="padding:12px;font-size:13px" onclick="renderAnaliseComparativa()">▶ Calcular</button>
       </div>
     </div>
 
-    <!-- Cards de resultado -->
-    <div class="perda-cards" style="margin-bottom:16px">
+    <!-- Cards resultado -->
+    <div class="perda-cards" id="comp-cards" style="margin-bottom:16px">
       <div class="perda-card" style="border-top:3px solid var(--green)">
         <div class="perda-card-label">✅ Já capturamos</div>
         <div class="perda-card-val" id="comp-ganho-total" style="color:var(--green)">—</div>
@@ -461,12 +468,12 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <div class="perda-card" style="border-top:3px solid var(--yellow)">
         <div class="perda-card-label">🎯 Potencial vs meta</div>
         <div class="perda-card-val" id="comp-upside-meta" style="color:var(--yellow)">—</div>
-        <div class="perda-card-sub">se atingir 100% das metas</div>
+        <div class="perda-card-sub">se atingir as metas</div>
       </div>
       <div class="perda-card" style="border-top:3px solid #6366f1">
         <div class="perda-card-label">🏆 Potencial vs benchmark</div>
         <div class="perda-card-val" id="comp-upside-bench" style="color:#6366f1">—</div>
-        <div class="perda-card-sub">se atingir nível do setor</div>
+        <div class="perda-card-sub">se atingir o setor</div>
       </div>
       <div class="perda-card" style="border-top:3px solid var(--bov)">
         <div class="perda-card-label">📊 Rendimento total</div>
@@ -475,38 +482,50 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       </div>
     </div>
 
-    <!-- Gráficos da análise comparativa -->
-    <div class="two-col" id="comp-charts-area" style="display:none;margin-bottom:16px">
-      <div class="card">
-        <div class="card-hdr"><div class="card-title">Evolução do rendimento total (%)</div><div style="font-size:11px;color:var(--muted)">Mês a mês — histórico completo</div></div>
-        <div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-comp-evolucao"></canvas></div></div>
+    <!-- Gráfico 1: Evolução mensal — ocupa largura total -->
+    <div class="card" id="comp-chart1-card" style="display:none;margin-bottom:16px">
+      <div class="card-hdr">
+        <div>
+          <div class="card-title" id="comp-chart1-title">Evolução do rendimento — histórico completo</div>
+          <div style="font-size:11px;color:var(--muted)" id="comp-chart1-sub">% rendimento mês a mês</div>
+        </div>
       </div>
-      <div class="card">
-        <div class="card-hdr"><div class="card-title">Ganho capturado vs potencial por miúdo</div><div style="font-size:11px;color:var(--muted)">Em R$ — top miúdos com maior impacto</div></div>
-        <div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-comp-barras"></canvas></div></div>
-      </div>
+      <div class="card-body"><div class="chart-wrap" style="height:280px"><canvas id="chart-comp-evolucao"></canvas></div></div>
     </div>
 
-    <!-- Tabela detalhada por miúdo -->
-    <div class="card">
+    <!-- Gráfico 2: Impacto financeiro por miúdo — ocupa largura total -->
+    <div class="card" id="comp-chart2-card" style="display:none;margin-bottom:16px">
+      <div class="card-hdr">
+        <div class="card-title">Impacto financeiro por miúdo (R$ mil)</div>
+        <div style="font-size:11px;color:var(--muted)">Ganho já capturado vs potencial restante</div>
+      </div>
+      <div class="card-body"><div class="chart-wrap" style="height:320px"><canvas id="chart-comp-barras"></canvas></div></div>
+    </div>
+
+    <!-- Tabela detalhada -->
+    <div class="card" id="comp-tabela-card" style="display:none">
       <div class="card-hdr">
         <div class="card-title">Detalhamento por miúdo</div>
-        <div style="font-size:11px;color:var(--muted)">Ganho já capturado e potencial restante por produto</div>
+        <div style="font-size:11px;color:var(--muted)">Variação de rendimento e impacto financeiro</div>
       </div>
       <div class="card-body card-body-0">
         <table class="tbl" id="tbl-comp-detalhe">
-          <thead><tr>
-            <th>Miúdo</th>
-            <th class="r" title="Rendimento % no período base">Base%</th>
-            <th class="r" title="Rendimento % atual">Atual%</th>
-            <th class="r" title="Meta interna">Meta%</th>
-            <th class="r" title="Benchmark do setor">Bench%</th>
-            <th class="r" title="Ganho financeiro já capturado vs base">✅ Ganho (R$)</th>
-            <th class="r" title="Potencial adicional se atingir a meta">🎯 Pot. Meta (R$)</th>
-            <th class="r" title="Potencial adicional se atingir o benchmark">🏆 Pot. Bench (R$)</th>
-          </tr></thead>
+          <thead>
+            <tr style="background:#f8fafc">
+              <th rowspan="2" style="vertical-align:middle">Miúdo</th>
+              <th colspan="3" class="r" style="text-align:center;background:#f1f5f9;border-bottom:1px solid var(--border)">Rendimento %</th>
+              <th colspan="2" class="r" style="text-align:center;background:#f0fdf4;border-bottom:1px solid var(--border)">Impacto financeiro (R$)</th>
+            </tr>
+            <tr>
+              <th class="r" style="background:#f1f5f9;font-size:10px">Base</th>
+              <th class="r" style="background:#f1f5f9;font-size:10px">Atual</th>
+              <th class="r" style="background:#f1f5f9;font-size:10px">Var.</th>
+              <th class="r" style="background:#f0fdf4;font-size:10px">✅ Ganho</th>
+              <th class="r" style="background:#fefce8;font-size:10px">🎯 Pot.Meta</th>
+            </tr>
+          </thead>
           <tbody id="tbody-comp-detalhe">
-            <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">Selecione os períodos e clique em "Calcular comparação"</td></tr>
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Clique em "Calcular" para ver os resultados</td></tr>
           </tbody>
         </table>
       </div>
@@ -1881,70 +1900,110 @@ function setEfic(vi,bi,pct,tipo){const el=document.getElementById(vi);const bar=
 function setPct(id,pct){const el=document.getElementById(id);if(!el)return;el.textContent=(pct>=0?'+':'') +pct.toFixed(1)+'%';el.className='trend '+(pct>=-5?'up':'down');}
 function showAlert(id,type,msg){const el=document.getElementById(id);if(!el)return;el.className='alert '+(type||'info');el.innerHTML=(type==='ok'?'✓ ':type==='err'?'✕ ':'') +msg;el.classList.remove('hidden');}
 // ── ANÁLISE COMPARATIVA DE RENDIMENTO ──
+// ── ANÁLISE COMPARATIVA ──
 function popularCompBase(){
   const selAno=document.getElementById('comp-base-ano');if(!selAno||!historico.length)return;
-  const anos=[...new Set(historico.map(h=>h.data.slice(0,4)))].sort((a,b)=>b-a);
+  const anos=[...new Set(historico.map(h=>h.data.slice(0,4)))].sort((a,b)=>a-b);
   selAno.innerHTML=anos.map(a=>`<option value="${a}">${a}</option>`).join('');
-  selAno.value=historico[0]?.data?.slice(0,4)||anos[anos.length-1];
+  selAno.value=anos[0]; // padrão: ano mais antigo
   popularCompBaseMeses();
-  const primeiraMes=historico[0]?.data?.slice(5,7)||'09';
-  document.getElementById('comp-base-mes').value=primeiraMes;
+  // padrão: mês mais antigo
+  const primMes=historico[0]?.data?.slice(5,7)||'01';
+  document.getElementById('comp-base-mes').value=primMes;
+  popularCompBaseDias();
+  // popular select de miúdo
+  const selM=document.getElementById('comp-filtro-miudo');
+  if(selM) selM.innerHTML='<option value="">Todos os miúdos</option>'+MIUDOS.map(m=>`<option value="${m.nome}">${m.nome}</option>`).join('');
   atualizarCompLabels();
 }
 function popularCompBaseMeses(){
-  const sel=document.getElementById('comp-base-mes');const ano=document.getElementById('comp-base-ano')?.value;
-  if(!sel||!ano)return;
+  const sel=document.getElementById('comp-base-mes');const ano=document.getElementById('comp-base-ano')?.value;if(!sel||!ano)return;
   const meses=[...new Set(historico.filter(h=>h.data.slice(0,4)===ano).map(h=>h.data.slice(5,7)))].sort();
   const nomes=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const v=sel.value;sel.innerHTML='<option value="">Todos</option>'+meses.map(m=>`<option value="${m}">${nomes[parseInt(m)]}</option>`).join('');
-  if(meses.includes(v))sel.value=v;popularCompBaseDias();
+  if(meses.includes(v))sel.value=v;
+  popularCompBaseDias();
 }
 function popularCompBaseDias(){
   const sel=document.getElementById('comp-base-dia');const ano=document.getElementById('comp-base-ano')?.value;const mes=document.getElementById('comp-base-mes')?.value;
   if(!sel)return;sel.innerHTML='<option value="">Todos</option>';if(!ano||!mes)return;
-  const dias=historico.filter(h=>h.data.slice(0,4)===ano&&h.data.slice(5,7)===mes).map(h=>h.data.slice(8,10)).sort();
-  sel.innerHTML='<option value="">Todos</option>'+dias.map(d=>`<option value="${d}">${d}</option>`).join('');
+  historico.filter(h=>h.data.slice(0,4)===ano&&h.data.slice(5,7)===mes).map(h=>h.data.slice(8,10)).sort().forEach(d=>{sel.innerHTML+=`<option value="${d}">${d}</option>`;});
 }
 function onCompChange(){
   const id=document.activeElement?.id;
-  if(id==='comp-base-ano')popularCompBaseMeses();
-  else if(id==='comp-base-mes')popularCompBaseDias();
+  if(id==='comp-base-ano')popularCompBaseMeses();else if(id==='comp-base-mes')popularCompBaseDias();
   atualizarCompLabels();
 }
 function atualizarCompLabels(){
   const ano=document.getElementById('comp-base-ano')?.value;const mes=document.getElementById('comp-base-mes')?.value;const dia=document.getElementById('comp-base-dia')?.value;
   const nomes=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  let txt=dia&&mes&&ano?`${dia}/${mes}/${ano}`:mes&&ano?`${nomes[parseInt(mes)]} de ${ano}`:ano?`Ano ${ano}`:'—';
-  const el=document.getElementById('comp-base-label');if(el)el.textContent=txt;
+  const el=document.getElementById('comp-base-label');
+  if(el)el.textContent=dia&&mes&&ano?`${dia}/${mes}/${ano}`:mes&&ano?`${nomes[parseInt(mes)]} de ${ano}`:ano?`Ano ${ano}`:'—';
   const el2=document.getElementById('comp-atual-label');if(el2)el2.textContent=document.getElementById('filtro-resumo')?.textContent||'—';
 }
 function getHistoricoBase(){
   const ano=document.getElementById('comp-base-ano')?.value;const mes=document.getElementById('comp-base-mes')?.value;const dia=document.getElementById('comp-base-dia')?.value;
-  return historico.filter(h=>{
-    if(ano&&h.data.slice(0,4)!==ano)return false;if(mes&&h.data.slice(5,7)!==mes)return false;if(dia&&h.data.slice(8,10)!==dia)return false;return true;
-  });
+  return historico.filter(h=>{if(ano&&h.data.slice(0,4)!==ano)return false;if(mes&&h.data.slice(5,7)!==mes)return false;if(dia&&h.data.slice(8,10)!==dia)return false;return true;});
 }
-function calcRendPorMiudo(datasSet){
+// Calcula rendimento real por miúdo: pesoKg / kgTotalAbate * 100, agregado por período
+function calcRendPorMiudo(datasSet, filtroNome){
   if(!miudosCache)return{};
-  const registros=miudosCache.filter(m=>datasSet.has(m.data));
+  const registros=miudosCache.filter(m=>datasSet.has(m.data)&&(!filtroNome||m.miudo?.trim().toUpperCase()===filtroNome.toUpperCase()));
+  // Agrupa por data primeiro: soma pesos e total abate por dia, depois calcula % por dia, depois média
+  const porDia={};
+  registros.forEach(r=>{
+    const key=r.data+'|'+(r.miudo||'').trim();
+    if(!porDia[key])porDia[key]={pesoKg:0,kgTotalAbate:r.kgTotalAbate||0,miudo:(r.miudo||'').trim()};
+    porDia[key].pesoKg+=r.pesoKg||0;
+    if(r.kgTotalAbate>porDia[key].kgTotalAbate)porDia[key].kgTotalAbate=r.kgTotalAbate;
+  });
   const porMiudo={};
-  registros.forEach(r=>{const key=String(r.miudo||'').trim().toUpperCase();const match=MIUDOS.find(m=>m.nome.toUpperCase()===key);if(!match)return;if(!porMiudo[match.nome])porMiudo[match.nome]=[];porMiudo[match.nome].push(r.pctReal||0);});
-  const result={};Object.entries(porMiudo).forEach(([nome,vals])=>{result[nome]=vals.reduce((a,b)=>a+b,0)/vals.length;});return result;
+  Object.values(porDia).forEach(d=>{
+    const match=MIUDOS.find(m=>m.nome.toUpperCase()===d.miudo.toUpperCase());
+    if(!match)return;
+    if(!porMiudo[match.nome])porMiudo[match.nome]=[];
+    const pct=d.kgTotalAbate>0?(d.pesoKg/d.kgTotalAbate*100):0;
+    if(pct>0)porMiudo[match.nome].push(pct);
+  });
+  const result={};
+  Object.entries(porMiudo).forEach(([nome,vals])=>{result[nome]=vals.reduce((a,b)=>a+b,0)/vals.length;});
+  return result;
+}
+// Calcula rendimento total mensal: soma pesos todos miúdos / soma kgTotalAbate, por mês
+function calcRendTotalMensal(filtroNome){
+  if(!miudosCache)return{};
+  const cache=filtroNome?miudosCache.filter(r=>r.miudo?.trim().toUpperCase()===filtroNome.toUpperCase()):miudosCache;
+  const porDiaMes={};
+  cache.forEach(r=>{
+    const mes=r.data.slice(0,7);const dia=r.data;
+    if(!porDiaMes[mes])porDiaMes[mes]={};
+    if(!porDiaMes[mes][dia])porDiaMes[mes][dia]={peso:0,total:0};
+    porDiaMes[mes][dia].peso+=r.pesoKg||0;
+    if((r.kgTotalAbate||0)>porDiaMes[mes][dia].total)porDiaMes[mes][dia].total=r.kgTotalAbate||0;
+  });
+  const result={};
+  Object.entries(porDiaMes).forEach(([mes,dias])=>{
+    let totalPeso=0,totalAbate=0,nd=0;
+    Object.values(dias).forEach(d=>{if(d.total>0){totalPeso+=d.peso;totalAbate+=d.total;nd++;}});
+    result[mes]=totalAbate>0?parseFloat((totalPeso/totalAbate*100).toFixed(4)):0;
+  });
+  return result;
 }
 async function renderAnaliseComparativa(){
   if(!miudosCache) miudosCache=await carregarMiudosCompletoDoSheets();
   const diasBase=getHistoricoBase();const diasAtual=getHistoricoFiltrado();
-  if(!diasBase.length){alert('Selecione um período base válido.');return;}
-  if(!diasAtual.length){alert('Selecione um período atual válido no filtro principal.');return;}
+  if(!diasBase.length){alert('Período base sem dados.');return;}if(!diasAtual.length){alert('Período atual sem dados.');return;}
+  const filtroMiudo=document.getElementById('comp-filtro-miudo')?.value||'';
   const datasBase=new Set(diasBase.map(d=>d.data));const datasAtual=new Set(diasAtual.map(d=>d.data));
-  const rendBase=calcRendPorMiudo(datasBase);const rendAtual=calcRendPorMiudo(datasAtual);
+  const rendBase=calcRendPorMiudo(datasBase,filtroMiudo);const rendAtual=calcRendPorMiudo(datasAtual,filtroMiudo);
   const totalAbatAtual=diasAtual.reduce((a,h)=>a+h.bovino.reduce((b,e)=>b+(e.abatidos||0),0)+h.suino.reduce((b,e)=>b+(e.abatidos||0),0),0);
   const pesoMedio=parseFloat(document.getElementById('m-media')?.textContent?.replace(/\./g,'').replace(',','.'))||250;
   const pesoTotalAtual=totalAbatAtual*pesoMedio;
   const precos=params.precosMiudos||{};
   let ganhoTotal=0,upsideMeta=0,upsideBench=0,rendTotalBase=0,rendTotalAtual=0;
   const linhas=[];
-  MIUDOS.forEach(m=>{
+  const miudosFiltro=filtroMiudo?MIUDOS.filter(m=>m.nome===filtroMiudo):MIUDOS;
+  miudosFiltro.forEach(m=>{
     const base=rendBase[m.nome]??null;const atual=rendAtual[m.nome]??null;const meta=m.meta;const bench=BENCHMARK_SETOR[m.nome]??null;const preco=precos[m.nome]||0;
     if(base===null&&atual===null)return;
     rendTotalBase+=(base||0);rendTotalAtual+=(atual||0);
@@ -1954,62 +2013,69 @@ async function renderAnaliseComparativa(){
     if(ganho!==null)ganhoTotal+=ganho;if(potMeta!==null)upsideMeta+=potMeta;if(potBench!==null)upsideBench+=potBench;
     linhas.push({nome:m.nome,base,atual,meta,bench,preco,ganho,potMeta,potBench});
   });
+  // Cards
   set('comp-ganho-total',(ganhoTotal>=0?'+':'')+fmtMoeda(ganhoTotal));
   document.getElementById('comp-ganho-total').style.color=ganhoTotal>=0?'var(--green)':'var(--red)';
   set('comp-upside-meta',upsideMeta>0?'+'+fmtMoeda(upsideMeta):'✅ Meta atingida');
   set('comp-upside-bench',upsideBench>0?'+'+fmtMoeda(upsideBench):'✅ Acima do setor');
   set('comp-rend-base',rendTotalBase.toFixed(2)+'% → '+rendTotalAtual.toFixed(2)+'%');
   const evolEl=document.getElementById('comp-rend-evolucao');
-  if(evolEl){const dir=rendTotalAtual>=rendTotalBase?'▲':'▼';const cor=rendTotalAtual>=rendTotalBase?'var(--green)':'var(--red)';evolEl.innerHTML=`<span style="color:${cor};font-weight:700">${dir} ${Math.abs(rendTotalAtual-rendTotalBase).toFixed(2)}pp</span> no rendimento total`;}
-  // ── GRÁFICO 1: Linha de evolução mensal ──
-  const porMesEv={};
-  (miudosCache||[]).forEach(r=>{
-    const mes=r.data.slice(0,7);
-    if(!porMesEv[mes])porMesEv[mes]=[];
-    if(r.pctReal>0)porMesEv[mes].push(r.pctReal);
-  });
-  const mesesOrd=Object.keys(porMesEv).sort();
+  if(evolEl){const dir=rendTotalAtual>=rendTotalBase?'▲':'▼';const cor=rendTotalAtual>=rendTotalBase?'var(--green)':'var(--red)';evolEl.innerHTML=`<span style="color:${cor};font-weight:700">${dir}${Math.abs(rendTotalAtual-rendTotalBase).toFixed(2)}pp</span>`;}
+  // Mostra seções
+  ['comp-chart1-card','comp-chart2-card','comp-tabela-card'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  // ── GRÁFICO 1: Evolução mensal — largura total, altura maior ──
+  const rendMensal=calcRendTotalMensal(filtroMiudo);
+  const mesesOrd=Object.keys(rendMensal).sort();
   const nomM=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const labEv=mesesOrd.map(m=>{const[y,mo]=m.split('-');return nomM[parseInt(mo)]+'/'+y.slice(2);});
-  const rendMensal=mesesOrd.map(m=>{const arr=porMesEv[m];return arr.length?parseFloat((arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(4)):0;});
-  const metaTot=MIUDOS.reduce((a,m)=>a+m.meta,0);
-  const datasBaseSet=new Set(diasBase.map(d=>d.data.slice(0,7)));
+  const valEv=mesesOrd.map(m=>rendMensal[m]);
+  const baseMeses=new Set(diasBase.map(d=>d.data.slice(0,7)));
+  const atualMeses=new Set(diasAtual.map(d=>d.data.slice(0,7)));
+  const metaTot=filtroMiudo?MIUDOS.find(m=>m.nome===filtroMiudo)?.meta||0:MIUDOS.reduce((a,m)=>a+m.meta,0);
+  const benchTot=filtroMiudo?(BENCHMARK_SETOR[filtroMiudo]||null):null;
+  const t1=document.getElementById('comp-chart1-title');const t1s=document.getElementById('comp-chart1-sub');
+  if(t1)t1.textContent=filtroMiudo?`Evolução do rendimento — ${filtroMiudo}`:'Evolução do rendimento total — histórico completo';
+  if(t1s)t1s.textContent=filtroMiudo?`% de rendimento do ${filtroMiudo} mês a mês`:'% rendimento total de todos os miúdos';
   if(CI['chart-comp-evolucao'])CI['chart-comp-evolucao'].destroy();
   const ctxEv=document.getElementById('chart-comp-evolucao');
-  if(ctxEv){CI['chart-comp-evolucao']=new Chart(ctxEv,{type:'line',data:{labels:labEv,datasets:[
-    {label:'Rendimento real (%)',data:rendMensal,borderColor:'#1a5ca8',backgroundColor:'rgba(26,92,168,0.08)',borderWidth:2,pointRadius:3,pointBackgroundColor:'#1a5ca8',fill:true,tension:0.3},
-    {label:'Meta total',data:mesesOrd.map(()=>metaTot),borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false},
-    {label:'Período base',data:mesesOrd.map((m,i)=>datasBaseSet.has(m)?rendMensal[i]:null),borderColor:'#dc2626',borderWidth:0,pointRadius:5,pointBackgroundColor:'#dc2626',showLine:false,spanGaps:false}
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:10}},datalabels:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v.toFixed(2)+'%'}},x:{grid:{display:false},ticks:{font:{size:10}}}}},plugins:[ChartDataLabels]});}
-
-  // ── GRÁFICO 2: Barras horizontais — ganho vs potencial ──
-  const linhasComValor=linhas.filter(r=>(r.ganho!==null&&r.ganho!==0)||(r.potMeta!==null&&r.potMeta>0));
-  linhasComValor.sort((a,b)=>(Math.abs(b.ganho||0)+(b.potMeta||0))-(Math.abs(a.ganho||0)+(a.potMeta||0)));
-  const top=linhasComValor.slice(0,10);
-  const labBar=top.map(r=>r.nome);
-  const dGanho=top.map(r=>r.ganho!==null?parseFloat((r.ganho/1000).toFixed(2)):0);
-  const dMeta=top.map(r=>r.potMeta!==null&&r.potMeta>0?parseFloat((r.potMeta/1000).toFixed(2)):0);
-  const dBench=top.map(r=>r.potBench!==null&&r.potBench>0?parseFloat((r.potBench/1000).toFixed(2)):0);
+  if(ctxEv){
+    const datasets=[
+      {label:filtroMiudo||'Rendimento real (%)',data:valEv,borderColor:'#1a5ca8',backgroundColor:'rgba(26,92,168,0.1)',borderWidth:2.5,pointRadius:mesesOrd.map(m=>baseMeses.has(m)||atualMeses.has(m)?5:3),pointBackgroundColor:mesesOrd.map(m=>baseMeses.has(m)?'#dc2626':atualMeses.has(m)?'#16a34a':'#1a5ca8'),fill:true,tension:0.3},
+      {label:'Meta',data:mesesOrd.map(()=>metaTot),borderColor:'#374151',borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false},
+    ];
+    if(benchTot)datasets.push({label:'Benchmark setor',data:mesesOrd.map(()=>benchTot),borderColor:'#6366f1',borderDash:[3,3],borderWidth:1.5,pointRadius:0,fill:false});
+    CI['chart-comp-evolucao']=new Chart(ctxEv,{type:'line',data:{labels:labEv,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:10,usePointStyle:true}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(2)}%`}},datalabels:{display:false},annotation:{}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},callback:v=>v.toFixed(2)+'%'},title:{display:true,text:'% Rendimento',font:{size:10}}},x:{grid:{color:'#f9fafb'},ticks:{font:{size:10},maxRotation:45}}}},plugins:[ChartDataLabels]});
+  }
+  // ── GRÁFICO 2: Barras horizontais — ordenado por impacto total ──
+  const linhasOrdenadas=[...linhas].filter(r=>r.ganho!==null||r.potMeta!==null).sort((a,b)=>(Math.abs(b.ganho||0)+(b.potMeta||0))-(Math.abs(a.ganho||0)+(a.potMeta||0)));
+  const top=linhasOrdenadas.slice(0,filtroMiudo?1:12);
   if(CI['chart-comp-barras'])CI['chart-comp-barras'].destroy();
   const ctxBar=document.getElementById('chart-comp-barras');
-  if(ctxBar){CI['chart-comp-barras']=new Chart(ctxBar,{type:'bar',data:{labels:labBar,datasets:[
-    {label:'Já capturado (R$ mil)',data:dGanho,backgroundColor:dGanho.map(v=>v>=0?'#16a34a':'#dc2626'),borderRadius:3},
-    {label:'Potencial vs meta (R$ mil)',data:dMeta,backgroundColor:'rgba(202,138,4,0.7)',borderRadius:3},
-    {label:'Potencial vs benchmark (R$ mil)',data:dBench,backgroundColor:'rgba(99,102,241,0.6)',borderRadius:3}
-  ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:10}},datalabels:{display:ctx=>Math.abs(ctx.dataset.data[ctx.dataIndex]||0)>0.05,anchor:'end',align:'end',font:{size:9},formatter:v=>v!==0?(v>0?'+':'')+v.toFixed(1)+'k':''}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v>0?'+':'')+v+'k'}},y:{grid:{display:false},ticks:{font:{size:10}}}}},plugins:[ChartDataLabels]});}
-
-  // Mostra área dos gráficos
-  const chartsArea=document.getElementById('comp-charts-area');
-  if(chartsArea)chartsArea.style.display='';
-
+  if(ctxBar&&top.length){
+    const labB=top.map(r=>r.nome);
+    const dG=top.map(r=>r.ganho!==null?parseFloat((r.ganho/1000).toFixed(2)):0);
+    const dM=top.map(r=>r.potMeta!==null&&r.potMeta>0?parseFloat((r.potMeta/1000).toFixed(2)):0);
+    // Altura dinâmica por qtd de miúdos
+    const altBar=document.querySelector('#comp-chart2-card .chart-wrap');
+    if(altBar)altBar.style.height=Math.max(200,top.length*50+80)+'px';
+    CI['chart-comp-barras']=new Chart(ctxBar,{type:'bar',data:{labels:labB,datasets:[
+      {label:'✅ Ganho já capturado (R$ mil)',data:dG,backgroundColor:dG.map(v=>v>=0?'rgba(22,163,74,0.8)':'rgba(220,38,38,0.7)'),borderRadius:4,borderSkipped:false},
+      {label:'🎯 Potencial vs meta (R$ mil)',data:dM,backgroundColor:'rgba(202,138,4,0.75)',borderRadius:4,borderSkipped:false}
+    ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{
+      legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12,usePointStyle:true}},
+      datalabels:{display:ctx=>Math.abs(ctx.dataset.data[ctx.dataIndex]||0)>=0.01,anchor:'end',align:'end',font:{size:10,weight:'600'},color:'#374151',formatter:v=>v===0?'':((v>0?'+':'')+v.toFixed(1)+'k')}
+    },scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v>0?'+':'')+v.toFixed(0)+'k'},title:{display:true,text:'R$ mil',font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:11},padding:4}}}},plugins:[ChartDataLabels]});
+  }
+  // ── TABELA ──
   const tbody=document.getElementById('tbody-comp-detalhe');
   if(tbody){tbody.innerHTML=linhas.map(r=>{
-    const fmtPct=v=>v!==null?v.toFixed(2)+'%':'—';
-    const fmtV=v=>v!==null?(v>=0?'+':'')+fmtMoeda(v):'—';
+    const fmtP=v=>v!==null?v.toFixed(2)+'%':'—';
+    const var_=r.base!==null&&r.atual!==null?(r.atual-r.base):null;
+    const corVar=var_===null?'':var_>0.05?'color:var(--green);font-weight:700':var_<-0.05?'color:var(--red);font-weight:700':'color:var(--muted)';
     const corG=r.ganho===null?'':r.ganho>0?'color:var(--green);font-weight:600':'color:var(--red)';
-    const corM=r.potMeta!==null&&r.potMeta>0?'color:var(--yellow);font-weight:600':'color:var(--green)';
-    const corB=r.potBench!==null&&r.potBench>0?'color:#6366f1;font-weight:600':'color:var(--green)';
-    return`<tr><td style="font-weight:500">${r.nome}</td><td class="r">${fmtPct(r.base)}</td><td class="r">${fmtPct(r.atual)}</td><td class="r" style="color:var(--muted)">${fmtPct(r.meta)}</td><td class="r" style="color:var(--muted)">${fmtPct(r.bench)}</td><td class="r" style="${corG}">${r.ganho!==null?fmtV(r.ganho):'—'}</td><td class="r" style="${corM}">${r.potMeta!==null?fmtV(r.potMeta):'✅'}</td><td class="r" style="${corB}">${r.potBench!==null?fmtV(r.potBench):'✅'}</td></tr>`;
+    const corM=r.potMeta!==null&&r.potMeta>0?'color:var(--yellow);font-weight:600':'color:var(--muted)';
+    const fmtV=v=>v===null?'—':v>=0?'+'+fmtMoeda(v):fmtMoeda(v);
+    return`<tr><td style="font-weight:500">${r.nome}${r.preco===0?'<span style="font-size:9px;color:var(--muted);margin-left:4px">sem preço</span>':''}</td><td class="r" style="background:#f8fafc">${fmtP(r.base)}</td><td class="r" style="background:#f8fafc">${fmtP(r.atual)}</td><td class="r" style="background:#f8fafc;${corVar}">${var_!==null?(var_>=0?'+':'')+var_.toFixed(2)+'pp':'—'}</td><td class="r" style="background:#f0fdf4;${corG}">${r.ganho!==null?fmtV(r.ganho):'—'}</td><td class="r" style="background:#fefce8;${corM}">${r.potMeta!==null?(r.potMeta>0?'+'+fmtMoeda(r.potMeta):'✅'):'—'}</td></tr>`;
   }).join('');}
 }
 
