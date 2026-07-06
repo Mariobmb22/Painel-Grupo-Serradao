@@ -173,7 +173,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-17</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-18</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -417,6 +417,88 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="two-col">
     <div class="card"><div class="card-hdr"><div class="card-title">Rendimento miúdos suíno <span class="badge badge-sui">Suíno</span></div><span class="card-date">dia</span></div><div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-sui"><thead><tr><th>Miúdo</th><th class="r">Meta%</th><th class="r">Real%</th><th class="r">Vol.Abt</th><th class="r">Perda (R$)</th><th class="r">F</th></tr></thead><tbody></tbody></table></div></div>
     <div class="card"><div class="card-hdr"><div class="card-title">Subprodutos</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-subprod"><thead><tr><th>Subproduto</th><th class="r">Meta/sem</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Acum.</th><th class="r">F</th></tr></thead><tbody></tbody></table></div></div>
+  </div>
+
+  <!-- ANÁLISE COMPARATIVA -->
+  <div style="margin-top:20px;padding-top:16px;border-top:2px solid var(--border)">
+    <div class="card-hdr" style="margin-bottom:14px">
+      <div>
+        <div style="font-size:14px;font-weight:700">Análise de ganho por melhoria de rendimento</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Compare períodos e quantifique o impacto financeiro da evolução</div>
+      </div>
+    </div>
+
+    <!-- Seletores de período -->
+    <div class="two-col" style="margin-bottom:16px">
+      <div class="card" style="border:1px solid var(--border2)">
+        <div class="card-hdr"><div class="card-title">📅 Período base <span style="font-size:10px;color:var(--muted)">("antes")</span></div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div class="filter-group"><label>Ano</label><select id="comp-base-ano" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"></select></div>
+            <div class="filter-group"><label>Mês</label><select id="comp-base-mes" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"><option value="">Todos</option></select></div>
+            <div class="filter-group"><label>Dia</label><select id="comp-base-dia" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"><option value="">Todos</option></select></div>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted)" id="comp-base-label">—</div>
+        </div>
+      </div>
+      <div class="card" style="border:1px solid var(--border2)">
+        <div class="card-hdr"><div class="card-title">📅 Período atual <span style="font-size:10px;color:var(--muted)">("depois")</span></div></div>
+        <div class="card-body">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Usa o filtro de período já selecionado no topo da página</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text)" id="comp-atual-label">—</div>
+          <button class="btn btn-primary" style="margin-top:10px;width:100%;padding:8px" onclick="renderAnaliseComparativa()">▶ Calcular comparação</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards de resultado -->
+    <div class="perda-cards" style="margin-bottom:16px">
+      <div class="perda-card" style="border-top:3px solid var(--green)">
+        <div class="perda-card-label">✅ Já capturamos</div>
+        <div class="perda-card-val" id="comp-ganho-total" style="color:var(--green)">—</div>
+        <div class="perda-card-sub" id="comp-ganho-sub">vs período base</div>
+      </div>
+      <div class="perda-card" style="border-top:3px solid var(--yellow)">
+        <div class="perda-card-label">🎯 Potencial vs meta</div>
+        <div class="perda-card-val" id="comp-upside-meta" style="color:var(--yellow)">—</div>
+        <div class="perda-card-sub">se atingir 100% das metas</div>
+      </div>
+      <div class="perda-card" style="border-top:3px solid #6366f1">
+        <div class="perda-card-label">🏆 Potencial vs benchmark</div>
+        <div class="perda-card-val" id="comp-upside-bench" style="color:#6366f1">—</div>
+        <div class="perda-card-sub">se atingir nível do setor</div>
+      </div>
+      <div class="perda-card" style="border-top:3px solid var(--bov)">
+        <div class="perda-card-label">📊 Rendimento total</div>
+        <div class="perda-card-val" id="comp-rend-base">—</div>
+        <div class="perda-card-sub" id="comp-rend-evolucao">base → atual</div>
+      </div>
+    </div>
+
+    <!-- Tabela detalhada por miúdo -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">Detalhamento por miúdo</div>
+        <div style="font-size:11px;color:var(--muted)">Ganho já capturado e potencial restante por produto</div>
+      </div>
+      <div class="card-body card-body-0">
+        <table class="tbl" id="tbl-comp-detalhe">
+          <thead><tr>
+            <th>Miúdo</th>
+            <th class="r" title="Rendimento % no período base">Base%</th>
+            <th class="r" title="Rendimento % atual">Atual%</th>
+            <th class="r" title="Meta interna">Meta%</th>
+            <th class="r" title="Benchmark do setor">Bench%</th>
+            <th class="r" title="Ganho financeiro já capturado vs base">✅ Ganho (R$)</th>
+            <th class="r" title="Potencial adicional se atingir a meta">🎯 Pot. Meta (R$)</th>
+            <th class="r" title="Potencial adicional se atingir o benchmark">🏆 Pot. Bench (R$)</th>
+          </tr></thead>
+          <tbody id="tbody-comp-detalhe">
+            <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">Selecione os períodos e clique em "Calcular comparação"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -888,6 +970,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       historico=hist;
       dadosDia=historico[historico.length-1];
       popularFiltrosPeriodo();
+      popularCompBase();
       // Seleciona automaticamente o último dia disponível
       const ultimaData=historico[historico.length-1].data;
       document.getElementById('filtro-ano').value=ultimaData.slice(0,4);
@@ -1785,6 +1868,98 @@ function farol(pct){if(pct>=-5)return'<span class="f f-g"></span>';if(pct>=-10)r
 function setEfic(vi,bi,pct,tipo){const el=document.getElementById(vi);const bar=document.getElementById(bi);if(!el||!bar)return;el.textContent=pct+'%';el.style.color=pct>=90?'var(--green)':pct>=70?'var(--yellow-bg)':'var(--red-bg)';bar.style.width=Math.min(pct,100)+'%';bar.style.background=tipo==='bov'?'var(--bov)':'var(--sui)';}
 function setPct(id,pct){const el=document.getElementById(id);if(!el)return;el.textContent=(pct>=0?'+':'') +pct.toFixed(1)+'%';el.className='trend '+(pct>=-5?'up':'down');}
 function showAlert(id,type,msg){const el=document.getElementById(id);if(!el)return;el.className='alert '+(type||'info');el.innerHTML=(type==='ok'?'✓ ':type==='err'?'✕ ':'') +msg;el.classList.remove('hidden');}
+// ── ANÁLISE COMPARATIVA DE RENDIMENTO ──
+function popularCompBase(){
+  const selAno=document.getElementById('comp-base-ano');if(!selAno||!historico.length)return;
+  const anos=[...new Set(historico.map(h=>h.data.slice(0,4)))].sort((a,b)=>b-a);
+  selAno.innerHTML=anos.map(a=>`<option value="${a}">${a}</option>`).join('');
+  selAno.value=historico[0]?.data?.slice(0,4)||anos[anos.length-1];
+  popularCompBaseMeses();
+  const primeiraMes=historico[0]?.data?.slice(5,7)||'09';
+  document.getElementById('comp-base-mes').value=primeiraMes;
+  atualizarCompLabels();
+}
+function popularCompBaseMeses(){
+  const sel=document.getElementById('comp-base-mes');const ano=document.getElementById('comp-base-ano')?.value;
+  if(!sel||!ano)return;
+  const meses=[...new Set(historico.filter(h=>h.data.slice(0,4)===ano).map(h=>h.data.slice(5,7)))].sort();
+  const nomes=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const v=sel.value;sel.innerHTML='<option value="">Todos</option>'+meses.map(m=>`<option value="${m}">${nomes[parseInt(m)]}</option>`).join('');
+  if(meses.includes(v))sel.value=v;popularCompBaseDias();
+}
+function popularCompBaseDias(){
+  const sel=document.getElementById('comp-base-dia');const ano=document.getElementById('comp-base-ano')?.value;const mes=document.getElementById('comp-base-mes')?.value;
+  if(!sel)return;sel.innerHTML='<option value="">Todos</option>';if(!ano||!mes)return;
+  const dias=historico.filter(h=>h.data.slice(0,4)===ano&&h.data.slice(5,7)===mes).map(h=>h.data.slice(8,10)).sort();
+  sel.innerHTML='<option value="">Todos</option>'+dias.map(d=>`<option value="${d}">${d}</option>`).join('');
+}
+function onCompChange(){
+  const id=document.activeElement?.id;
+  if(id==='comp-base-ano')popularCompBaseMeses();
+  else if(id==='comp-base-mes')popularCompBaseDias();
+  atualizarCompLabels();
+}
+function atualizarCompLabels(){
+  const ano=document.getElementById('comp-base-ano')?.value;const mes=document.getElementById('comp-base-mes')?.value;const dia=document.getElementById('comp-base-dia')?.value;
+  const nomes=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  let txt=dia&&mes&&ano?`${dia}/${mes}/${ano}`:mes&&ano?`${nomes[parseInt(mes)]} de ${ano}`:ano?`Ano ${ano}`:'—';
+  const el=document.getElementById('comp-base-label');if(el)el.textContent=txt;
+  const el2=document.getElementById('comp-atual-label');if(el2)el2.textContent=document.getElementById('filtro-resumo')?.textContent||'—';
+}
+function getHistoricoBase(){
+  const ano=document.getElementById('comp-base-ano')?.value;const mes=document.getElementById('comp-base-mes')?.value;const dia=document.getElementById('comp-base-dia')?.value;
+  return historico.filter(h=>{
+    if(ano&&h.data.slice(0,4)!==ano)return false;if(mes&&h.data.slice(5,7)!==mes)return false;if(dia&&h.data.slice(8,10)!==dia)return false;return true;
+  });
+}
+function calcRendPorMiudo(datasSet){
+  if(!miudosCache)return{};
+  const registros=miudosCache.filter(m=>datasSet.has(m.data));
+  const porMiudo={};
+  registros.forEach(r=>{const key=String(r.miudo||'').trim().toUpperCase();const match=MIUDOS.find(m=>m.nome.toUpperCase()===key);if(!match)return;if(!porMiudo[match.nome])porMiudo[match.nome]=[];porMiudo[match.nome].push(r.pctReal||0);});
+  const result={};Object.entries(porMiudo).forEach(([nome,vals])=>{result[nome]=vals.reduce((a,b)=>a+b,0)/vals.length;});return result;
+}
+async function renderAnaliseComparativa(){
+  if(!miudosCache) miudosCache=await carregarMiudosCompletoDoSheets();
+  const diasBase=getHistoricoBase();const diasAtual=getHistoricoFiltrado();
+  if(!diasBase.length){alert('Selecione um período base válido.');return;}
+  if(!diasAtual.length){alert('Selecione um período atual válido no filtro principal.');return;}
+  const datasBase=new Set(diasBase.map(d=>d.data));const datasAtual=new Set(diasAtual.map(d=>d.data));
+  const rendBase=calcRendPorMiudo(datasBase);const rendAtual=calcRendPorMiudo(datasAtual);
+  const totalAbatAtual=diasAtual.reduce((a,h)=>a+h.bovino.reduce((b,e)=>b+(e.abatidos||0),0)+h.suino.reduce((b,e)=>b+(e.abatidos||0),0),0);
+  const pesoMedio=parseFloat(document.getElementById('m-media')?.textContent?.replace(/\./g,'').replace(',','.'))||250;
+  const pesoTotalAtual=totalAbatAtual*pesoMedio;
+  const precos=params.precosMiudos||{};
+  let ganhoTotal=0,upsideMeta=0,upsideBench=0,rendTotalBase=0,rendTotalAtual=0;
+  const linhas=[];
+  MIUDOS.forEach(m=>{
+    const base=rendBase[m.nome]??null;const atual=rendAtual[m.nome]??null;const meta=m.meta;const bench=BENCHMARK_SETOR[m.nome]??null;const preco=precos[m.nome]||0;
+    if(base===null&&atual===null)return;
+    rendTotalBase+=(base||0);rendTotalAtual+=(atual||0);
+    const ganho=base!==null&&atual!==null&&preco>0?((atual-base)/100)*pesoTotalAtual*preco:null;
+    const potMeta=atual!==null&&preco>0&&meta>atual?((meta-atual)/100)*pesoTotalAtual*preco:null;
+    const potBench=atual!==null&&bench!==null&&preco>0&&bench>atual?((bench-atual)/100)*pesoTotalAtual*preco:null;
+    if(ganho!==null)ganhoTotal+=ganho;if(potMeta!==null)upsideMeta+=potMeta;if(potBench!==null)upsideBench+=potBench;
+    linhas.push({nome:m.nome,base,atual,meta,bench,preco,ganho,potMeta,potBench});
+  });
+  set('comp-ganho-total',(ganhoTotal>=0?'+':'')+fmtMoeda(ganhoTotal));
+  document.getElementById('comp-ganho-total').style.color=ganhoTotal>=0?'var(--green)':'var(--red)';
+  set('comp-upside-meta',upsideMeta>0?'+'+fmtMoeda(upsideMeta):'✅ Meta atingida');
+  set('comp-upside-bench',upsideBench>0?'+'+fmtMoeda(upsideBench):'✅ Acima do setor');
+  set('comp-rend-base',rendTotalBase.toFixed(2)+'% → '+rendTotalAtual.toFixed(2)+'%');
+  const evolEl=document.getElementById('comp-rend-evolucao');
+  if(evolEl){const dir=rendTotalAtual>=rendTotalBase?'▲':'▼';const cor=rendTotalAtual>=rendTotalBase?'var(--green)':'var(--red)';evolEl.innerHTML=`<span style="color:${cor};font-weight:700">${dir} ${Math.abs(rendTotalAtual-rendTotalBase).toFixed(2)}pp</span> no rendimento total`;}
+  const tbody=document.getElementById('tbody-comp-detalhe');
+  if(tbody){tbody.innerHTML=linhas.map(r=>{
+    const fmtPct=v=>v!==null?v.toFixed(2)+'%':'—';
+    const fmtV=v=>v!==null?(v>=0?'+':'')+fmtMoeda(v):'—';
+    const corG=r.ganho===null?'':r.ganho>0?'color:var(--green);font-weight:600':'color:var(--red)';
+    const corM=r.potMeta!==null&&r.potMeta>0?'color:var(--yellow);font-weight:600':'color:var(--green)';
+    const corB=r.potBench!==null&&r.potBench>0?'color:#6366f1;font-weight:600':'color:var(--green)';
+    return`<tr><td style="font-weight:500">${r.nome}</td><td class="r">${fmtPct(r.base)}</td><td class="r">${fmtPct(r.atual)}</td><td class="r" style="color:var(--muted)">${fmtPct(r.meta)}</td><td class="r" style="color:var(--muted)">${fmtPct(r.bench)}</td><td class="r" style="${corG}">${r.ganho!==null?fmtV(r.ganho):'—'}</td><td class="r" style="${corM}">${r.potMeta!==null?fmtV(r.potMeta):'✅'}</td><td class="r" style="${corB}">${r.potBench!==null?fmtV(r.potBench):'✅'}</td></tr>`;
+  }).join('');}
+}
+
 function exportPDF(){
   // Remove print-active de todos os painéis e usa o painel ativo atual
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active'));
