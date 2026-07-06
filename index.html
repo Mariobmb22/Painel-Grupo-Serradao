@@ -156,7 +156,14 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 .script-config label{font-size:11px;font-weight:600;color:var(--text);display:block;margin-bottom:6px}
 .script-config-row{display:flex;gap:8px;align-items:center}
 .script-config input{flex:1;padding:6px 10px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:monospace}
-@media print{.topbar,.tabs,.no-print{display:none !important}.panel{display:none !important}.panel.active{display:block !important}body{background:white}.main{padding:0}}
+@media print{
+  .topbar,.tabs,.no-print,.filterbar,.subtabs,.subpanel:not(.active){display:none !important}
+  .panel{display:none !important}
+  .panel.print-active{display:block !important}
+  body{background:white}.main{padding:0}
+  .chart-wrap{height:180px !important}
+  .print-header{display:flex !important}
+}
 @media(max-width:900px){.two-col,.three-col,.four-col,.sum-cards,.perda-cards{grid-template-columns:1fr}.resumo-grid{grid-template-columns:1fr 1fr}.upload-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -166,7 +173,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-16</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-17</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -174,6 +181,10 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <div class="leg-item"><div class="leg-dot" style="background:var(--yellow-bg)"></div>Tolerância</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--red-bg)"></div>Fora da meta</div>
     </div>
+    <button class="btn-top no-print" onclick="printRelatorio('volume')" title="Imprimir relatório de abate do dia (o que você envia diariamente)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Relatório do dia
+    </button>
     <button class="btn-top no-print" onclick="exportPDF()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/><path d="M4 18h16v2H4z"/></svg>
       Exportar PDF
@@ -283,20 +294,62 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   </div>
   <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — bovino (cabeças) <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-bov"></canvas></div></div></div>
   <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — suíno (cabeças) <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-sui"></canvas></div></div></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">Indicadores do período</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="efic-mini"><div class="efic-mini-label">Média diária bovino</div><div class="efic-mini-val" id="ind-media-dia-bov" style="font-size:14px">—</div></div>
+          <div class="efic-mini"><div class="efic-mini-label">Média diária suíno</div><div class="efic-mini-val" id="ind-media-dia-sui" style="font-size:14px">—</div></div>
+          <div class="efic-mini"><div class="efic-mini-label">Custo condenação/animal</div><div class="efic-mini-val" id="ind-custo-cond-animal" style="font-size:14px;color:var(--red)">—</div></div>
+          <div class="efic-mini"><div class="efic-mini-label">Perda total condenação</div><div class="efic-mini-val" id="ind-perda-cond-total" style="font-size:14px;color:var(--red)">—</div></div>
+          <div class="efic-mini"><div class="efic-mini-label">Aproveitamento do animal</div><div class="efic-mini-val" id="ind-aprov-animal" style="font-size:14px;color:var(--green)">—</div><div class="efic-mini-label" style="margin-top:2px">% peso entrada → miúdos</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">Peso médio por animal <span style="font-size:10px;color:var(--muted)">(lançamento do dia)</span></div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="efic-mini"><div class="efic-mini-label">Média boi (macho)</div><div class="efic-mini-val" id="sum-media-bov-m" style="font-size:14px">—</div><div class="efic-mini-label" style="margin-top:2px">kg/cabeça</div></div>
+          <div class="efic-mini"><div class="efic-mini-label">Média vaca (fêmea)</div><div class="efic-mini-val" id="sum-media-bov-f" style="font-size:14px">—</div><div class="efic-mini-label" style="margin-top:2px">kg/cabeça</div></div>
+          <div class="efic-mini"><div class="efic-mini-label">Média total</div><div class="efic-mini-val" id="m-media" style="font-size:14px">—</div><div class="efic-mini-label" style="margin-top:2px">kg/cabeça</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- PRODUTIVIDADE -->
 <div class="panel" id="panel-produtividade">
   <div class="sec-hdr">Produtividade operacional</div>
-  <div class="sum-cards">
-    <div class="sum-card"><div class="sum-card-label">Abates/homem/hora · bovino</div><div class="sum-card-val"><span class="f f-r" id="fi-prod-bov" style="margin-right:4px"></span><span id="prod-ahh-bov">—</span></div><div class="sum-card-sub">Indicador principal</div></div>
-    <div class="sum-card"><div class="sum-card-label">Abates/homem/hora · suíno</div><div class="sum-card-val"><span class="f f-g" id="fi-prod-sui" style="margin-right:4px"></span><span id="prod-ahh-sui">—</span></div><div class="sum-card-sub">Indicador principal</div></div>
-    <div class="sum-card" style="border-top:2px solid var(--border2)"><div class="sum-card-label">Abate/hora bovino</div><div class="sum-card-val" id="prod-bov-h">—</div><div class="sum-card-sub">cab/h</div></div>
-    <div class="sum-card" style="border-top:2px solid var(--border2)"><div class="sum-card-label">Abate/hora suíno</div><div class="sum-card-val" id="prod-sui-h">—</div><div class="sum-card-sub">cab/h</div></div>
-    <div class="sum-card" style="border-top:2px solid var(--border2)"><div class="sum-card-label">Cab/colaborador bovino</div><div class="sum-card-val" id="prod-colab-bov">—</div><div class="sum-card-sub">cab/pessoa</div></div>
-    <div class="sum-card" style="border-top:2px solid var(--border2)"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">cab/pessoa</div></div>
+  <!-- Indicador principal: abates/homem/hora -->
+  <div class="two-col" style="margin-bottom:0">
+    <div class="card" style="border:2px solid var(--bov)">
+      <div class="card-hdr"><div class="card-title" style="color:var(--bov)">Abates / homem / hora — Bovino</div><span class="badge badge-bov">Principal</span></div>
+      <div class="card-body" style="text-align:center;padding:20px 12px">
+        <div style="font-size:36px;font-weight:800;color:var(--bov)" id="prod-ahh-bov">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">cab/homem/hora · média do período</div>
+        <div class="efic-bar" style="margin-top:12px"><div class="efic-bar-fill" id="prod-ahh-bov-bar" style="background:var(--bov);width:0%"></div></div>
+      </div>
+    </div>
+    <div class="card" style="border:2px solid var(--sui)">
+      <div class="card-hdr"><div class="card-title" style="color:var(--sui)">Abates / homem / hora — Suíno</div><span class="badge badge-sui">Principal</span></div>
+      <div class="card-body" style="text-align:center;padding:20px 12px">
+        <div style="font-size:36px;font-weight:800;color:var(--sui)" id="prod-ahh-sui">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">cab/homem/hora · média do período</div>
+        <div class="efic-bar" style="margin-top:12px"><div class="efic-bar-fill" id="prod-ahh-sui-bar" style="background:var(--sui);width:0%"></div></div>
+      </div>
+    </div>
   </div>
-  <div class="two-col">
+  <!-- Auxiliares -->
+  <div class="sum-cards" style="margin-top:12px">
+    <div class="sum-card"><div class="sum-card-label">Abate/hora bovino</div><div class="sum-card-val" id="prod-bov-h">—</div><div class="sum-card-sub">cab/hora · média/dia</div></div>
+    <div class="sum-card"><div class="sum-card-label">Abate/hora suíno</div><div class="sum-card-val" id="prod-sui-h">—</div><div class="sum-card-sub">cab/hora · média/dia</div></div>
+    <div class="sum-card"><div class="sum-card-label">Cab/colaborador bovino</div><div class="sum-card-val" id="prod-colab-bov">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
+    <div class="sum-card"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
+  </div>
+  <div class="two-col" style="margin-top:12px">
     <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — bovino <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-bov"></canvas></div></div></div>
     <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — suíno <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-sui"></canvas></div></div></div>
   </div>
@@ -553,6 +606,13 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 </div>
 
 </main>
+<div id="print-header" class="print-header" style="display:none;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:2px solid #111;margin-bottom:16px">
+  <div>
+    <div style="font-size:16px;font-weight:700">Dashboard Operacional — Frigobet</div>
+    <div style="font-size:12px;color:#6b7280" id="print-header-sub">—</div>
+  </div>
+  <div style="text-align:right;font-size:11px;color:#6b7280" id="print-header-date">—</div>
+</div>
 
 <!-- LOGIN GERAL DO SITE -->
 <div class="overlay" id="login-site-overlay" style="display:flex;z-index:500;background:var(--bg)">
@@ -1096,19 +1156,25 @@ function renderDashboard(){
     return;
   }
   const agregado=agregarDias(diasFiltrados);
+  const nd=diasFiltrados.length||1; // número de dias do período
   const d={
     bovino:filtrarPorEmpresa(agregado.bovino),
     suino:filtrarPorEmpresa(agregado.suino),
     metaBov:agregado.metaBov,metaSui:agregado.metaSui,
-    capBov:agregado.capBov*diasFiltrados.length,capSui:agregado.capSui*diasFiltrados.length,
+    capBov:agregado.capBov,   // capacidade DIÁRIA — não multiplica pelos dias
+    capSui:agregado.capSui,
+    nd,                        // passa o nº de dias para os cálculos de eficiência
     data:diasFiltrados[diasFiltrados.length-1].data
   };
   const dl=filtroAtual.dia?fmtBR(d.data):document.getElementById('filtro-resumo')?.textContent||fmtBR(d.data);
   ['top-date','vol-date-label','vol-bov-date','vol-sui-date'].forEach(id=>set(id,dl));
   const tB=d.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
   const tS=d.suino.reduce((a,r)=>a+(r.abatidos||0),0);
-  const eB=d.capBov>0?Math.round(tB/d.capBov*100):0;
-  const eS=d.capSui>0?Math.round(tS/d.capSui*100):0;
+  // Eficiência: média diária / capacidade diária (não acumulado / capacidade)
+  const mediaDiaBov=tB/d.nd;
+  const mediaDiaSui=tS/d.nd;
+  const eB=d.capBov>0?Math.round(mediaDiaBov/d.capBov*100):0;
+  const eS=d.capSui>0?Math.round(mediaDiaSui/d.capSui*100):0;
   const fiBov=document.getElementById('fi-bov');const fiSui=document.getElementById('fi-sui');
   if(fiBov)fiBov.className='f '+(tB>=d.metaBov*0.95?'f-g':tB>=d.metaBov*0.90?'f-y':'f-r');
   if(fiSui)fiSui.className='f '+(tS>=d.metaSui*0.95?'f-g':tS>=d.metaSui*0.90?'f-y':'f-r');
@@ -1161,18 +1227,21 @@ function renderDashboard(){
   renderBarChart('chart-bov',labelsChart,bovChart,metaBovChart,'#1a5ca8');
   renderBarChart('chart-sui',labelsChart,suiChart,metaSuiChart,'#b45309');
 
-  const horasBov=parseFloat(document.getElementById('m-horas-bov')?.value)||8*diasFiltrados.length;
-  const horasSui=parseFloat(document.getElementById('m-horas-sui')?.value)||8*diasFiltrados.length;
+  const horasBov=parseFloat(document.getElementById('m-horas-bov')?.value)||8; // horas/dia
+  const horasSui=parseFloat(document.getElementById('m-horas-sui')?.value)||8;
   const colabBov=parseFloat(document.getElementById('m-colab-bov')?.value)||params.colabBov||90;
   const colabSui=parseFloat(document.getElementById('m-colab-sui')?.value)||params.colabSui||80;
-  const abHBov=horasBov>0?tB/horasBov:0;
-  const abHSui=horasSui>0?tS/horasSui:0;
-  const abHHBov=horasBov>0&&colabBov>0?tB/(horasBov*colabBov):0;
-  const abHHSui=horasSui>0&&colabSui>0?tS/(horasSui*colabSui):0;
+  // Usa média diária para indicadores de ritmo (não acumulado do período)
+  const mediaBov=tB/d.nd;
+  const mediaSui=tS/d.nd;
+  const abHBov=horasBov>0?mediaBov/horasBov:0;
+  const abHSui=horasSui>0?mediaSui/horasSui:0;
+  const abHHBov=horasBov>0&&colabBov>0?mediaBov/(horasBov*colabBov):0;
+  const abHHSui=horasSui>0&&colabSui>0?mediaSui/(horasSui*colabSui):0;
   set('prod-bov-h',abHBov.toFixed(1));set('prod-sui-h',abHSui.toFixed(1));
-  set('prod-colab-bov',(colabBov>0?tB/colabBov:0).toFixed(1));set('prod-colab-sui',(colabSui>0?tS/colabSui:0).toFixed(1));
-  set('prod-ahh-bov',abHHBov.toFixed(3));set('prod-ahh-sui',abHHSui.toFixed(3));
-  renderQualidadeReal();renderCondenacaoReal(tB);renderRendimentoReal(tB,tS);renderProdutividadeReal();
+  set('prod-colab-bov',(colabBov>0?mediaBov/colabBov:0).toFixed(1));set('prod-colab-sui',(colabSui>0?mediaSui/colabSui:0).toFixed(1));
+  set('prod-ahh-bov',abHHBov.toFixed(4));set('prod-ahh-sui',abHHSui.toFixed(4));
+  renderQualidadeReal();renderCondenacaoReal(tB);renderRendimentoReal(tB,tS);renderProdutividadeReal();calcularIndicadoresExtra(tB,tS,d.nd);
 }
 function renderProdutividadeReal(){
   const diasFiltrados=getHistoricoFiltrado();
@@ -1622,7 +1691,19 @@ function calcML(nome){
   if(de){de.textContent=(dif>=0?'+':'') +dif.toFixed(2)+'%';de.style.color=dif>=0?'var(--green)':'var(--red-bg)';}
   checkMR();
 }
-function calcMiudosTotais(){const mac=parseFloat(document.getElementById('m-machos')?.value)||0;const fem=parseFloat(document.getElementById('m-femeas')?.value)||0;const pm=parseFloat(document.getElementById('m-peso-machos')?.value)||0;const pf=parseFloat(document.getElementById('m-peso-femeas')?.value)||0;const tc=mac+fem;const tp=pm+pf;const me=tc>0?(tp/tc):0;const fn=n=>n.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:2});set('m-total-cab',fn(tc));set('m-total-peso',fn(tp));set('m-media',fn(me));MIUDOS.forEach(m=>calcML(m.nome));checkMR();}
+function calcMiudosTotais(){
+  const mac=parseFloat(document.getElementById('m-machos')?.value)||0;
+  const fem=parseFloat(document.getElementById('m-femeas')?.value)||0;
+  const pm=parseFloat(document.getElementById('m-peso-machos')?.value)||0;
+  const pf=parseFloat(document.getElementById('m-peso-femeas')?.value)||0;
+  const tc=mac+fem;const tp=pm+pf;const me=tc>0?(tp/tc):0;
+  const mediaMacho=mac>0?(pm/mac):0;const mediaFemea=fem>0?(pf/fem):0;
+  const fn=n=>n.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:2});
+  set('m-total-cab',fn(tc));set('m-total-peso',fn(tp));set('m-media',fn(me));
+  set('sum-media-bov-m',mediaMacho>0?fn(mediaMacho):'—');
+  set('sum-media-bov-f',mediaFemea>0?fn(mediaFemea):'—');
+  MIUDOS.forEach(m=>calcML(m.nome));checkMR();
+}
 function checkMR(){const date=document.getElementById('miudos-date')?.value;const tp=parseFloat(document.getElementById('m-total-peso')?.textContent?.replace(/\./g,'').replace(',','.'))||0;const btn=document.getElementById('btn-salvar-miudos');if(btn)btn.disabled=!date||tp<=0;}
 function onMiudosDateChange(){const date=document.getElementById('miudos-date')?.value;const lbl=document.getElementById('miudos-date-label');if(lbl&&date){const[y,m,d]=date.split('-');lbl.textContent=`${d}/${m}/${y}`;}checkMR();atualizarStatusDia(date);}
 async function atualizarStatusDia(date){const el=document.getElementById('miudos-status-dia');if(!el||!date)return;el.textContent='Verificando...';try{const mm=await carregarMiudosDoSheets(date);if(mm.length){el.innerHTML=`<span style="color:var(--green);font-weight:700">✓ ${mm.length} miúdos registrados</span><br><span style="color:var(--muted);font-size:11px">Clique Salvar para sobrescrever</span>`;}else{el.innerHTML='<span style="color:var(--muted)">Nenhum lançamento para esta data</span>';}}catch(e){el.textContent='Não foi possível verificar';}}
@@ -1704,7 +1785,63 @@ function farol(pct){if(pct>=-5)return'<span class="f f-g"></span>';if(pct>=-10)r
 function setEfic(vi,bi,pct,tipo){const el=document.getElementById(vi);const bar=document.getElementById(bi);if(!el||!bar)return;el.textContent=pct+'%';el.style.color=pct>=90?'var(--green)':pct>=70?'var(--yellow-bg)':'var(--red-bg)';bar.style.width=Math.min(pct,100)+'%';bar.style.background=tipo==='bov'?'var(--bov)':'var(--sui)';}
 function setPct(id,pct){const el=document.getElementById(id);if(!el)return;el.textContent=(pct>=0?'+':'') +pct.toFixed(1)+'%';el.className='trend '+(pct>=-5?'up':'down');}
 function showAlert(id,type,msg){const el=document.getElementById(id);if(!el)return;el.className='alert '+(type||'info');el.innerHTML=(type==='ok'?'✓ ':type==='err'?'✕ ':'') +msg;el.classList.remove('hidden');}
-function exportPDF(){window.print();}
+function exportPDF(){
+  // Remove print-active de todos os painéis e usa o painel ativo atual
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active'));
+  const ativo=document.querySelector('.panel.active');if(ativo)ativo.classList.add('print-active');
+  const sub=document.getElementById('print-header-sub');
+  const dt=document.getElementById('print-header-date');
+  if(sub) sub.textContent=document.getElementById('filtro-resumo')?.textContent||'';
+  if(dt) dt.textContent='Emitido em '+new Date().toLocaleString('pt-BR');
+  window.print();
+  setTimeout(()=>document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active')),1000);
+}
+function printRelatorio(painel){
+  // Muda para o painel antes de imprimir e gera o relatório formatado
+  showTab(painel);
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active'));
+  const el=document.getElementById('panel-'+painel);if(el)el.classList.add('print-active');
+  const sub=document.getElementById('print-header-sub');
+  const dt=document.getElementById('print-header-date');
+  if(sub) sub.textContent=document.getElementById('filtro-resumo')?.textContent||'';
+  if(dt) dt.textContent='Emitido em '+new Date().toLocaleString('pt-BR');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active')),500);
+  },300);
+}
+
+// Novos indicadores calculados a partir do período filtrado
+function calcularIndicadoresExtra(tB,tS,nd){
+  // 1. Custo de condenação por animal (perda R$ total / total abatido)
+  if(condenacaoCache){
+    const datasSet=new Set(getHistoricoFiltrado().map(d=>d.data));
+    const registros=condenacaoCache.filter(c=>datasSet.has(c.data)&&c.tipo==='Peça');
+    const precos=params.precosMiudos||{};
+    const precoMap={'Cabeça':precos['Carne Industrial']||0,'Língua':precos['Língua']||0,
+      'Coração':precos['Coração']||0,'Pulmão':precos['Pulmão']||0,
+      'Fígado':precos['Fígado']||0,'Rins':precos['Rins']||0,'Intestino':precos['Bucho']||0};
+    const perdaTotal=registros.reduce((a,r)=>a+(r.qtd*(precoMap[r.produto]||0)),0);
+    const totalAbat=tB+tS;
+    const custoPorAnimal=totalAbat>0?(perdaTotal/totalAbat):0;
+    set('ind-custo-cond-animal','R$ '+custoPorAnimal.toFixed(2));
+    set('ind-perda-cond-total',fmtMoeda(-perdaTotal));
+  }
+  // 2. Aproveitamento do animal (% do peso entrada → miúdos)
+  if(miudosCache){
+    const datasSet=new Set(getHistoricoFiltrado().map(d=>d.data));
+    const pesoMiudos=miudosCache.filter(m=>datasSet.has(m.data)).reduce((a,m)=>a+m.pesoKg,0);
+    const pesoEntrada=parseFloat(document.getElementById('m-peso-machos')?.value||0)+
+                      parseFloat(document.getElementById('m-peso-femeas')?.value||0);
+    if(pesoEntrada>0){
+      const aprov=(pesoMiudos/pesoEntrada*100);
+      set('ind-aprov-animal',aprov.toFixed(2)+'%');
+    }
+  }
+  // 3. Abates/dia média do período
+  set('ind-media-dia-bov',(tB/nd).toFixed(0)+' cab/dia');
+  set('ind-media-dia-sui',(tS/nd).toFixed(0)+' cab/dia');
+}
 </script>
 </body>
 </html>
