@@ -166,7 +166,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-15</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-16</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -289,16 +289,18 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 <div class="panel" id="panel-produtividade">
   <div class="sec-hdr">Produtividade operacional</div>
   <div class="sum-cards">
-    <div class="sum-card"><div class="sum-card-label">Abate/h bovino · dia</div><div class="sum-card-val"><span class="f f-r" id="fi-prod-bov" style="margin-right:4px"></span><span id="prod-bov-h">—</span></div><div class="sum-card-sub">Meta: <span id="prod-bov-meta">—</span> cab/h</div></div>
-    <div class="sum-card"><div class="sum-card-label">Abate/h suíno · dia</div><div class="sum-card-val"><span class="f f-g" id="fi-prod-sui" style="margin-right:4px"></span><span id="prod-sui-h">—</span></div><div class="sum-card-sub">Meta: <span id="prod-sui-meta">—</span> cab/h</div></div>
-    <div class="sum-card"><div class="sum-card-label">Cab/colaborador bovino</div><div class="sum-card-val" id="prod-colab-bov">—</div><div class="sum-card-sub">Meta: <span id="prod-colab-bov-meta">—</span></div></div>
-    <div class="sum-card"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">Meta: <span id="prod-colab-sui-meta">—</span></div></div>
+    <div class="sum-card"><div class="sum-card-label">Abates/homem/hora · bovino</div><div class="sum-card-val"><span class="f f-r" id="fi-prod-bov" style="margin-right:4px"></span><span id="prod-ahh-bov">—</span></div><div class="sum-card-sub">Indicador principal</div></div>
+    <div class="sum-card"><div class="sum-card-label">Abates/homem/hora · suíno</div><div class="sum-card-val"><span class="f f-g" id="fi-prod-sui" style="margin-right:4px"></span><span id="prod-ahh-sui">—</span></div><div class="sum-card-sub">Indicador principal</div></div>
+    <div class="sum-card" style="border-top:2px solid var(--border2)"><div class="sum-card-label">Abate/hora bovino</div><div class="sum-card-val" id="prod-bov-h">—</div><div class="sum-card-sub">cab/h</div></div>
+    <div class="sum-card" style="border-top:2px solid var(--border2)"><div class="sum-card-label">Abate/hora suíno</div><div class="sum-card-val" id="prod-sui-h">—</div><div class="sum-card-sub">cab/h</div></div>
+    <div class="sum-card" style="border-top:2px solid var(--border2)"><div class="sum-card-label">Cab/colaborador bovino</div><div class="sum-card-val" id="prod-colab-bov">—</div><div class="sum-card-sub">cab/pessoa</div></div>
+    <div class="sum-card" style="border-top:2px solid var(--border2)"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">cab/pessoa</div></div>
   </div>
   <div class="two-col">
-    <div class="card"><div class="card-hdr"><div class="card-title">Abate/h — bovino <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Abate/h — suíno <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-sui"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — bovino <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — suíno <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-sui"></canvas></div></div></div>
   </div>
-  <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Abate/h Bov</th><th class="r">Meta</th><th class="r">Farol</th><th class="r">Abate/h Suí</th><th class="r">Meta</th><th class="r">Farol</th><th class="r">Cab/Col Bov</th><th class="r">Cab/Col Suí</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
+  <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Abts/H/h Bov</th><th class="r">Abate/h Bov</th><th class="r">Cab/Col Bov</th><th class="r">F</th><th class="r">Abts/H/h Suí</th><th class="r">Abate/h Suí</th><th class="r">Cab/Col Suí</th><th class="r">F</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
 </div>
 
 <!-- QUALIDADE -->
@@ -383,6 +385,10 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
           <div class="param-field"><label>Fêmeas (cabeças)</label><input type="number" id="m-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
           <div class="param-field"><label>Peso machos (kg)</label><input type="number" id="m-peso-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
           <div class="param-field"><label>Peso fêmeas (kg)</label><input type="number" id="m-peso-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
+          <div class="param-field"><label>Horas abate bovino</label><input type="number" step="0.5" id="m-horas-bov" placeholder="8" oninput="calcMiudosTotais()"></div>
+          <div class="param-field"><label>Horas abate suíno</label><input type="number" step="0.5" id="m-horas-sui" placeholder="8" oninput="calcMiudosTotais()"></div>
+          <div class="param-field"><label>Colaboradores bovino</label><input type="number" id="m-colab-bov" placeholder="90" oninput="calcMiudosTotais()"></div>
+          <div class="param-field"><label>Colaboradores suíno</label><input type="number" id="m-colab-sui" placeholder="80" oninput="calcMiudosTotais()"></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
           <div class="efic-mini"><div class="efic-mini-label">Total cabeças</div><div class="efic-mini-val" id="m-total-cab" style="color:var(--bov)">0</div></div>
@@ -423,9 +429,9 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Condenação de peças</div>
         <table class="tbl" id="tbl-condenacao-form"><thead><tr><th style="width:60%">Produto</th><th class="r" style="width:40%">Peças condenadas</th></tr></thead><tbody id="tbody-condenacao-form"></tbody></table>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:16px 0 8px">Condenação de animal inteiro</div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="number" step="1" min="0" id="cd-animal-inteiro" placeholder="0" style="width:100px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:13px">
-          <span style="font-size:12px;color:var(--muted)">animais condenados inteiros no dia</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="param-field"><label>Machos condenados</label><input type="number" step="1" min="0" id="cd-animal-macho" placeholder="0"></div>
+          <div class="param-field"><label>Fêmeas condenadas</label><input type="number" step="1" min="0" id="cd-animal-femea" placeholder="0"></div>
         </div>
       </div>
     </div>
@@ -436,13 +442,13 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <div class="card-hdr"><div class="card-title">Qualidade & perdas</div><div style="font-size:11px;color:var(--muted)">% sobre o total · salva junto com Miúdos</div></div>
       <div class="card-body">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:4px 0 6px">Contaminação de carcaça</div>
-        <table class="tbl" id="tbl-q-contam-carcaca"><thead><tr><th style="width:46%">Região/tipo</th><th class="r" style="width:54%">%</th></tr></thead><tbody></tbody></table>
+        <table class="tbl" id="tbl-q-contam-carcaca"><thead><tr><th style="width:46%">Região/tipo</th><th class="r" style="width:54%">Qtd (carcaças)</th></tr></thead><tbody></tbody></table>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Contaminação na entrada do abate</div>
-        <table class="tbl" id="tbl-q-contam-entrada"><thead><tr><th style="width:46%">Peça</th><th class="r" style="width:54%">%</th></tr></thead><tbody></tbody></table>
+        <table class="tbl" id="tbl-q-contam-entrada"><thead><tr><th style="width:46%">Peça</th><th class="r" style="width:54%">Qtd (peças)</th></tr></thead><tbody></tbody></table>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Peças depreciadas</div>
-        <table class="tbl" id="tbl-q-deprec"><thead><tr><th style="width:46%">Corte</th><th class="r" style="width:54%">%</th></tr></thead><tbody></tbody></table>
+        <table class="tbl" id="tbl-q-deprec"><thead><tr><th style="width:46%">Corte</th><th class="r" style="width:54%">Qtd (peças)</th></tr></thead><tbody></tbody></table>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Lesões na carcaça</div>
-        <table class="tbl" id="tbl-q-lesoes"><thead><tr><th style="width:46%">Corte</th><th class="r" style="width:54%">%</th></tr></thead><tbody></tbody></table>
+        <table class="tbl" id="tbl-q-lesoes"><thead><tr><th style="width:46%">Corte</th><th class="r" style="width:54%">Qtd (peças)</th></tr></thead><tbody></tbody></table>
       </div>
     </div>
   </div>
@@ -1155,9 +1161,17 @@ function renderDashboard(){
   renderBarChart('chart-bov',labelsChart,bovChart,metaBovChart,'#1a5ca8');
   renderBarChart('chart-sui',labelsChart,suiChart,metaSuiChart,'#b45309');
 
-  const horasTotal=8*diasFiltrados.length;
-  set('prod-bov-h',(horasTotal>0?tB/horasTotal:0).toFixed(1));set('prod-sui-h',(horasTotal>0?tS/horasTotal:0).toFixed(1));
-  set('prod-colab-bov',(tB/(params.colabBov||90)).toFixed(1));set('prod-colab-sui',(tS/(params.colabSui||80)).toFixed(1));
+  const horasBov=parseFloat(document.getElementById('m-horas-bov')?.value)||8*diasFiltrados.length;
+  const horasSui=parseFloat(document.getElementById('m-horas-sui')?.value)||8*diasFiltrados.length;
+  const colabBov=parseFloat(document.getElementById('m-colab-bov')?.value)||params.colabBov||90;
+  const colabSui=parseFloat(document.getElementById('m-colab-sui')?.value)||params.colabSui||80;
+  const abHBov=horasBov>0?tB/horasBov:0;
+  const abHSui=horasSui>0?tS/horasSui:0;
+  const abHHBov=horasBov>0&&colabBov>0?tB/(horasBov*colabBov):0;
+  const abHHSui=horasSui>0&&colabSui>0?tS/(horasSui*colabSui):0;
+  set('prod-bov-h',abHBov.toFixed(1));set('prod-sui-h',abHSui.toFixed(1));
+  set('prod-colab-bov',(colabBov>0?tB/colabBov:0).toFixed(1));set('prod-colab-sui',(colabSui>0?tS/colabSui:0).toFixed(1));
+  set('prod-ahh-bov',abHHBov.toFixed(3));set('prod-ahh-sui',abHHSui.toFixed(3));
   renderQualidadeReal();renderCondenacaoReal(tB);renderRendimentoReal(tB,tS);renderProdutividadeReal();
 }
 function renderProdutividadeReal(){
@@ -1207,16 +1221,24 @@ function renderProdutividadeReal(){
   const linhasTabela=[];
   grupos.forEach(g=>{
     const horas=8*g.dias;
+    const colabBov=params.colabBov||90;
+    const colabSui=params.colabSui||80;
     const abateHBov=horas>0?g.bov/horas:0;
     const abateHSui=horas>0?g.sui/horas:0;
     const metaHBov=horas>0?g.metaBov/horas:0;
     const metaHSui=horas>0?g.metaSui/horas:0;
-    const cabColBov=g.bov/(params.colabBov||90);
-    const cabColSui=g.sui/(params.colabSui||80);
+    const cabColBov=colabBov>0?g.bov/colabBov:0;
+    const cabColSui=colabSui>0?g.sui/colabSui:0;
+    // abates/homem/hora = principal
+    const ahhBov=horas>0&&colabBov>0?g.bov/(horas*colabBov):0;
+    const ahhSui=horas>0&&colabSui>0?g.sui/(horas*colabSui):0;
+    // meta abates/homem/hora baseada na meta de abate/h e mesmos colaboradores
+    const metaAhhBov=horas>0&&colabBov>0?g.metaBov/(horas*colabBov):0;
+    const metaAhhSui=horas>0&&colabSui>0?g.metaSui/(horas*colabSui):0;
     labelsBov.push(g.label);
-    bovH.push(parseFloat(abateHBov.toFixed(1)));bovHMeta.push(parseFloat(metaHBov.toFixed(1)));
-    suiH.push(parseFloat(abateHSui.toFixed(1)));suiHMeta.push(parseFloat(metaHSui.toFixed(1)));
-    linhasTabela.push([g.label,abateHBov.toFixed(1),metaHBov.toFixed(1),farol(metaHBov>0?(abateHBov-metaHBov)/metaHBov*100:0),abateHSui.toFixed(1),metaHSui.toFixed(1),farol(metaHSui>0?(abateHSui-metaHSui)/metaHSui*100:0),cabColBov.toFixed(1),cabColSui.toFixed(1)]);
+    bovH.push(parseFloat(ahhBov.toFixed(4)));bovHMeta.push(parseFloat(metaAhhBov.toFixed(4)));
+    suiH.push(parseFloat(ahhSui.toFixed(4)));suiHMeta.push(parseFloat(metaAhhSui.toFixed(4)));
+    linhasTabela.push([g.label,ahhBov.toFixed(3),abateHBov.toFixed(1),cabColBov.toFixed(1),farol(metaAhhBov>0?(ahhBov-metaAhhBov)/metaAhhBov*100:0),ahhSui.toFixed(3),abateHSui.toFixed(1),cabColSui.toFixed(1),farol(metaAhhSui>0?(ahhSui-metaAhhSui)/metaAhhSui*100:0)]);
   });
   if(labelsBov.length){
     renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8');
@@ -1224,7 +1246,7 @@ function renderProdutividadeReal(){
   }
   const tb=document.getElementById('tbody-prod-semanal');
   if(tb){
-    tb.innerHTML=linhasTabela.map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r">${r[3]}</td><td class="r">${r[4]}</td><td class="r" style="color:var(--muted)">${r[5]}</td><td class="r">${r[6]}</td><td class="r">${r[7]}</td><td class="r">${r[8]}</td></tr>`).join('');
+    tb.innerHTML=linhasTabela.map(r=>`<tr><td>${r[0]}</td><td class="r"><b>${r[1]}</b></td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r" style="color:var(--muted)">${r[3]}</td><td class="r">${r[4]}</td><td class="r"><b>${r[5]}</b></td><td class="r" style="color:var(--muted)">${r[6]}</td><td class="r" style="color:var(--muted)">${r[7]}</td><td class="r">${r[8]}</td></tr>`).join('');
   }
 }
 const EMPRESAS_PROPRIAS=['Serradão','Frigovitta'];
@@ -1309,16 +1331,22 @@ async function renderCondenacaoReal(tBov){
     set('cond-pecas-total-pct',totalPct.toFixed(3)+'%');
     set('cond-pecas-total-rs',totalRs>0?fmtMoeda(-totalRs):'—');
   }
-  // Animais inteiros
-  const animaisRegistros=registros.filter(r=>r.tipo==='Animal inteiro');
-  const totalAnimais=animaisRegistros.reduce((a,r)=>a+r.qtd,0);
+  // Animais inteiros — separado por macho/fêmea
+  const animaisMacho=registros.filter(r=>r.tipo==='Animal inteiro'&&r.produto==='Macho').reduce((a,r)=>a+r.qtd,0);
+  const animaisFemea=registros.filter(r=>r.tipo==='Animal inteiro'&&(r.produto==='Fêmea'||r.produto==='—')).reduce((a,r)=>a+r.qtd,0);
+  const totalAnimais=animaisMacho+animaisFemea;
   const pctAnimais=totalAbatidos>0?(totalAnimais/totalAbatidos*100):0;
   set('cond-animais-total',fmt(totalAnimais)||'0');
   set('cond-animais-pct',(pctAnimais.toFixed(3))+'%');
   const listaEl=document.getElementById('cond-animais-lista');
   if(listaEl){
-    if(!animaisRegistros.length){listaEl.textContent='Nenhuma condenação de animal inteiro no período';}
-    else{listaEl.innerHTML=animaisRegistros.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)"><span>${r.data}</span><span style="font-weight:600;color:var(--red)">${fmt(r.qtd)} animal${r.qtd>1?'is':''}</span></div>`).join('');}
+    if(!totalAnimais){listaEl.textContent='Nenhuma condenação de animal inteiro no período';}
+    else{
+      let html='';
+      if(animaisMacho>0) html+=`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)"><span>Machos</span><span style="font-weight:600;color:var(--red)">${fmt(animaisMacho)} animal${animaisMacho>1?'is':''}</span></div>`;
+      if(animaisFemea>0) html+=`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)"><span>Fêmeas</span><span style="font-weight:600;color:var(--red)">${fmt(animaisFemea)} animal${animaisFemea>1?'is':''}</span></div>`;
+      listaEl.innerHTML=html;
+    }
   }
 }
 async function carregarQualidadeDoSheets(){
@@ -1522,14 +1550,14 @@ function buildCondenacaoForm(){
 }
 async function salvarCondenacaoNoSheets(date){
   const rows=[];
-  // Peças condenadas
   CONDENADOS.forEach(p=>{
     const qtd=parseFloat(document.getElementById(`cd-${p}-qtd`)?.value)||0;
     if(qtd>0) rows.push([date,'Peça',p,qtd]);
   });
-  // Animal inteiro
-  const animais=parseFloat(document.getElementById('cd-animal-inteiro')?.value)||0;
-  if(animais>0) rows.push([date,'Animal inteiro','—',animais]);
+  const machos=parseFloat(document.getElementById('cd-animal-macho')?.value)||0;
+  const femeas=parseFloat(document.getElementById('cd-animal-femea')?.value)||0;
+  if(machos>0) rows.push([date,'Animal inteiro','Macho',machos]);
+  if(femeas>0) rows.push([date,'Animal inteiro','Fêmea',femeas]);
   if(!rows.length) return true;
   try{await sheetsAppend('Condenacao',rows);return true;}catch(e){console.error(e);return false;}
 }
@@ -1546,7 +1574,7 @@ function buildQualidadeForm(){
     const tb=document.querySelector(`#tbl-${cat} tbody`);if(!tb)return;tb.innerHTML='';
     itens.forEach(item=>{
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td style="font-weight:500">${item}</td><td class="r"><input type="number" step="0.01" min="0" id="ql-${cat}-${item}" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td>`;
+      tr.innerHTML=`<td style="font-weight:500">${item}</td><td class="r"><input type="number" step="1" min="0" id="ql-${cat}-${item}" placeholder="0" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td>`;
       tb.appendChild(tr);
     });
   });
