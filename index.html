@@ -173,7 +173,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-20</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-21</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1081,9 +1081,13 @@ function buildParamsGrid(){
 }
 function buildPrecosGrid(){
   const g=document.getElementById('params-precos');if(!g)return;g.innerHTML='';
+  // Preços iniciais baseados em dados reais: 14 da Hipercarnes Jun/2026 + 7 estimativas atacado
+  const PRECOS_INICIAIS={"Aorta":22.5,"Bucho":12.5,"Carne Industrial":17.5,"Colmeia":15.0,"Coração":8.0,"Couro":5.0,"Diafragma":25.0,"Esôfago":4.5,"Fígado":12.0,"Língua":10.5,"Lombinho":25.0,"Mocotó":12.0,"Omaso":22.5,"Pulmão":3.5,"Rabo":25.0,"Recortes":17.5,"Rins":2.5,"Sangria":18.6,"Tendão":13.0,"Traqueia":3.5,"Vergalho":25.0};
   if(!params.precosMiudos)params.precosMiudos={};
   MIUDOS.forEach(m=>{
-    const v=params.precosMiudos[m.nome]??0;
+    // Usa o preço salvo, ou o preço inicial como padrão (não mais zero)
+    const v=params.precosMiudos[m.nome]!=null&&params.precosMiudos[m.nome]>0?params.precosMiudos[m.nome]:(PRECOS_INICIAIS[m.nome]??0);
+    if(v>0&&!params.precosMiudos[m.nome])params.precosMiudos[m.nome]=v; // salva o default
     const div=document.createElement('div');
     div.className='param-field';
     div.innerHTML=`<label>${m.nome}</label><input type="number" step="0.01" min="0" id="preco-${m.nome}" value="${v}">`;
@@ -2063,8 +2067,8 @@ async function renderAnaliseComparativa(){
       {label:'🎯 Potencial vs meta (R$ mil)',data:dM,backgroundColor:'rgba(202,138,4,0.75)',borderRadius:4,borderSkipped:false}
     ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{
       legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12,usePointStyle:true}},
-      datalabels:{display:ctx=>Math.abs(ctx.dataset.data[ctx.dataIndex]||0)>=0.01,anchor:'end',align:'end',font:{size:10,weight:'600'},color:'#374151',formatter:v=>v===0?'':((v>0?'+':'')+v.toFixed(1)+'k')}
-    },scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v>0?'+':'')+v.toFixed(0)+'k'},title:{display:true,text:'R$ mil',font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:11},padding:4}}}},plugins:[ChartDataLabels]});
+      datalabels:{display:ctx=>Math.abs(ctx.dataset.data[ctx.dataIndex]||0)>=0.01,anchor:'center',align:'center',font:{size:10,weight:'600'},color:ctx=>{const v=ctx.dataset.data[ctx.dataIndex]||0;return Math.abs(v)>1?'#fff':'#374151';},formatter:v=>v===0?'':((v>0?'+':'')+v.toFixed(1)+'k')}
+    },scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v>0?'+':'')+v.toFixed(0)+'k'},title:{display:true,text:'R$ mil',font:{size:10}},grace:'10%'},y:{grid:{display:false},ticks:{font:{size:11},padding:4}}}},plugins:[ChartDataLabels]});
   }
   // ── TABELA ──
   const tbody=document.getElementById('tbody-comp-detalhe');
