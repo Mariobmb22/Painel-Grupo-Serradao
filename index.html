@@ -166,7 +166,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-14</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-15</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -304,6 +304,38 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 <!-- QUALIDADE -->
 <div class="panel" id="panel-qualidade">
   <div class="sec-hdr">Qualidade &amp; perdas — acompanhamento semanal</div>
+
+  <!-- CONDENAÇÃO -->
+  <div class="two-col" style="margin-bottom:0">
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">Condenação de peças</div>
+        <div style="font-size:11px;color:var(--muted)">% sobre total abatido · perda em R$</div>
+      </div>
+      <div class="card-body card-body-0">
+        <table class="tbl" id="tbl-cond-pecas">
+          <thead><tr><th>Produto</th><th class="r">Qtd</th><th class="r">% do total</th><th class="r">Perda R$</th><th class="r">F</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr class="total"><td>Total</td><td class="r" id="cond-pecas-total-qtd">—</td><td class="r" id="cond-pecas-total-pct">—</td><td class="r" id="cond-pecas-total-rs">—</td><td></td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">Condenação de animal inteiro</div>
+        <div style="font-size:11px;color:var(--muted)">Animais reprovados no período</div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="efic-mini"><div class="efic-mini-label">Total animais condenados</div><div class="efic-mini-val" id="cond-animais-total" style="color:var(--red)">—</div></div>
+          <div class="efic-mini"><div class="efic-mini-label">% sobre abatidos</div><div class="efic-mini-val" id="cond-animais-pct" style="color:var(--red)">—</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase">Evolução no período</div>
+        <div id="cond-animais-lista" style="font-size:12px;color:var(--muted)">Sem dados no período selecionado</div>
+      </div>
+    </div>
+  </div>
+
   <div class="two-col">
     <div class="card"><div class="card-hdr"><div class="card-title">Contaminação de carcaça (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-contam-carcaca-disp"><thead><tr><th>Região/tipo</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
     <div class="card"><div class="card-hdr"><div class="card-title">Contaminação na entrada do abate (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-contam-entrada-disp"><thead><tr><th>Peça</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
@@ -785,7 +817,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
   loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();buildCondenacaoForm();buildQualidadeForm();
   try{
-    const [hist]=await Promise.all([carregarHistoricoCompleto(),carregarBenchmarkDoSheets()]);
+    const [hist]=await Promise.all([carregarHistoricoCompleto(),carregarBenchmarkDoSheets(),carregarCondenacaoDoSheets().then(d=>{condenacaoCache=d;})]);
     if(hist.length){
       historico=hist;
       dadosDia=historico[historico.length-1];
@@ -1126,7 +1158,7 @@ function renderDashboard(){
   const horasTotal=8*diasFiltrados.length;
   set('prod-bov-h',(horasTotal>0?tB/horasTotal:0).toFixed(1));set('prod-sui-h',(horasTotal>0?tS/horasTotal:0).toFixed(1));
   set('prod-colab-bov',(tB/(params.colabBov||90)).toFixed(1));set('prod-colab-sui',(tS/(params.colabSui||80)).toFixed(1));
-  renderQualidadeReal();renderRendimentoReal(tB,tS);renderProdutividadeReal();
+  renderQualidadeReal();renderCondenacaoReal(tB);renderRendimentoReal(tB,tS);renderProdutividadeReal();
 }
 function renderProdutividadeReal(){
   const diasFiltrados=getHistoricoFiltrado();
@@ -1224,6 +1256,71 @@ function renderVolTable(id,rows,metaTotal,total){
   if(rows.length>1){const tr=document.createElement('tr');tr.className='total';tr.style.borderTop='2px solid var(--border)';tr.innerHTML=`<td>Total</td><td class="r">${fmt(total)}</td><td class="r">${fmt(metaTotal)}</td><td class="r">${farol(metaTotal>0?(total-metaTotal)/metaTotal*100:0)}</td>`;tbody.appendChild(tr);}
 }
 let qualidadeCache=null;
+let condenacaoCache=null;
+async function carregarCondenacaoDoSheets(){
+  try{
+    const rows=await sheetsRead('Condenacao');
+    // Suporta formato novo (Data|Tipo|Produto|Qtd) e antigo (Data|Produto|Cont|Doenca|Total)
+    return rows.slice(1).filter(r=>r[0]).map(r=>{
+      const data=String(r[0]).slice(0,10);
+      if(r[1]==='Peça'||r[1]==='Animal inteiro'){
+        // Novo formato
+        return{data,tipo:r[1],produto:r[2]||'—',qtd:+r[3]||0};
+      } else {
+        // Formato antigo — converte: soma contaminacao+doenca como peça
+        return{data,tipo:'Peça',produto:r[1]||'—',qtd:(+r[2]||0)+(+r[3]||0)||(+r[4]||0)};
+      }
+    }).filter(r=>r.qtd>0);
+  }catch(e){return[];}
+}
+async function renderCondenacaoReal(tBov){
+  if(!condenacaoCache) condenacaoCache=await carregarCondenacaoDoSheets();
+  const diasFiltrados=getHistoricoFiltrado();
+  if(!diasFiltrados.length) return;
+  const datasSet=new Set(diasFiltrados.map(d=>d.data));
+  const registros=condenacaoCache.filter(c=>datasSet.has(c.data));
+  const precos=params.precosMiudos||{};
+  // Mapa de preços por produto (nome da peça → preço do miúdo correspondente)
+  const precoMap={'Cabeça':precos['Carne Industrial']||0,'Língua':precos['Língua']||0,
+    'Coração':precos['Coração']||0,'Pulmão':precos['Pulmão']||0,
+    'Fígado':precos['Fígado']||0,'Rins':precos['Rins']||0,'Intestino':precos['Bucho']||0};
+  // Peças condenadas
+  const pecas={};
+  CONDENADOS.forEach(p=>{pecas[p]={qtd:0};});
+  registros.filter(r=>r.tipo==='Peça').forEach(r=>{
+    if(pecas[r.produto]!==undefined) pecas[r.produto].qtd+=r.qtd;
+  });
+  const totalAbatidos=tBov||diasFiltrados.reduce((a,h)=>a+h.bovino.reduce((b,e)=>b+(e.abatidos||0),0),0);
+  const tbody=document.querySelector('#tbl-cond-pecas tbody');
+  if(tbody){
+    tbody.innerHTML='';
+    let totalQtd=0,totalRs=0,totalPct=0;
+    CONDENADOS.forEach(p=>{
+      const qtd=pecas[p].qtd;if(!qtd)return;
+      const preco=precoMap[p]||0;
+      const pct=totalAbatidos>0?(qtd/totalAbatidos*100):0;
+      const perdaRs=qtd*preco;
+      totalQtd+=qtd;totalRs+=perdaRs;totalPct+=pct;
+      const cor=pct>1?'var(--red)':pct>0.5?'var(--yellow)':'var(--muted)';
+      const f=pct>1?'<span class="f f-r"></span>':pct>0.5?'<span class="f f-y"></span>':'<span class="f f-g"></span>';
+      tbody.innerHTML+=`<tr><td>${p}</td><td class="r">${fmt(qtd)}</td><td class="r" style="color:${cor}">${pct.toFixed(3)}%</td><td class="r" style="color:var(--red)">${preco>0?fmtMoeda(-perdaRs):'—'}</td><td class="r">${f}</td></tr>`;
+    });
+    set('cond-pecas-total-qtd',fmt(totalQtd));
+    set('cond-pecas-total-pct',totalPct.toFixed(3)+'%');
+    set('cond-pecas-total-rs',totalRs>0?fmtMoeda(-totalRs):'—');
+  }
+  // Animais inteiros
+  const animaisRegistros=registros.filter(r=>r.tipo==='Animal inteiro');
+  const totalAnimais=animaisRegistros.reduce((a,r)=>a+r.qtd,0);
+  const pctAnimais=totalAbatidos>0?(totalAnimais/totalAbatidos*100):0;
+  set('cond-animais-total',fmt(totalAnimais)||'0');
+  set('cond-animais-pct',(pctAnimais.toFixed(3))+'%');
+  const listaEl=document.getElementById('cond-animais-lista');
+  if(listaEl){
+    if(!animaisRegistros.length){listaEl.textContent='Nenhuma condenação de animal inteiro no período';}
+    else{listaEl.innerHTML=animaisRegistros.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)"><span>${r.data}</span><span style="font-weight:600;color:var(--red)">${fmt(r.qtd)} animal${r.qtd>1?'is':''}</span></div>`).join('');}
+  }
+}
 async function carregarQualidadeDoSheets(){
   try{const rows=await sheetsRead('Qualidade');return rows.slice(1).filter(r=>r[0]).map(r=>({data:String(r[0]).slice(0,10),categoria:r[1],item:r[2],valor:+r[3]||0}));}catch(e){return[];}
 }
