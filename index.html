@@ -181,7 +181,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-24</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-25</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -475,24 +475,24 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     <!-- Cards resultado -->
     <div class="perda-cards" id="comp-cards" style="margin-bottom:16px">
       <div class="perda-card" style="border-top:3px solid var(--green)">
-        <div class="perda-card-label">✅ Já capturamos</div>
+        <div class="perda-card-label">✅ Ganho com a melhoria</div>
         <div class="perda-card-val" id="comp-ganho-total" style="color:var(--green)">—</div>
-        <div class="perda-card-sub" id="comp-ganho-sub">vs período base</div>
+        <div class="perda-card-sub" id="comp-ganho-sub">Quanto deixou de perder por mês</div>
       </div>
       <div class="perda-card" style="border-top:3px solid var(--yellow)">
-        <div class="perda-card-label">🎯 Potencial vs meta</div>
+        <div class="perda-card-label">🎯 Ainda perde vs meta</div>
         <div class="perda-card-val" id="comp-upside-meta" style="color:var(--yellow)">—</div>
-        <div class="perda-card-sub">se atingir as metas</div>
+        <div class="perda-card-sub">Potencial a capturar atingindo as metas</div>
       </div>
       <div class="perda-card" style="border-top:3px solid #6366f1">
-        <div class="perda-card-label">🏆 Potencial vs benchmark</div>
+        <div class="perda-card-label">🏆 Ainda perde vs benchmark</div>
         <div class="perda-card-val" id="comp-upside-bench" style="color:#6366f1">—</div>
-        <div class="perda-card-sub">se atingir o setor</div>
+        <div class="perda-card-sub">Potencial se atingir nível do setor</div>
       </div>
       <div class="perda-card" style="border-top:3px solid var(--bov)">
         <div class="perda-card-label">📊 Rendimento total</div>
-        <div class="perda-card-val" id="comp-rend-base">—</div>
-        <div class="perda-card-sub" id="comp-rend-evolucao">base → atual</div>
+        <div class="perda-card-val" id="comp-rend-base" style="font-size:16px">—</div>
+        <div class="perda-card-sub" id="comp-rend-evolucao">base → atual · projeção anual</div>
       </div>
     </div>
 
@@ -2013,51 +2013,99 @@ function calcRendTotalMensal(filtroNome){
 async function renderAnaliseComparativa(){
   if(!miudosCache) miudosCache=await carregarMiudosCompletoDoSheets();
   const diasBase=getHistoricoBase();const diasAtual=getHistoricoFiltrado();
-  if(!diasBase.length){alert('Período base sem dados.');return;}if(!diasAtual.length){alert('Período atual sem dados.');return;}
+  if(!diasBase.length){alert('Período base sem dados.');return;}
+  if(!diasAtual.length){alert('Período atual sem dados.');return;}
   const filtroMiudo=document.getElementById('comp-filtro-miudo')?.value||'';
-  const datasBase=new Set(diasBase.map(d=>d.data));const datasAtual=new Set(diasAtual.map(d=>d.data));
-  const rendBase=calcRendPorMiudo(datasBase,filtroMiudo);const rendAtual=calcRendPorMiudo(datasAtual,filtroMiudo);
-  // Peso total abatido no período atual — usa kgTotalAbate real da aba Miúdos
-  // (cada linha do cache já tem o peso total de carcaça do dia)
-  const datasAtualSet=new Set(diasAtual.map(d=>d.data));
-  const kgPorDia={};
-  (miudosCache||[]).forEach(r=>{
-    if(!datasAtualSet.has(r.data))return;
-    // pega o maior kgTotalAbate do dia (é o mesmo para todos os miúdos do mesmo dia)
-    if(!kgPorDia[r.data]||r.kgTotalAbate>kgPorDia[r.data])kgPorDia[r.data]=r.kgTotalAbate||0;
-  });
-  const pesoTotalAtual=Object.values(kgPorDia).reduce((a,b)=>a+b,0);
-  // Fallback: se não há dados de miúdos, estima por cabeças × peso médio
-  const totalAbatAtual=diasAtual.reduce((a,h)=>a+h.bovino.reduce((b,e)=>b+(e.abatidos||0),0)+h.suino.reduce((b,e)=>b+(e.abatidos||0),0),0);
-  const pesoBase=pesoTotalAtual>0?pesoTotalAtual:(totalAbatAtual*250);
-  // Label para mostrar a fonte do peso
-  const labelPeso=pesoTotalAtual>0?`Base: ${(pesoBase/1000).toFixed(0)}t de carcaça real (${diasAtual.length} dias)`:`Base estimada: ${totalAbatAtual} animais × 250kg (sem dados de miúdos)`;
-  const elPesoBadge=document.getElementById('comp-ganho-sub');if(elPesoBadge)elPesoBadge.textContent=labelPeso;
+  const datasBase=new Set(diasBase.map(d=>d.data));
+  const datasAtual=new Set(diasAtual.map(d=>d.data));
+  const rendBase=calcRendPorMiudo(datasBase,filtroMiudo);
+  const rendAtual=calcRendPorMiudo(datasAtual,filtroMiudo);
   const precos=params.precosMiudos||{};
-  let ganhoTotal=0,upsideMeta=0,upsideBench=0,rendTotalBase=0,rendTotalAtual=0;
+
+  // ── PESO DE CARCAÇA POR PERÍODO (real do cache) ──
+  function pesoReal(datasSet){
+    const kgDia={};
+    (miudosCache||[]).forEach(r=>{
+      if(!datasSet.has(r.data))return;
+      if(!kgDia[r.data]||r.kgTotalAbate>kgDia[r.data])kgDia[r.data]=r.kgTotalAbate||0;
+    });
+    return{total:Object.values(kgDia).reduce((a,b)=>a+b,0),dias:Object.keys(kgDia).length};
+  }
+  const pesoBaseInfo=pesoReal(datasBase);
+  const pesoAtualInfo=pesoReal(datasAtual);
+  // Fallback se não há dados de miúdos
+  const diasBaseCount=diasBase.length||1;
+  const diasAtualCount=diasAtual.length||1;
+  const pesoBaseMensal=pesoBaseInfo.total>0?(pesoBaseInfo.total/pesoBaseInfo.dias*22):(diasBase.reduce((a,h)=>a+h.bovino.reduce((b,e)=>b+(e.abatidos||0),0),0)*250/diasBaseCount*22);
+  const pesoAtualMensal=pesoAtualInfo.total>0?(pesoAtualInfo.total/pesoAtualInfo.dias*22):(diasAtual.reduce((a,h)=>a+h.bovino.reduce((b,e)=>b+(e.abatidos||0),0),0)*250/diasAtualCount*22);
+
+  // ── CÁLCULO POR MIÚDO: perda vs meta em cada período ──
+  let perdaBaseMensal=0, perdaAtualMensal=0, rendTotalBase=0, rendTotalAtual=0;
   const linhas=[];
   const miudosFiltro=filtroMiudo?MIUDOS.filter(m=>m.nome===filtroMiudo):MIUDOS;
   miudosFiltro.forEach(m=>{
-    const base=rendBase[m.nome]??null;const atual=rendAtual[m.nome]??null;const meta=m.meta;const bench=BENCHMARK_SETOR[m.nome]??null;const preco=precos[m.nome]||0;
+    const base=rendBase[m.nome]??null;
+    const atual=rendAtual[m.nome]??null;
+    const meta=m.meta;
+    const bench=BENCHMARK_SETOR[m.nome]??null;
+    const preco=precos[m.nome]||0;
     if(base===null&&atual===null)return;
     rendTotalBase+=(base||0);rendTotalAtual+=(atual||0);
-    const ganho=base!==null&&atual!==null&&preco>0?((atual-base)/100)*pesoBase*preco:null;
-    const potMeta=atual!==null&&preco>0&&meta>atual?((meta-atual)/100)*pesoBase*preco:null;
-    const potBench=atual!==null&&bench!==null&&preco>0&&bench>atual?((bench-atual)/100)*pesoBase*preco:null;
-    if(ganho!==null)ganhoTotal+=ganho;if(potMeta!==null)upsideMeta+=potMeta;if(potBench!==null)upsideBench+=potBench;
-    linhas.push({nome:m.nome,base,atual,meta,bench,preco,ganho,potMeta,potBench});
+
+    // Perda vs meta = (meta% - real%) / 100 × peso mensal × preço/kg
+    // Se real > meta, a "perda" é negativa = ganho
+    const perdaBaseM=base!==null&&preco>0?((meta-(base||0))/100)*pesoBaseMensal*preco:null;
+    const perdaAtualM=atual!==null&&preco>0?((meta-(atual||0))/100)*pesoAtualMensal*preco:null;
+    // Ganho mensal = quanto a menos se perde agora vs antes
+    const ganhoMensal=perdaBaseM!==null&&perdaAtualM!==null?(perdaBaseM-perdaAtualM):null;
+    // Potencial restante vs meta = quanto ainda perde por mês
+    const potMetaMensal=perdaAtualM!==null&&perdaAtualM>0?perdaAtualM:null;
+    // Potencial vs benchmark
+    const potBenchMensal=atual!==null&&bench!==null&&preco>0&&bench>atual?((bench-atual)/100)*pesoAtualMensal*preco:null;
+
+    if(perdaBaseM!==null&&perdaBaseM>0)perdaBaseMensal+=perdaBaseM;
+    if(perdaAtualM!==null&&perdaAtualM>0)perdaAtualMensal+=perdaAtualM;
+
+    linhas.push({nome:m.nome,base,atual,meta,bench,preco,
+      perdaBaseM,perdaAtualM,ganhoMensal,potMetaMensal,potBenchMensal});
   });
-  // Cards
-  set('comp-ganho-total',(ganhoTotal>=0?'+':'')+fmtMoeda(ganhoTotal));
-  document.getElementById('comp-ganho-total').style.color=ganhoTotal>=0?'var(--green)':'var(--red)';
-  set('comp-upside-meta',upsideMeta>0?'+'+fmtMoeda(upsideMeta):'✅ Meta atingida');
-  set('comp-upside-bench',upsideBench>0?'+'+fmtMoeda(upsideBench):'✅ Acima do setor');
+
+  const ganhoMensalTotal=perdaBaseMensal-perdaAtualMensal;
+  const ganhoAnual=ganhoMensalTotal*12;
+  const potMetaTotal=perdaAtualMensal;
+  const potBenchTotal=linhas.reduce((a,r)=>a+(r.potBenchMensal||0),0);
+
+  // ── CARDS ──
+  // Card 1: Quanto perdia antes vs agora
+  set('comp-ganho-total',fmtMoeda(ganhoMensalTotal)+'/mês');
+  document.getElementById('comp-ganho-total').style.color=ganhoMensalTotal>=0?'var(--green)':'var(--red)';
+  const elSub=document.getElementById('comp-ganho-sub');
+  if(elSub){
+    const infoBase=pesoBaseInfo.total>0?`${(pesoBaseInfo.total/1000).toFixed(0)}t`:`${diasBaseCount} dias`;
+    const infoAtual=pesoAtualInfo.total>0?`${(pesoAtualInfo.total/1000).toFixed(0)}t`:`${diasAtualCount} dias`;
+    elSub.innerHTML=`Perdia <b style="color:var(--red)">${fmtMoeda(perdaBaseMensal)}/mês</b> → Perde <b style="color:${perdaAtualMensal>0?'var(--red)':'var(--green)'}">${fmtMoeda(perdaAtualMensal)}/mês</b>`;
+  }
+
+  // Card 2: Potencial vs meta (quanto ainda perde por mês)
+  set('comp-upside-meta',potMetaTotal>0?fmtMoeda(potMetaTotal)+'/mês':'✅ Meta atingida');
+
+  // Card 3: Potencial vs benchmark
+  set('comp-upside-bench',potBenchTotal>0?fmtMoeda(potBenchTotal)+'/mês':'✅ Acima do setor');
+
+  // Card 4: Evolução + projeção anual
   set('comp-rend-base',rendTotalBase.toFixed(2)+'% → '+rendTotalAtual.toFixed(2)+'%');
   const evolEl=document.getElementById('comp-rend-evolucao');
-  if(evolEl){const dir=rendTotalAtual>=rendTotalBase?'▲':'▼';const cor=rendTotalAtual>=rendTotalBase?'var(--green)':'var(--red)';evolEl.innerHTML=`<span style="color:${cor};font-weight:700">${dir}${Math.abs(rendTotalAtual-rendTotalBase).toFixed(2)}pp</span>`;}
+  if(evolEl){
+    const dir=rendTotalAtual>=rendTotalBase?'▲':'▼';
+    const cor=rendTotalAtual>=rendTotalBase?'var(--green)':'var(--red)';
+    const anualStr=ganhoAnual>=0?'+'+fmtMoeda(ganhoAnual):fmtMoeda(ganhoAnual);
+    evolEl.innerHTML=`<span style="color:${cor};font-weight:700">${dir}${Math.abs(rendTotalAtual-rendTotalBase).toFixed(2)}pp</span> · Projeção anual: <b style="color:${ganhoAnual>=0?'var(--green)':'var(--red)'}">${anualStr}/ano</b>`;
+  }
+
   // Mostra seções
   ['comp-chart1-card','comp-chart2-card','comp-tabela-card'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
-  // ── GRÁFICO 1: Evolução mensal — largura total, altura maior ──
+
+  // ── GRÁFICO 1: Evolução mensal ──
   const rendMensal=calcRendTotalMensal(filtroMiudo);
   const mesesOrd=Object.keys(rendMensal).sort();
   const nomM=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -2068,48 +2116,50 @@ async function renderAnaliseComparativa(){
   const metaTot=filtroMiudo?MIUDOS.find(m=>m.nome===filtroMiudo)?.meta||0:MIUDOS.reduce((a,m)=>a+m.meta,0);
   const benchTot=filtroMiudo?(BENCHMARK_SETOR[filtroMiudo]||null):null;
   const t1=document.getElementById('comp-chart1-title');const t1s=document.getElementById('comp-chart1-sub');
-  if(t1)t1.textContent=filtroMiudo?`Evolução do rendimento — ${filtroMiudo}`:'Evolução do rendimento total — histórico completo';
-  if(t1s)t1s.textContent=filtroMiudo?`% de rendimento do ${filtroMiudo} mês a mês`:'% rendimento total de todos os miúdos';
+  if(t1)t1.textContent=filtroMiudo?`Evolução — ${filtroMiudo}`:'Evolução do rendimento total';
+  if(t1s)t1s.textContent=filtroMiudo?`% mês a mês`:'soma dos % de todos os miúdos · mês a mês';
   if(CI['chart-comp-evolucao'])CI['chart-comp-evolucao'].destroy();
   const ctxEv=document.getElementById('chart-comp-evolucao');
   if(ctxEv){
     const datasets=[
-      {label:filtroMiudo||'Rendimento real (%)',data:valEv,borderColor:'#1a5ca8',backgroundColor:'rgba(26,92,168,0.1)',borderWidth:2.5,pointRadius:mesesOrd.map(m=>baseMeses.has(m)||atualMeses.has(m)?5:3),pointBackgroundColor:mesesOrd.map(m=>baseMeses.has(m)?'#dc2626':atualMeses.has(m)?'#16a34a':'#1a5ca8'),fill:true,tension:0.3},
+      {label:filtroMiudo||'Rendimento real',data:valEv,borderColor:'#1a5ca8',backgroundColor:'rgba(26,92,168,0.1)',borderWidth:2.5,pointRadius:mesesOrd.map(m=>baseMeses.has(m)||atualMeses.has(m)?6:3),pointBackgroundColor:mesesOrd.map(m=>baseMeses.has(m)?'#dc2626':atualMeses.has(m)?'#16a34a':'#1a5ca8'),fill:true,tension:0.3},
       {label:'Meta',data:mesesOrd.map(()=>metaTot),borderColor:'#374151',borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false},
     ];
-    if(benchTot)datasets.push({label:'Benchmark setor',data:mesesOrd.map(()=>benchTot),borderColor:'#6366f1',borderDash:[3,3],borderWidth:1.5,pointRadius:0,fill:false});
-    CI['chart-comp-evolucao']=new Chart(ctxEv,{type:'line',data:{labels:labEv,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:10,usePointStyle:true}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(2)}%`}},datalabels:{display:false},annotation:{}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},callback:v=>v.toFixed(2)+'%'},title:{display:true,text:'% Rendimento',font:{size:10}}},x:{grid:{color:'#f9fafb'},ticks:{font:{size:10},maxRotation:45}}}},plugins:[ChartDataLabels]});
+    if(benchTot)datasets.push({label:'Benchmark',data:mesesOrd.map(()=>benchTot),borderColor:'#6366f1',borderDash:[3,3],borderWidth:1.5,pointRadius:0,fill:false});
+    CI['chart-comp-evolucao']=new Chart(ctxEv,{type:'line',data:{labels:labEv,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:10,usePointStyle:true}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw.toFixed(2)+'%'}},datalabels:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},callback:v=>v.toFixed(2)+'%'}},x:{grid:{color:'#f9fafb'},ticks:{font:{size:10},maxRotation:45}}}},plugins:[ChartDataLabels]});
   }
-  // ── GRÁFICO 2: Barras horizontais — ordenado por impacto total ──
-  const linhasOrdenadas=[...linhas].filter(r=>r.ganho!==null||r.potMeta!==null).sort((a,b)=>(Math.abs(b.ganho||0)+(b.potMeta||0))-(Math.abs(a.ganho||0)+(a.potMeta||0)));
-  const top=linhasOrdenadas.slice(0,filtroMiudo?1:12);
+
+  // ── GRÁFICO 2: Barras — ganho mensal vs potencial por miúdo ──
+  const linhasOrd=[...linhas].filter(r=>r.ganhoMensal!==null||r.potMetaMensal!==null)
+    .sort((a,b)=>(Math.abs(b.ganhoMensal||0)+(b.potMetaMensal||0))-(Math.abs(a.ganhoMensal||0)+(a.potMetaMensal||0)));
+  const top=linhasOrd.slice(0,filtroMiudo?1:12);
   if(CI['chart-comp-barras'])CI['chart-comp-barras'].destroy();
   const ctxBar=document.getElementById('chart-comp-barras');
   if(ctxBar&&top.length){
     const labB=top.map(r=>r.nome);
-    const dG=top.map(r=>r.ganho!==null?parseFloat((r.ganho/1000).toFixed(2)):0);
-    const dM=top.map(r=>r.potMeta!==null&&r.potMeta>0?parseFloat((r.potMeta/1000).toFixed(2)):0);
-    // Altura dinâmica por qtd de miúdos
+    const dG=top.map(r=>r.ganhoMensal!==null?parseFloat((r.ganhoMensal/1000).toFixed(2)):0);
+    const dM=top.map(r=>r.potMetaMensal!==null?parseFloat((r.potMetaMensal/1000).toFixed(2)):0);
     const altBar=document.querySelector('#comp-chart2-card .chart-wrap');
     if(altBar)altBar.style.height=Math.max(200,top.length*50+80)+'px';
     CI['chart-comp-barras']=new Chart(ctxBar,{type:'bar',data:{labels:labB,datasets:[
-      {label:'✅ Ganho já capturado (R$ mil)',data:dG,backgroundColor:dG.map(v=>v>=0?'rgba(22,163,74,0.8)':'rgba(220,38,38,0.7)'),borderRadius:4,borderSkipped:false},
-      {label:'🎯 Potencial vs meta (R$ mil)',data:dM,backgroundColor:'rgba(202,138,4,0.75)',borderRadius:4,borderSkipped:false}
+      {label:'✅ Ganho mensal (R$ mil)',data:dG,backgroundColor:dG.map(v=>v>=0?'rgba(22,163,74,0.8)':'rgba(220,38,38,0.7)'),borderRadius:4,borderSkipped:false},
+      {label:'🎯 Ainda perde/mês (R$ mil)',data:dM,backgroundColor:'rgba(202,138,4,0.75)',borderRadius:4,borderSkipped:false}
     ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{
       legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12,usePointStyle:true}},
       datalabels:{display:ctx=>Math.abs(ctx.dataset.data[ctx.dataIndex]||0)>=0.01,anchor:'center',align:'center',font:{size:10,weight:'600'},color:ctx=>{const v=ctx.dataset.data[ctx.dataIndex]||0;return Math.abs(v)>1?'#fff':'#374151';},formatter:v=>v===0?'':((v>0?'+':'')+v.toFixed(1)+'k')}
-    },scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v>0?'+':'')+v.toFixed(0)+'k'},title:{display:true,text:'R$ mil',font:{size:10}},grace:'10%'},y:{grid:{display:false},ticks:{font:{size:11},padding:4}}}},plugins:[ChartDataLabels]});
+    },scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v>0?'+':'')+v.toFixed(0)+'k'},grace:'10%'},y:{grid:{display:false},ticks:{font:{size:11},padding:4}}}},plugins:[ChartDataLabels]});
   }
+
   // ── TABELA ──
   const tbody=document.getElementById('tbody-comp-detalhe');
   if(tbody){tbody.innerHTML=linhas.map(r=>{
     const fmtP=v=>v!==null?v.toFixed(2)+'%':'—';
     const var_=r.base!==null&&r.atual!==null?(r.atual-r.base):null;
     const corVar=var_===null?'':var_>0.05?'color:var(--green);font-weight:700':var_<-0.05?'color:var(--red);font-weight:700':'color:var(--muted)';
-    const corG=r.ganho===null?'':r.ganho>0?'color:var(--green);font-weight:600':'color:var(--red)';
-    const corM=r.potMeta!==null&&r.potMeta>0?'color:var(--yellow);font-weight:600':'color:var(--muted)';
-    const fmtV=v=>v===null?'—':v>=0?'+'+fmtMoeda(v):fmtMoeda(v);
-    return`<tr><td style="font-weight:500">${r.nome}${r.preco===0?'<span style="font-size:9px;color:var(--muted);margin-left:4px">sem preço</span>':''}</td><td class="r" style="background:#f8fafc">${fmtP(r.base)}</td><td class="r" style="background:#f8fafc">${fmtP(r.atual)}</td><td class="r" style="background:#f8fafc;${corVar}">${var_!==null?(var_>=0?'+':'')+var_.toFixed(2)+'pp':'—'}</td><td class="r" style="background:#f0fdf4;${corG}">${r.ganho!==null?fmtV(r.ganho):'—'}</td><td class="r" style="background:#fefce8;${corM}">${r.potMeta!==null?(r.potMeta>0?'+'+fmtMoeda(r.potMeta):'✅'):'—'}</td></tr>`;
+    const corG=r.ganhoMensal===null?'':r.ganhoMensal>0?'color:var(--green);font-weight:600':'color:var(--red)';
+    const corM=r.potMetaMensal!==null&&r.potMetaMensal>0?'color:var(--yellow);font-weight:600':'color:var(--muted)';
+    const fmtV=v=>v===null?'—':fmtMoeda(v);
+    return`<tr><td style="font-weight:500">${r.nome}${r.preco===0?'<span style="font-size:9px;color:var(--muted);margin-left:4px">sem preço</span>':''}</td><td class="r" style="background:#f8fafc">${fmtP(r.base)}</td><td class="r" style="background:#f8fafc">${fmtP(r.atual)}</td><td class="r" style="background:#f8fafc;${corVar}">${var_!==null?(var_>=0?'+':'')+var_.toFixed(2)+'pp':'—'}</td><td class="r" style="background:#f0fdf4;${corG}">${r.ganhoMensal!==null?fmtV(r.ganhoMensal)+'/mês':'—'}</td><td class="r" style="background:#fefce8;${corM}">${r.potMetaMensal!==null&&r.potMetaMensal>0?fmtV(r.potMetaMensal)+'/mês':'✅'}</td></tr>`;
   }).join('');}
 }
 
