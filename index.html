@@ -103,11 +103,11 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 .sum-card-sub{font-size:10px;color:var(--muted);margin-top:2px}
 .sum-card-sub .err{color:var(--red)}
 .sum-card-sub .ok{color:var(--green)}
-.chart-wrap{position:relative;height:180px}
+.chart-wrap{position:relative;height:200px}
 .trend-up{color:var(--red-bg);font-weight:700}
 .trend-dn{color:var(--green-bg);font-weight:700}
 .trend-eq{color:var(--muted);font-weight:700}
-.perda-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.perda-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px}
 .perda-card{background:var(--white);border:1px solid var(--border);border-radius:var(--rlg);padding:10px 14px}
 .perda-card-label{font-size:10px;color:var(--muted);margin-bottom:3px}
 .perda-card-val{font-size:18px;font-weight:800;color:var(--red-bg)}
@@ -160,9 +160,17 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   .topbar,.tabs,.no-print,.filterbar,.subtabs,.subpanel:not(.active){display:none !important}
   .panel{display:none !important}
   .panel.print-active{display:block !important}
-  body{background:white}.main{padding:0}
-  .chart-wrap{height:180px !important}
+  body{background:white;font-size:11px}.main{padding:0 8px}
+  .card{break-inside:avoid;page-break-inside:avoid;margin-bottom:8px}
+  .chart-wrap{height:160px !important}
   .print-header{display:flex !important}
+  .resumo-bar{padding:8px 12px;margin-bottom:8px}
+  .resumo-item-val{font-size:16px}
+  .two-col{gap:8px;margin-bottom:8px}
+  .sec-hdr{margin-bottom:6px}
+  .sum-cards{gap:6px;margin-bottom:8px}
+  .sum-card{padding:6px 10px}
+  .sum-card-val{font-size:18px}
 }
 @media(max-width:900px){.two-col,.three-col,.four-col,.sum-cards,.perda-cards{grid-template-columns:1fr}.resumo-grid{grid-template-columns:1fr 1fr}.upload-grid{grid-template-columns:1fr 1fr}}
 </style>
@@ -173,7 +181,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-21</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-24</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -292,28 +300,34 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       </div>
     </div>
   </div>
-  <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — bovino (cabeças) <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-bov"></canvas></div></div></div>
-  <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — suíno (cabeças) <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-sui"></canvas></div></div></div>
+  <div class="two-col">
+    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — bovino (cabeças) <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — suíno (cabeças) <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-sui"></canvas></div></div></div>
+  </div>
   <div class="two-col">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">Indicadores do período</div></div>
+      <div class="card-hdr"><div class="card-title">📊 Indicadores do período</div></div>
       <div class="card-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="efic-mini"><div class="efic-mini-label">Média diária bovino</div><div class="efic-mini-val" id="ind-media-dia-bov" style="font-size:14px">—</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">Média diária suíno</div><div class="efic-mini-val" id="ind-media-dia-sui" style="font-size:14px">—</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">Custo condenação/animal</div><div class="efic-mini-val" id="ind-custo-cond-animal" style="font-size:14px;color:var(--red)">—</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">Perda total condenação</div><div class="efic-mini-val" id="ind-perda-cond-total" style="font-size:14px;color:var(--red)">—</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">Aproveitamento do animal</div><div class="efic-mini-val" id="ind-aprov-animal" style="font-size:14px;color:var(--green)">—</div><div class="efic-mini-label" style="margin-top:2px">% peso entrada → miúdos</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="efic-mini" style="border-left:3px solid var(--bov)"><div class="efic-mini-label">Média diária bovino</div><div class="efic-mini-val" id="ind-media-dia-bov" style="font-size:15px">—</div></div>
+          <div class="efic-mini" style="border-left:3px solid var(--sui)"><div class="efic-mini-label">Média diária suíno</div><div class="efic-mini-val" id="ind-media-dia-sui" style="font-size:15px">—</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+          <div class="efic-mini" style="border-left:3px solid var(--red-bg)"><div class="efic-mini-label">Custo condenação/animal</div><div class="efic-mini-val" id="ind-custo-cond-animal" style="font-size:15px;color:var(--red)">—</div><div class="efic-mini-label" style="margin-top:2px">R$ perdido por cabeça abatida</div></div>
+          <div class="efic-mini" style="border-left:3px solid var(--red-bg)"><div class="efic-mini-label">Perda total condenação</div><div class="efic-mini-val" id="ind-perda-cond-total" style="font-size:15px;color:var(--red)">—</div><div class="efic-mini-label" style="margin-top:2px">Acumulado no período</div></div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="efic-mini" style="border-left:3px solid var(--green-bg)"><div class="efic-mini-label">Aproveitamento do animal</div><div class="efic-mini-val" id="ind-aprov-animal" style="font-size:15px;color:var(--green)">—</div><div class="efic-mini-label" style="margin-top:2px">% peso de carcaça convertido em miúdos</div></div>
         </div>
       </div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">Peso médio por animal <span style="font-size:10px;color:var(--muted)">(lançamento do dia)</span></div></div>
+      <div class="card-hdr"><div class="card-title">⚖️ Peso médio por animal</div><span style="font-size:10px;color:var(--muted)">dados do lançamento do dia</span></div>
       <div class="card-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="efic-mini"><div class="efic-mini-label">Média boi (macho)</div><div class="efic-mini-val" id="sum-media-bov-m" style="font-size:14px">—</div><div class="efic-mini-label" style="margin-top:2px">kg/cabeça</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">Média vaca (fêmea)</div><div class="efic-mini-val" id="sum-media-bov-f" style="font-size:14px">—</div><div class="efic-mini-label" style="margin-top:2px">kg/cabeça</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">Média total</div><div class="efic-mini-val" id="m-media" style="font-size:14px">—</div><div class="efic-mini-label" style="margin-top:2px">kg/cabeça</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div class="efic-mini" style="border-left:3px solid var(--bov);text-align:center"><div class="efic-mini-label">Boi (macho)</div><div class="efic-mini-val" id="sum-media-bov-m" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
+          <div class="efic-mini" style="border-left:3px solid #ec4899;text-align:center"><div class="efic-mini-label">Vaca (fêmea)</div><div class="efic-mini-val" id="sum-media-bov-f" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
+          <div class="efic-mini" style="border-left:3px solid var(--muted);text-align:center"><div class="efic-mini-label">Média total</div><div class="efic-mini-val" id="vol-media-total" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
         </div>
       </div>
     </div>
@@ -350,8 +364,8 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     <div class="sum-card"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
   </div>
   <div class="two-col" style="margin-top:12px">
-    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — bovino <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — suíno <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-prod-sui"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — bovino <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — suíno <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-sui"></canvas></div></div></div>
   </div>
   <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Abts/H/h Bov</th><th class="r">Abate/h Bov</th><th class="r">Cab/Col Bov</th><th class="r">F</th><th class="r">Abts/H/h Suí</th><th class="r">Abate/h Suí</th><th class="r">Cab/Col Suí</th><th class="r">F</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
 </div>
@@ -794,7 +808,7 @@ async function salvarDiaNoSheets(d){
       const abateExist=await sheetsRead('Abates');
       const jaTem=abateExist.slice(1).some(r=>r[0]===d.data);
       if(!jaTem) await sheetsAppend('Abates',abateRows);
-      else console.log('Abates do dia já existem, pulando:',d.data);
+      else {/*console.log('Abates do dia já existem, pulando:',d.data)*/;}
     }
 
     // Pesos: Mês | Data | Peso Bov FV | Peso Bov Serradão | Peso Suí Seali | Peso Suí Serradão
@@ -811,7 +825,7 @@ async function salvarDiaNoSheets(d){
       const pesoExist=await sheetsRead('Pesos');
       const jaTemPeso=pesoExist.slice(1).some(r=>String(r[1]||r[0]).slice(0,10)===d.data);
       if(!jaTemPeso) await sheetsAppend('Pesos',[[mes,d.data,pesoBovFV,pesoBovSerr,pesoSuiSeali,pesoSuiSerr]]);
-      else console.log('Pesos do dia já existem, pulando:',d.data);
+      else {/*console.log('Pesos do dia já existem, pulando:',d.data)*/;}
     }
 
     const tBov=d.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
@@ -823,7 +837,7 @@ async function salvarDiaNoSheets(d){
     const histExist=await sheetsRead('Historico_Diario');
     const jaTemHist=histExist.slice(1).some(r=>r[0]===d.data);
     if(!jaTemHist) await sheetsAppend('Historico_Diario',[[d.data,tBov,d.metaBov,tSui,d.metaSui,eBov,eSui,mBov.toFixed(2),mSui.toFixed(2)]]);
-    else console.log('Histórico do dia já existe, pulando:',d.data);
+    else {/*console.log('Histórico do dia já existe, pulando:',d.data)*/;}
     return true;
   }catch(e){console.error(e);return false;}
 }
@@ -868,7 +882,7 @@ async function carregarHistoricoCompleto(){
         pesosBov:[],pesosSui:[]
       };
     }).sort((a,b)=>a.data.localeCompare(b.data));
-  }catch(e){console.log('Erro ao carregar histórico completo:',e);return[];}
+  }catch(e){return[];}
 }
 async function carregarMiudosDoSheets(data){
   try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]===data).map(r=>({miudo:r[1],nrPecas:+r[2]||0,pesoKg:+r[3]||0,kgTotalAbate:+r[4]||0,pctReal:+r[5]||0,pctMeta:+r[6]||0}));}catch(e){return[];}
@@ -1013,7 +1027,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       atualizarResumoFiltro();
       renderDashboard();
     }else{loadDemoData();}
-  }catch(e){console.log('Sheets offline:',e);loadDemoData();}
+  }catch(e){loadDemoData();}
 });
 
 // ── LOGIN ──
@@ -1218,8 +1232,8 @@ async function processarPDFs(){
     const bovino=extrairEscalasBovino(pdfTexts['bov-escala']||'');
     const suino=extrairEscalasSuino(pdfTexts['sui-escala']||'');
     const escalas={bovino,suino};
-    console.log('Escalas bov:',bovino.map(e=>e.empresa+':'+e.abatidos).join(','));
-    console.log('Escalas sui:',suino.map(e=>e.empresa+':'+e.abatidos).join(','));
+    //console.log('Escalas bov:',bovino.map(e=>e.empresa+':'+e.abatidos).join(','));
+    //console.log('Escalas sui:',suino.map(e=>e.empresa+':'+e.abatidos).join(','));
 
     const slots=[{slot:'peso-bov-serradao',tipo:'bovino'},{slot:'peso-bov-frigovitta',tipo:'bovino'},{slot:'peso-sui-serradao',tipo:'suino'}];
     if(pdfTexts['peso-sui-seali'])slots.push({slot:'peso-sui-seali',tipo:'suino'});
@@ -1230,7 +1244,7 @@ async function processarPDFs(){
       if(!texto)return;
       const r=extrairTotalizacaoSisAtak(texto);
       const emp=slotEmpMap[slot];
-      console.log('Peso',slot,'→',emp,r);
+      //console.log('Peso',slot,'→',emp,r);
       if(r&&r.cabecas>0) pesoResults[slot]={...r,empresa:emp,tipo};
     });
 
@@ -1410,12 +1424,14 @@ function renderProdutividadeReal(){
     const horas=8*g.dias;
     const colabBov=params.colabBov||90;
     const colabSui=params.colabSui||80;
+    const mediaDiaBovG=g.dias>0?g.bov/g.dias:0;
+    const mediaDiaSuiG=g.dias>0?g.sui/g.dias:0;
     const abateHBov=horas>0?g.bov/horas:0;
     const abateHSui=horas>0?g.sui/horas:0;
     const metaHBov=horas>0?g.metaBov/horas:0;
     const metaHSui=horas>0?g.metaSui/horas:0;
-    const cabColBov=colabBov>0?g.bov/colabBov:0;
-    const cabColSui=colabSui>0?g.sui/colabSui:0;
+    const cabColBov=colabBov>0?mediaDiaBovG/colabBov:0;
+    const cabColSui=colabSui>0?mediaDiaSuiG/colabSui:0;
     // abates/homem/hora = principal
     const ahhBov=horas>0&&colabBov>0?g.bov/(horas*colabBov):0;
     const ahhSui=horas>0&&colabSui>0?g.sui/(horas*colabSui):0;
@@ -1790,8 +1806,8 @@ async function carregarBenchmarkDoSheets(){
     if(!rows||rows.length<2)return;
     const novo={};
     rows.slice(1).forEach(r=>{if(r[0]&&r[1]!=null)novo[r[0]]=parseFloat(r[1])||0;});
-    if(Object.keys(novo).length>0){BENCHMARK_SETOR=novo;console.log('Benchmark carregado do Sheets:',Object.keys(novo).length,'miúdos');}
-  }catch(e){console.log('Benchmark: usando fallback (Sheets indisponível)');}
+    if(Object.keys(novo).length>0){BENCHMARK_SETOR=novo;}
+  }catch(e){/* Benchmark: usando fallback */}
 }
 const MIUDOS=[{nome:'Aorta',meta:0.08},{nome:'Bucho',meta:1.45},{nome:'Carne Industrial',meta:0.65},{nome:'Colmeia',meta:0.23},{nome:'Coração',meta:0.57},{nome:'Couro',meta:17.50},{nome:'Diafragma',meta:0.48},{nome:'Esôfago',meta:0.14},{nome:'Fígado',meta:2.08},{nome:'Língua',meta:0.36},{nome:'Lombinho',meta:0.25},{nome:'Mocotó',meta:0.54},{nome:'Omaso',meta:0.36},{nome:'Pulmão',meta:0.00},{nome:'Rabo',meta:0.57},{nome:'Recortes',meta:0.55},{nome:'Rins',meta:0.00},{nome:'Sangria',meta:1.17},{nome:'Tendão',meta:0.30},{nome:'Traqueia',meta:0.12},{nome:'Vergalho',meta:0.15}];
 function buildMiudosForm(){const tb=document.getElementById('tbody-miudos-form');if(!tb)return;tb.innerHTML='';MIUDOS.forEach(m=>{const tr=document.createElement('tr');tr.innerHTML=`<td style="font-weight:500">${m.nome}</td><td class="r"><input type="number" step="1" min="0" id="mp-${m.nome}-pec" placeholder="0" style="width:80px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r"><input type="number" step="0.01" min="0" id="mp-${m.nome}-kg" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-pct">—</td><td class="r"><input type="number" step="0.01" min="0" value="${m.meta.toFixed(2)}" id="mp-${m.nome}-meta" style="width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-dif">—</td>`;tb.appendChild(tr);});}
@@ -1818,6 +1834,7 @@ function calcMiudosTotais(){
   const mediaMacho=mac>0?(pm/mac):0;const mediaFemea=fem>0?(pf/fem):0;
   const fn=n=>n.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:2});
   set('m-total-cab',fn(tc));set('m-total-peso',fn(tp));set('m-media',fn(me));
+  set('vol-media-total',me>0?fn(me):'—');
   set('sum-media-bov-m',mediaMacho>0?fn(mediaMacho):'—');
   set('sum-media-bov-f',mediaFemea>0?fn(mediaFemea):'—');
   MIUDOS.forEach(m=>calcML(m.nome));checkMR();
@@ -2000,9 +2017,22 @@ async function renderAnaliseComparativa(){
   const filtroMiudo=document.getElementById('comp-filtro-miudo')?.value||'';
   const datasBase=new Set(diasBase.map(d=>d.data));const datasAtual=new Set(diasAtual.map(d=>d.data));
   const rendBase=calcRendPorMiudo(datasBase,filtroMiudo);const rendAtual=calcRendPorMiudo(datasAtual,filtroMiudo);
+  // Peso total abatido no período atual — usa kgTotalAbate real da aba Miúdos
+  // (cada linha do cache já tem o peso total de carcaça do dia)
+  const datasAtualSet=new Set(diasAtual.map(d=>d.data));
+  const kgPorDia={};
+  (miudosCache||[]).forEach(r=>{
+    if(!datasAtualSet.has(r.data))return;
+    // pega o maior kgTotalAbate do dia (é o mesmo para todos os miúdos do mesmo dia)
+    if(!kgPorDia[r.data]||r.kgTotalAbate>kgPorDia[r.data])kgPorDia[r.data]=r.kgTotalAbate||0;
+  });
+  const pesoTotalAtual=Object.values(kgPorDia).reduce((a,b)=>a+b,0);
+  // Fallback: se não há dados de miúdos, estima por cabeças × peso médio
   const totalAbatAtual=diasAtual.reduce((a,h)=>a+h.bovino.reduce((b,e)=>b+(e.abatidos||0),0)+h.suino.reduce((b,e)=>b+(e.abatidos||0),0),0);
-  const pesoMedio=parseFloat(document.getElementById('m-media')?.textContent?.replace(/\./g,'').replace(',','.'))||250;
-  const pesoTotalAtual=totalAbatAtual*pesoMedio;
+  const pesoBase=pesoTotalAtual>0?pesoTotalAtual:(totalAbatAtual*250);
+  // Label para mostrar a fonte do peso
+  const labelPeso=pesoTotalAtual>0?`Base: ${(pesoBase/1000).toFixed(0)}t de carcaça real (${diasAtual.length} dias)`:`Base estimada: ${totalAbatAtual} animais × 250kg (sem dados de miúdos)`;
+  const elPesoBadge=document.getElementById('comp-ganho-sub');if(elPesoBadge)elPesoBadge.textContent=labelPeso;
   const precos=params.precosMiudos||{};
   let ganhoTotal=0,upsideMeta=0,upsideBench=0,rendTotalBase=0,rendTotalAtual=0;
   const linhas=[];
@@ -2011,9 +2041,9 @@ async function renderAnaliseComparativa(){
     const base=rendBase[m.nome]??null;const atual=rendAtual[m.nome]??null;const meta=m.meta;const bench=BENCHMARK_SETOR[m.nome]??null;const preco=precos[m.nome]||0;
     if(base===null&&atual===null)return;
     rendTotalBase+=(base||0);rendTotalAtual+=(atual||0);
-    const ganho=base!==null&&atual!==null&&preco>0?((atual-base)/100)*pesoTotalAtual*preco:null;
-    const potMeta=atual!==null&&preco>0&&meta>atual?((meta-atual)/100)*pesoTotalAtual*preco:null;
-    const potBench=atual!==null&&bench!==null&&preco>0&&bench>atual?((bench-atual)/100)*pesoTotalAtual*preco:null;
+    const ganho=base!==null&&atual!==null&&preco>0?((atual-base)/100)*pesoBase*preco:null;
+    const potMeta=atual!==null&&preco>0&&meta>atual?((meta-atual)/100)*pesoBase*preco:null;
+    const potBench=atual!==null&&bench!==null&&preco>0&&bench>atual?((bench-atual)/100)*pesoBase*preco:null;
     if(ganho!==null)ganhoTotal+=ganho;if(potMeta!==null)upsideMeta+=potMeta;if(potBench!==null)upsideBench+=potBench;
     linhas.push({nome:m.nome,base,atual,meta,bench,preco,ganho,potMeta,potBench});
   });
@@ -2111,9 +2141,10 @@ function printRelatorio(painel){
 
 // Novos indicadores calculados a partir do período filtrado
 function calcularIndicadoresExtra(tB,tS,nd){
-  // 1. Custo de condenação por animal (perda R$ total / total abatido)
+  const diasFiltrados=getHistoricoFiltrado();
+  // 1. Custo de condenação por animal
   if(condenacaoCache){
-    const datasSet=new Set(getHistoricoFiltrado().map(d=>d.data));
+    const datasSet=new Set(diasFiltrados.map(d=>d.data));
     const registros=condenacaoCache.filter(c=>datasSet.has(c.data)&&c.tipo==='Peça');
     const precos=params.precosMiudos||{};
     const precoMap={'Cabeça':precos['Carne Industrial']||0,'Língua':precos['Língua']||0,
@@ -2125,15 +2156,17 @@ function calcularIndicadoresExtra(tB,tS,nd){
     set('ind-custo-cond-animal','R$ '+custoPorAnimal.toFixed(2));
     set('ind-perda-cond-total',fmtMoeda(-perdaTotal));
   }
-  // 2. Aproveitamento do animal (% do peso entrada → miúdos)
+  // 2. Aproveitamento do animal (% kg miúdos / kg total abate)
   if(miudosCache){
-    const datasSet=new Set(getHistoricoFiltrado().map(d=>d.data));
-    const pesoMiudos=miudosCache.filter(m=>datasSet.has(m.data)).reduce((a,m)=>a+m.pesoKg,0);
-    const pesoEntrada=parseFloat(document.getElementById('m-peso-machos')?.value||0)+
-                      parseFloat(document.getElementById('m-peso-femeas')?.value||0);
-    if(pesoEntrada>0){
-      const aprov=(pesoMiudos/pesoEntrada*100);
-      set('ind-aprov-animal',aprov.toFixed(2)+'%');
+    const datasSet=new Set(diasFiltrados.map(d=>d.data));
+    const regMiudos=miudosCache.filter(m=>datasSet.has(m.data));
+    const pesoMiudos=regMiudos.reduce((a,m)=>a+m.pesoKg,0);
+    // Usa kgTotalAbate real do cache (maior valor por dia)
+    const kgPorDia={};
+    regMiudos.forEach(r=>{if(!kgPorDia[r.data]||r.kgTotalAbate>kgPorDia[r.data])kgPorDia[r.data]=r.kgTotalAbate||0;});
+    const pesoTotal=Object.values(kgPorDia).reduce((a,b)=>a+b,0);
+    if(pesoTotal>0){
+      set('ind-aprov-animal',(pesoMiudos/pesoTotal*100).toFixed(2)+'%');
     }
   }
   // 3. Abates/dia média do período
