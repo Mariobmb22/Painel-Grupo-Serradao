@@ -181,7 +181,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-29</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-30</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1121,7 +1121,14 @@ function salvarParametros(){
   showAlert('upload-alert','ok','Parâmetros salvos!');
   setTimeout(()=>document.getElementById('upload-alert').classList.add('hidden'),3000);
 }
-function loadParams(){const s=localStorage.getItem('frigobet-params');if(s)try{params=JSON.parse(s);}catch(e){}}
+function loadParams(){
+  const PRECOS_DEFAULT={"Aorta":22.5,"Bucho":12.5,"Carne Industrial":17.5,"Colmeia":15.0,"Coração":8.0,"Couro":5.0,"Diafragma":25.0,"Esôfago":4.5,"Fígado":12.0,"Língua":10.5,"Lombinho":25.0,"Mocotó":12.0,"Omaso":22.5,"Pulmão":3.5,"Rabo":25.0,"Recortes":17.5,"Rins":2.5,"Sangria":18.6,"Tendão":13.0,"Traqueia":3.5,"Vergalho":25.0};
+  const s=localStorage.getItem('frigobet-params');
+  if(s)try{const loaded=JSON.parse(s);Object.assign(params,loaded);}catch(e){}
+  // Garante que preços existem com defaults (não sobrescreve valores salvos válidos)
+  if(!params.precosMiudos)params.precosMiudos={};
+  Object.entries(PRECOS_DEFAULT).forEach(([k,v])=>{if(!params.precosMiudos[k]||params.precosMiudos[k]<1)params.precosMiudos[k]=v;});
+}
 
 // ── PDF ──
 async function getPDFText(file){const ab=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:ab}).promise;let text='';for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const c=await page.getTextContent();text+=c.items.map(it=>it.str).join(' ')+'\n';}return text;}
