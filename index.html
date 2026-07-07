@@ -181,7 +181,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-27</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-29</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -779,7 +779,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 const DIAS=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
-let params={capBov:370,capSui:580,colabBov:90,colabSui:80,metas:{Segunda:{bov:370,sui:500},Terça:{bov:370,sui:500},Quarta:{bov:370,sui:500},Quinta:{bov:370,sui:500},Sexta:{bov:370,sui:500},Sábado:{bov:200,sui:300},Domingo:{bov:0,sui:0}}};
+let params={capBov:370,capSui:580,colabBov:90,colabSui:80,precosMiudos:{"Aorta":22.5,"Bucho":12.5,"Carne Industrial":17.5,"Colmeia":15.0,"Coração":8.0,"Couro":5.0,"Diafragma":25.0,"Esôfago":4.5,"Fígado":12.0,"Língua":10.5,"Lombinho":25.0,"Mocotó":12.0,"Omaso":22.5,"Pulmão":3.5,"Rabo":25.0,"Recortes":17.5,"Rins":2.5,"Sangria":18.6,"Tendão":13.0,"Traqueia":3.5,"Vergalho":25.0},metas:{Segunda:{bov:370,sui:500},Terça:{bov:370,sui:500},Quarta:{bov:370,sui:500},Quinta:{bov:370,sui:500},Sexta:{bov:370,sui:500},Sábado:{bov:200,sui:300},Domingo:{bov:0,sui:0}}};
 let dadosDia=null,historico=[];
 const pdfFiles={},pdfTexts={},pdfDates={},importFiles={};
 
@@ -2121,7 +2121,7 @@ async function renderAnaliseComparativa(){
   const baseMeses=new Set(diasBase.map(d=>d.data.slice(0,7)));
   const atualMeses=new Set(diasAtual.map(d=>d.data.slice(0,7)));
   const metaTot=filtroMiudo?MIUDOS.find(m=>m.nome===filtroMiudo)?.meta||0:MIUDOS.reduce((a,m)=>a+m.meta,0);
-  const benchTot=filtroMiudo?(BENCHMARK_SETOR[filtroMiudo]||null):Object.values(BENCHMARK_SETOR).reduce((a,b)=>a+b,0);
+  const benchTot=filtroMiudo?(BENCHMARK_SETOR[filtroMiudo]||null):null; // benchmark total não faz sentido (só 15 de 21 miúdos têm bench)
   const t1=document.getElementById('comp-chart1-title');const t1s=document.getElementById('comp-chart1-sub');
   if(t1)t1.textContent=filtroMiudo?`Evolução — ${filtroMiudo}`:'Evolução do rendimento total';
   if(t1s)t1s.textContent=filtroMiudo?`% mês a mês`:'soma dos % de todos os miúdos · mês a mês';
