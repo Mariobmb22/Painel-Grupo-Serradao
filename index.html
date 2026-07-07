@@ -181,7 +181,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-25</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-26</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2052,9 +2052,9 @@ async function renderAnaliseComparativa(){
     if(base===null&&atual===null)return;
     rendTotalBase+=(base||0);rendTotalAtual+=(atual||0);
 
-    // Perda vs meta = (meta% - real%) / 100 × peso mensal × preço/kg
-    // Se real > meta, a "perda" é negativa = ganho
-    const perdaBaseM=base!==null&&preco>0?((meta-(base||0))/100)*pesoBaseMensal*preco:null;
+    // Perda vs meta = (meta% - real%) / 100 × peso mensal ATUAL × preço/kg
+    // IMPORTANTE: usa o peso do período ATUAL em ambos para isolar o efeito do rendimento
+    const perdaBaseM=base!==null&&preco>0?((meta-(base||0))/100)*pesoAtualMensal*preco:null;
     const perdaAtualM=atual!==null&&preco>0?((meta-(atual||0))/100)*pesoAtualMensal*preco:null;
     // Ganho mensal = quanto a menos se perde agora vs antes
     const ganhoMensal=perdaBaseM!==null&&perdaAtualM!==null?(perdaBaseM-perdaAtualM):null;
@@ -2081,9 +2081,7 @@ async function renderAnaliseComparativa(){
   document.getElementById('comp-ganho-total').style.color=ganhoMensalTotal>=0?'var(--green)':'var(--red)';
   const elSub=document.getElementById('comp-ganho-sub');
   if(elSub){
-    const infoBase=pesoBaseInfo.total>0?`${(pesoBaseInfo.total/1000).toFixed(0)}t`:`${diasBaseCount} dias`;
-    const infoAtual=pesoAtualInfo.total>0?`${(pesoAtualInfo.total/1000).toFixed(0)}t`:`${diasAtualCount} dias`;
-    elSub.innerHTML=`Perdia <b style="color:var(--red)">${fmtMoeda(perdaBaseMensal)}/mês</b> → Perde <b style="color:${perdaAtualMensal>0?'var(--red)':'var(--green)'}">${fmtMoeda(perdaAtualMensal)}/mês</b>`;
+    elSub.innerHTML=`Perdia <b style="color:var(--red)">${fmtMoeda(perdaBaseMensal)}/mês</b> → Perde <b style="color:${perdaAtualMensal>0?'var(--red)':'var(--green)'}">${fmtMoeda(perdaAtualMensal)}/mês</b><br><span style="font-size:9px;color:var(--muted)">Ambos sobre ${(pesoAtualMensal/1000).toFixed(0)}t/mês de carcaça atual</span>`;
   }
 
   // Card 2: Potencial vs meta (quanto ainda perde por mês)
