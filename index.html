@@ -92,13 +92,13 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 .f-r{background:var(--red-bg)}
 .efic-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border2)}
 .efic-mini{background:var(--bg);border-radius:var(--r);padding:8px 10px}
-.efic-mini-label{font-size:10px;color:var(--muted);margin-bottom:3px}
+.efic-mini-label{font-size:12px;color:var(--muted);margin-bottom:3px;font-weight:500}
 .efic-mini-val{font-size:16px;font-weight:800}
 .efic-bar{height:4px;border-radius:2px;background:var(--border);margin-top:5px;overflow:hidden}
 .efic-bar-fill{height:100%;border-radius:2px}
 .sum-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .sum-card{background:var(--white);border:1px solid var(--border);border-radius:var(--rlg);padding:10px 14px}
-.sum-card-label{font-size:10px;color:var(--muted);margin-bottom:4px}
+.sum-card-label{font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500}
 .sum-card-val{font-size:22px;font-weight:800;color:var(--text)}
 .sum-card-sub{font-size:10px;color:var(--muted);margin-top:2px}
 .sum-card-sub .err{color:var(--red)}
@@ -109,10 +109,10 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 .trend-eq{color:var(--muted);font-weight:700}
 .perda-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px}
 .perda-card{background:var(--white);border:1px solid var(--border);border-radius:var(--rlg);padding:10px 14px}
-.perda-card-label{font-size:10px;color:var(--muted);margin-bottom:3px}
+.perda-card-label{font-size:12px;color:var(--muted);margin-bottom:3px;font-weight:500}
 .perda-card-val{font-size:18px;font-weight:800;color:var(--red-bg)}
 .perda-card-val.lingua{color:var(--red-bg);font-size:16px}
-.perda-card-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.perda-card-sub{font-size:11px;color:var(--muted);margin-top:2px}
 .upload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
 .uslot{border:1.5px dashed var(--border);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:all .15s;position:relative}
 .uslot:hover{border-color:var(--bov);background:var(--bov-light)}
@@ -181,7 +181,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-30</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-33</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -442,32 +442,20 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       </div>
     </div>
 
-    <!-- Seletores -->
-    <div style="display:grid;grid-template-columns:2fr 2fr 1fr;gap:12px;margin-bottom:16px;align-items:end">
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="card-hdr"><div class="card-title">📅 Período base ("antes")</div></div>
-        <div class="card-body" style="padding-top:8px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-            <div class="filter-group"><label>Ano</label><select id="comp-base-ano" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%"></select></div>
-            <div class="filter-group"><label>Mês</label><select id="comp-base-mes" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%"><option value="">Todos</option></select></div>
-          </div>
-          <div style="font-size:11px;color:var(--muted)" id="comp-base-label">—</div>
-        </div>
-      </div>
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="card-hdr"><div class="card-title">📅 Período atual ("depois")</div></div>
-        <div class="card-body" style="padding-top:8px">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Usa o filtro de período do topo da página</div>
-          <div style="font-size:12px;font-weight:600" id="comp-atual-label">—</div>
-          <div class="filter-group" style="margin-top:10px"><label>Filtrar miúdo específico</label>
-            <select id="comp-filtro-miudo" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
-              <option value="">Todos os miúdos</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn btn-primary" style="padding:12px;font-size:13px" onclick="renderAnaliseComparativa()">▶ Calcular</button>
+    <!-- Seletores em barra horizontal -->
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;align-self:center">📅 Base:</div>
+      <div class="filter-group" style="margin:0;min-width:90px"><label>Ano</label><select id="comp-base-ano" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%"></select></div>
+      <div class="filter-group" style="margin:0;min-width:100px"><label>Mês</label><select id="comp-base-mes" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%"><option value="">Todos</option></select></div>
+      <div style="font-size:11px;color:var(--muted);align-self:center" id="comp-base-label">—</div>
+      <div style="width:1px;height:32px;background:var(--border);margin:0 4px"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;align-self:center">📊 Atual:</div>
+      <div style="font-size:12px;font-weight:600;align-self:center" id="comp-atual-label">—</div>
+      <div style="width:1px;height:32px;background:var(--border);margin:0 4px"></div>
+      <div class="filter-group" style="margin:0;min-width:160px"><label>Miúdo específico</label>
+        <select id="comp-filtro-miudo" onchange="onCompChange()" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
+          <option value="">Todos os miúdos</option>
+        </select>
       </div>
     </div>
 
@@ -965,7 +953,13 @@ function onFiltroChange(origem){
   filtroAtual.dia=document.getElementById('filtro-dia')?.value||null;
   filtroAtual.empresa=document.getElementById('filtro-empresa')?.value||'';
   atualizarResumoFiltro();
+  atualizarCompLabels();
   renderDashboard();
+  // Se a análise comparativa já foi calculada e está visível, atualiza automaticamente
+  const chartCard=document.getElementById('comp-chart1-card');
+  if(chartCard&&chartCard.style.display!=='none'&&miudosCache&&historico.length){
+    renderAnaliseComparativa();
+  }
 }
 
 function atualizarResumoFiltro(){
@@ -1025,6 +1019,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       filtroAtual={ano:ultimaData.slice(0,4),mes:ultimaData.slice(5,7),dia:ultimaData.slice(8,10),empresa:''};
       atualizarResumoFiltro();
       renderDashboard();
+      carregarMiudosCompletoDoSheets().then(d=>{miudosCache=d;renderAnaliseComparativa();});
     }else{loadDemoData();}
   }catch(e){loadDemoData();}
 });
@@ -1125,9 +1120,11 @@ function loadParams(){
   const PRECOS_DEFAULT={"Aorta":22.5,"Bucho":12.5,"Carne Industrial":17.5,"Colmeia":15.0,"Coração":8.0,"Couro":5.0,"Diafragma":25.0,"Esôfago":4.5,"Fígado":12.0,"Língua":10.5,"Lombinho":25.0,"Mocotó":12.0,"Omaso":22.5,"Pulmão":3.5,"Rabo":25.0,"Recortes":17.5,"Rins":2.5,"Sangria":18.6,"Tendão":13.0,"Traqueia":3.5,"Vergalho":25.0};
   const s=localStorage.getItem('frigobet-params');
   if(s)try{const loaded=JSON.parse(s);Object.assign(params,loaded);}catch(e){}
-  // Garante que preços existem com defaults (não sobrescreve valores salvos válidos)
+  // Garante preços válidos — só substitui se ausente ou claramente inválido (< R$1)
   if(!params.precosMiudos)params.precosMiudos={};
-  Object.entries(PRECOS_DEFAULT).forEach(([k,v])=>{if(!params.precosMiudos[k]||params.precosMiudos[k]<1)params.precosMiudos[k]=v;});
+  Object.entries(PRECOS_DEFAULT).forEach(([k,v])=>{
+    if(!params.precosMiudos[k]||params.precosMiudos[k]<1)params.precosMiudos[k]=v;
+  });
 }
 
 // ── PDF ──
@@ -1970,6 +1967,8 @@ function onCompChange(){
   const id=document.activeElement?.id;
   if(id==='comp-base-ano')popularCompBaseMeses();else if(id==='comp-base-mes')popularCompBaseDias();
   atualizarCompLabels();
+  // Auto-calcula se já tem dados carregados
+  if(miudosCache&&historico.length)renderAnaliseComparativa();
 }
 function atualizarCompLabels(){
   const ano=document.getElementById('comp-base-ano')?.value;const mes=document.getElementById('comp-base-mes')?.value;const dia=document.getElementById('comp-base-dia')?.value;
