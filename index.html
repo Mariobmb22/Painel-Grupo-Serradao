@@ -181,7 +181,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-34</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-35</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1024,7 +1024,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       filtroAtual={ano:ultimaData.slice(0,4),mes:ultimaData.slice(5,7),dia:ultimaData.slice(8,10),empresa:''};
       atualizarResumoFiltro();
       renderDashboard();
-      carregarMiudosCompletoDoSheets().then(d=>{miudosCache=d;renderAnaliseComparativa();});
+      // Carrega miúdos DEPOIS do histórico, não em paralelo
+      setTimeout(()=>carregarMiudosCompletoDoSheets().then(d=>{miudosCache=d;renderAnaliseComparativa();}), 2000);
     }else{loadDemoData();}
   }catch(e){loadDemoData();}
 });
