@@ -181,7 +181,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="brand">
     <span class="brand-name">Dashboard operacional — Frigobet</span>
     <span class="brand-sub">Atualização diária</span>
-    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-33</span>
+    <span style="font-size:9px;color:#d1d5db;margin-left:6px" title="Versão do código">v2026.06.30-34</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -220,6 +220,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     </div>
   </div>
   <div class="filter-label" id="filtro-resumo">Carregando…</div>
+  <div id="hist-range" style="font-size:10px;color:var(--muted);margin-left:8px"></div>
 </div>
 
 <nav class="tabs no-print">
@@ -1007,6 +1008,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(hist.length){
       historico=hist;
       dadosDia=historico[historico.length-1];
+      // Diagnóstico: mostra no console quantos dias foram carregados
+      console.info(`[Frigobet] Histórico carregado: ${hist.length} dias | ${hist[0]?.data} → ${hist[hist.length-1]?.data}`);
+      const hrEl=document.getElementById('hist-range');
+      if(hrEl) hrEl.textContent=`Histórico: ${hist[0]?.data?.slice(0,7)} → ${hist[hist.length-1]?.data?.slice(0,7)} (${hist.length} dias)`;
       popularFiltrosPeriodo();
       popularCompBase();
       // Seleciona automaticamente o último dia disponível
