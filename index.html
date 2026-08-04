@@ -219,7 +219,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-37</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-38</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -624,7 +624,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 
   <div class="subpanel" id="sub-miudos-condenacao">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">Condenação</div><div style="font-size:11px;color:var(--muted)">Peças e animais condenados · salva junto com Miúdos</div></div>
+      <div class="card-hdr"><div class="card-title">Condenação</div><button class="btn btn-primary" onclick="salvarSoCondenacao()">Salvar condenação</button></div>
       <div class="card-body">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Condenação de peças</div>
         <table class="tbl" id="tbl-condenacao-form"><thead><tr><th style="width:60%">Produto</th><th class="r" style="width:40%">Peças condenadas</th></tr></thead><tbody id="tbody-condenacao-form"></tbody></table>
@@ -1756,6 +1756,14 @@ function buildCondenacaoForm(){
     tr.innerHTML=`<td style="font-weight:500">${p}</td><td class="r"><input type="number" step="1" min="0" id="cd-${p}-qtd" placeholder="0" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td>`;
     tb.appendChild(tr);
   });
+}
+async function salvarSoCondenacao(){
+  const date=document.getElementById('miudos-date')?.value;
+  if(!date){alert('Selecione a data antes de salvar.');return;}
+  const btn=event.target;btn.disabled=true;btn.textContent='Salvando...';
+  const ok=await salvarCondenacaoNoSheets(date);
+  btn.disabled=false;btn.textContent='Salvar condenação';
+  alert(ok?'✓ Condenação salva no Sheets!':'✕ Erro ao salvar. Verifique a conexão.');
 }
 async function salvarCondenacaoNoSheets(date){
   const rows=[];
