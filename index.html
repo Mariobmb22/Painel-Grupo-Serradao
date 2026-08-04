@@ -219,7 +219,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-36</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-37</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -446,14 +446,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     </div>
   </div>
 
-  <div class="two-col">
-    <div class="card"><div class="card-hdr"><div class="card-title">Contaminação de carcaça (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-contam-carcaca-disp"><thead><tr><th>Região/tipo</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Contaminação na entrada do abate (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-contam-entrada-disp"><thead><tr><th>Peça</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
-  </div>
-  <div class="two-col">
-    <div class="card"><div class="card-hdr"><div class="card-title">Peças depreciadas (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-deprec-disp"><thead><tr><th>Corte</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Lesões na carcaça (%)</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-q-lesoes-disp"><thead><tr><th>Corte</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Sem 3</th><th class="r">Sem 4</th><th class="r">Tend.</th></tr></thead><tbody></tbody></table></div></div>
-  </div>
+
 </div>
 
 <!-- RENDIMENTO -->
@@ -611,7 +604,6 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     <div class="subtab active" onclick="showSubtab('miudos','sub-miudos-itens')" id="subtab-miudos-itens">Miúdos</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-carcaca')" id="subtab-miudos-carcaca">Carcaça</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-condenacao')" id="subtab-miudos-condenacao">Condenação</div>
-    <div class="subtab" onclick="showSubtab('miudos','sub-miudos-qualidade')" id="subtab-miudos-qualidade">Qualidade</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-precos')" id="subtab-miudos-precos">Preços</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-import')" id="subtab-miudos-import">Importar histórico</div>
   </div>
@@ -641,22 +633,6 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
           <div class="param-field"><label>Machos condenados</label><input type="number" step="1" min="0" id="cd-animal-macho" placeholder="0"></div>
           <div class="param-field"><label>Fêmeas condenadas</label><input type="number" step="1" min="0" id="cd-animal-femea" placeholder="0"></div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="subpanel" id="sub-miudos-qualidade">
-    <div class="card">
-      <div class="card-hdr"><div class="card-title">Qualidade & perdas</div><div style="font-size:11px;color:var(--muted)">% sobre o total · salva junto com Miúdos</div></div>
-      <div class="card-body">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:4px 0 6px">Contaminação de carcaça</div>
-        <table class="tbl" id="tbl-q-contam-carcaca"><thead><tr><th style="width:46%">Região/tipo</th><th class="r" style="width:54%">Qtd (carcaças)</th></tr></thead><tbody></tbody></table>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Contaminação na entrada do abate</div>
-        <table class="tbl" id="tbl-q-contam-entrada"><thead><tr><th style="width:46%">Peça</th><th class="r" style="width:54%">Qtd (peças)</th></tr></thead><tbody></tbody></table>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Peças depreciadas</div>
-        <table class="tbl" id="tbl-q-deprec"><thead><tr><th style="width:46%">Corte</th><th class="r" style="width:54%">Qtd (peças)</th></tr></thead><tbody></tbody></table>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:14px 0 6px">Lesões na carcaça</div>
-        <table class="tbl" id="tbl-q-lesoes"><thead><tr><th style="width:46%">Corte</th><th class="r" style="width:54%">Qtd (peças)</th></tr></thead><tbody></tbody></table>
       </div>
     </div>
   </div>
@@ -1046,7 +1022,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const ud=document.getElementById('upload-date');if(ud)ud.value=today;
   const md=document.getElementById('miudos-date');if(md)md.value=today;
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
-  loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();buildCondenacaoForm();buildQualidadeForm();
+  loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();buildCondenacaoForm();
   try{
     const [hist]=await Promise.all([carregarHistoricoCompleto(),carregarBenchmarkDoSheets(),carregarCondenacaoDoSheets().then(d=>{condenacaoCache=d;})]);
     if(hist.length){
@@ -1426,7 +1402,7 @@ function renderDashboard(){
   set('prod-bov-h',abHBov.toFixed(1));set('prod-sui-h',abHSui.toFixed(1));
   set('prod-colab-bov',(colabBov>0?mediaBov/colabBov:0).toFixed(1));set('prod-colab-sui',(colabSui>0?mediaSui/colabSui:0).toFixed(1));
   set('prod-ahh-bov',abHHBov.toFixed(4));set('prod-ahh-sui',abHHSui.toFixed(4));
-  renderQualidadeReal();renderCondenacaoReal(tB);renderRendimentoReal(tB,tS);renderProdutividadeReal();calcularIndicadoresExtra(tB,tS,d.nd);
+  renderCondenacaoReal(tB);renderRendimentoReal(tB,tS);renderProdutividadeReal();calcularIndicadoresExtra(tB,tS,d.nd);
 }
 function renderProdutividadeReal(){
   const diasFiltrados=getHistoricoFiltrado();
@@ -1533,7 +1509,7 @@ function renderVolTable(id,rows,metaTotal,total){
   }
   if(rows.length>1){const tr=document.createElement('tr');tr.className='total';tr.style.borderTop='2px solid var(--border)';tr.innerHTML=`<td>Total</td><td class="r">${fmt(total)}</td><td class="r">${fmt(metaTotal)}</td><td class="r">${farol(metaTotal>0?(total-metaTotal)/metaTotal*100:0)}</td>`;tbody.appendChild(tr);}
 }
-let qualidadeCache=null;
+let qualidadeCache=null; // mantido para compatibilidade — não usado
 let condenacaoCache=null;
 async function carregarCondenacaoDoSheets(){
   try{
@@ -1605,39 +1581,6 @@ async function renderCondenacaoReal(tBov){
     }
   }
 }
-async function carregarQualidadeDoSheets(){
-  try{const rows=await sheetsRead('Qualidade');return rows.slice(1).filter(r=>r[0]).map(r=>({data:String(r[0]).slice(0,10),categoria:r[1],item:r[2],valor:+r[3]||0}));}catch(e){return[];}
-}
-function semanaDoMes(dataISO){const d=new Date(dataISO+'T12:00:00');return Math.ceil(d.getDate()/7);}
-async function renderQualidadeReal(){
-  if(!qualidadeCache) qualidadeCache=await carregarQualidadeDoSheets();
-  const diasFiltrados=getHistoricoFiltrado();
-  if(!diasFiltrados.length){renderDemoQualidade();return;}
-  const datasSet=new Set(diasFiltrados.map(d=>d.data));
-  const registros=qualidadeCache.filter(q=>datasSet.has(q.data));
-
-  Object.entries(QUALIDADE_ITENS).forEach(([cat,itens])=>{
-    const porItemSemana={};
-    itens.forEach(item=>{porItemSemana[item]={1:[],2:[],3:[],4:[],5:[]};});
-    registros.filter(r=>r.categoria===cat).forEach(r=>{
-      const sem=Math.min(semanaDoMes(r.data),5);
-      if(porItemSemana[r.item]) porItemSemana[r.item][sem].push(r.valor);
-    });
-    const rows=itens.map(item=>{
-      const med=s=>{const arr=porItemSemana[item][s];return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;};
-      const s1=med(1),s2=med(2),s3=med(3),s4=med(4)+med(5);
-      return{nome:item,s1:parseFloat(s1.toFixed(2)),s2:parseFloat(s2.toFixed(2)),s3:parseFloat(s3.toFixed(2)),s4:parseFloat(s4.toFixed(2))};
-    });
-    renderQualTable('tbl-'+cat+'-disp',rows);
-  });
-}
-function renderDemoQualidade(){
-  renderQualTable('tbl-q-contam-carcaca-disp',[{nome:'DIANTEIRO — Pelo',s1:3,s2:4,s3:6,s4:2},{nome:'DIANTEIRO — Gastro',s1:9,s2:7,s3:3,s4:1},{nome:'DIANTEIRO — Couro',s1:12,s2:10,s3:8,s4:7},{nome:'TRASEIRO — Pelo',s1:23,s2:22,s3:20,s4:16},{nome:'TRASEIRO — Gastro',s1:5,s2:7,s3:4,s4:7},{nome:'TRASEIRO — Couro',s1:8,s2:9,s3:10,s4:3}]);
-  renderQualTable('tbl-q-contam-entrada-disp',[{nome:'Mocotó dianteiro',s1:68,s2:59,s3:38,s4:32},{nome:'Mocotó traseiro',s1:18,s2:18,s3:24,s4:26},{nome:'Matambre',s1:32,s2:13,s3:14,s4:26},{nome:'Peito',s1:23,s2:13,s3:16,s4:25}]);
-  renderQualTable('tbl-q-deprec-disp',[{nome:'Dianteiro',s1:15,s2:0,s3:25,s4:17},{nome:'Costela',s1:0,s2:25,s3:17,s4:10},{nome:'Traseiro',s1:27,s2:20,s3:34,s4:13}]);
-  renderQualTable('tbl-q-lesoes-disp',[{nome:'Dianteiro',s1:1,s2:2,s3:4,s4:2},{nome:'Costela',s1:1,s2:1,s3:2,s4:2},{nome:'Lombo',s1:0,s2:1,s3:2,s4:1},{nome:'Traseiro',s1:3,s2:5,s3:4,s4:3}]);
-}
-function renderQualTable(id,rows){const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';rows.forEach(r=>{const tr=document.createElement('tr');const tc=r.s4<r.s3?'var(--green)':'var(--red)';tr.innerHTML=`<td>${r.nome}</td><td class="r">${r.s1}%</td><td class="r">${r.s2}%</td><td class="r">${r.s3}%</td><td class="r">${r.s4}%</td><td class="r" style="color:${tc};font-weight:700">${r.s4<r.s3?'↓':'↑'}</td>`;tbody.appendChild(tr);});}
 let miudosCache=null;
 let carcacaCache=null;
 async function carregarCarcacaDoSheets(){
@@ -1828,35 +1771,6 @@ async function salvarCondenacaoNoSheets(date){
   try{await sheetsAppend('Condenacao',rows);return true;}catch(e){console.error(e);return false;}
 }
 
-// ── QUALIDADE ──
-const QUALIDADE_ITENS={
-  'q-contam-carcaca':['Dianteiro — Pelo','Dianteiro — Gastro','Dianteiro — Couro','Traseiro — Pelo','Traseiro — Gastro','Traseiro — Couro'],
-  'q-contam-entrada':['Mocotó dianteiro','Mocotó traseiro','Matambre','Peito'],
-  'q-deprec':['Dianteiro','Costela','Traseiro'],
-  'q-lesoes':['Dianteiro','Costela','Lombo','Traseiro']
-};
-function buildQualidadeForm(){
-  Object.entries(QUALIDADE_ITENS).forEach(([cat,itens])=>{
-    const tb=document.querySelector(`#tbl-${cat} tbody`);if(!tb)return;tb.innerHTML='';
-    itens.forEach(item=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td style="font-weight:500">${item}</td><td class="r"><input type="number" step="1" min="0" id="ql-${cat}-${item}" placeholder="0" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td>`;
-      tb.appendChild(tr);
-    });
-  });
-}
-async function salvarQualidadeNoSheets(date){
-  const rows=[];
-  Object.entries(QUALIDADE_ITENS).forEach(([cat,itens])=>{
-    itens.forEach(item=>{
-      const v=parseFloat(document.getElementById(`ql-${cat}-${item}`)?.value)||0;
-      if(v>0) rows.push([date,cat,item,v]);
-    });
-  });
-  if(!rows.length) return true;
-  try{await sheetsAppend('Qualidade',rows);return true;}catch(e){console.error(e);return false;}
-}
-
 // ── MIÚDOS ──
 // Benchmark do setor — carregado da aba 'Benchmark' no Sheets
 // Fallback: mediana de 5 fontes (Hipercarnes 01+02/06/2026, Valencio Altamira 04+05/06/2026, xlsx não identificado)
@@ -1947,10 +1861,9 @@ async function salvarMiudos(){
   const okM=await salvarMiudosNoSheets(date,mm,tp);
   const okC=await salvarCarcacaNoSheets(date);
   const okCd=await salvarCondenacaoNoSheets(date);
-  const okQ=await salvarQualidadeNoSheets(date);
-  const ok=okM&&okC&&okCd&&okQ;
+  const ok=okM&&okC&&okCd;
   al.className='alert '+(ok?'ok':'err');
-  al.textContent=ok?`✓ ${mm.length} miúdos, carcaça, condenação e qualidade salvos no Sheets!`:'✕ Erro ao salvar.';
+  al.textContent=ok?`✓ ${mm.length} miúdos, carcaça e condenação salvos no Sheets!`:'✕ Erro ao salvar.';
   btn.disabled=false;btn.textContent='Salvar no Sheets';
   setTimeout(()=>{al.className='alert hidden';},4000);
   atualizarStatusDia(date);
