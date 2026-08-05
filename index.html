@@ -219,7 +219,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-38</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-39</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -570,26 +570,23 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 
 <!-- MIÚDOS -->
 <div class="panel" id="panel-miudos">
-  <div class="sec-hdr">Lançamento de miúdos — <span id="miudos-date-label">selecione uma data</span></div>
+  <div class="sec-hdr">Lançamento diário — <span id="miudos-date-label">selecione uma data</span></div>
 
+  <!-- SEÇÃO 1: Data + Animais abatidos -->
   <div class="two-col" style="margin-bottom:14px">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">Data de referência</div><input type="date" id="miudos-date" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;color:var(--text)" onchange="onMiudosDateChange()"></div>
+      <div class="card-hdr"><div class="card-title">📅 Data de referência</div><input type="date" id="miudos-date" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--text);font-weight:600" onchange="onMiudosDateChange()"></div>
       <div class="card-body"><div id="miudos-status-dia" style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0">Selecione uma data para ver o status</div></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">Resumo do abate (machos/fêmeas)</div></div>
+      <div class="card-hdr"><div class="card-title">🐂 Animais abatidos</div></div>
       <div class="card-body">
         <div id="miudos-alert" class="alert hidden"></div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">
           <div class="param-field"><label>Machos (cabeças)</label><input type="number" id="m-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
           <div class="param-field"><label>Fêmeas (cabeças)</label><input type="number" id="m-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
-          <div class="param-field"><label>Peso machos (kg)</label><input type="number" id="m-peso-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
-          <div class="param-field"><label>Peso fêmeas (kg)</label><input type="number" id="m-peso-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
-          <div class="param-field"><label>Horas abate bovino</label><input type="number" step="0.5" id="m-horas-bov" placeholder="8" oninput="calcMiudosTotais()"></div>
-          <div class="param-field"><label>Horas abate suíno</label><input type="number" step="0.5" id="m-horas-sui" placeholder="8" oninput="calcMiudosTotais()"></div>
-          <div class="param-field"><label>Colaboradores bovino</label><input type="number" id="m-colab-bov" placeholder="90" oninput="calcMiudosTotais()"></div>
-          <div class="param-field"><label>Colaboradores suíno</label><input type="number" id="m-colab-sui" placeholder="80" oninput="calcMiudosTotais()"></div>
+          <div class="param-field"><label>Peso total machos (kg)</label><input type="number" id="m-peso-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
+          <div class="param-field"><label>Peso total fêmeas (kg)</label><input type="number" id="m-peso-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
           <div class="efic-mini"><div class="efic-mini-label">Total cabeças</div><div class="efic-mini-val" id="m-total-cab" style="color:var(--bov)">0</div></div>
@@ -600,6 +597,64 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     </div>
   </div>
 
+  <!-- SEÇÃO 2: Horários e Paradas -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-hdr"><div class="card-title">⏱️ Horários de abate e paradas</div></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px">
+        <div style="border:1px solid var(--border);border-radius:var(--r);padding:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--bov);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Bovino</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="param-field"><label>Início do box</label><input type="time" id="m-box-inicio-bov" oninput="calcHorasBox()"></div>
+            <div class="param-field"><label>Fim do box</label><input type="time" id="m-box-fim-bov" oninput="calcHorasBox()"></div>
+            <div class="param-field"><label>Colaboradores</label><input type="number" id="m-colab-bov" placeholder="90" oninput="calcHorasBox()"></div>
+            <div class="efic-mini" style="display:flex;flex-direction:column;justify-content:center"><div class="efic-mini-label">Duração bruta</div><div class="efic-mini-val" id="m-horas-bruta-bov" style="font-size:14px">—</div></div>
+          </div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--r);padding:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--sui);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Suíno</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="param-field"><label>Início do box</label><input type="time" id="m-box-inicio-sui" oninput="calcHorasBox()"></div>
+            <div class="param-field"><label>Fim do box</label><input type="time" id="m-box-fim-sui" oninput="calcHorasBox()"></div>
+            <div class="param-field"><label>Colaboradores</label><input type="number" id="m-colab-sui" placeholder="80" oninput="calcHorasBox()"></div>
+            <div class="efic-mini" style="display:flex;flex-direction:column;justify-content:center"><div class="efic-mini-label">Duração bruta</div><div class="efic-mini-val" id="m-horas-bruta-sui" style="font-size:14px">—</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Paradas no dia</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+        <div style="border:1px solid var(--border);border-radius:var(--r);padding:10px">
+          <div style="font-size:11px;font-weight:600;color:var(--yellow);margin-bottom:6px">🔧 Operacional</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div class="param-field"><label>Qtd</label><input type="number" id="m-parada-oper-qtd" placeholder="0" min="0" oninput="calcHorasBox()"></div>
+            <div class="param-field"><label>Duração (min)</label><input type="number" id="m-parada-oper-min" placeholder="0" min="0" oninput="calcHorasBox()"></div>
+          </div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--r);padding:10px">
+          <div style="font-size:11px;font-weight:600;color:var(--red);margin-bottom:6px">🛠️ Manutenção</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div class="param-field"><label>Qtd</label><input type="number" id="m-parada-manut-qtd" placeholder="0" min="0" oninput="calcHorasBox()"></div>
+            <div class="param-field"><label>Duração (min)</label><input type="number" id="m-parada-manut-min" placeholder="0" min="0" oninput="calcHorasBox()"></div>
+          </div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--r);padding:10px">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">📋 Outras</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div class="param-field"><label>Qtd</label><input type="number" id="m-parada-outras-qtd" placeholder="0" min="0" oninput="calcHorasBox()"></div>
+            <div class="param-field"><label>Duração (min)</label><input type="number" id="m-parada-outras-min" placeholder="0" min="0" oninput="calcHorasBox()"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div class="efic-mini" style="border-left:3px solid var(--muted)"><div class="efic-mini-label">Total paradas</div><div class="efic-mini-val" id="m-paradas-total" style="font-size:14px">0</div></div>
+        <div class="efic-mini" style="border-left:3px solid var(--red)"><div class="efic-mini-label">Tempo parado</div><div class="efic-mini-val" id="m-paradas-min-total" style="font-size:14px;color:var(--red)">0 min</div></div>
+        <div class="efic-mini" style="border-left:3px solid var(--bov)"><div class="efic-mini-label">Hora líquida bov</div><div class="efic-mini-val" id="m-horas-liq-bov" style="font-size:14px;color:var(--bov)">—</div></div>
+        <div class="efic-mini" style="border-left:3px solid var(--sui)"><div class="efic-mini-label">Hora líquida suí</div><div class="efic-mini-val" id="m-horas-liq-sui" style="font-size:14px;color:var(--sui)">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 3: Sub-abas -->
   <div class="subtabs no-print">
     <div class="subtab active" onclick="showSubtab('miudos','sub-miudos-itens')" id="subtab-miudos-itens">Miúdos</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-carcaca')" id="subtab-miudos-carcaca">Carcaça</div>
@@ -626,12 +681,14 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     <div class="card">
       <div class="card-hdr"><div class="card-title">Condenação</div><button class="btn btn-primary" onclick="salvarSoCondenacao()">Salvar condenação</button></div>
       <div class="card-body">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Condenação de peças</div>
-        <table class="tbl" id="tbl-condenacao-form"><thead><tr><th style="width:60%">Produto</th><th class="r" style="width:40%">Peças condenadas</th></tr></thead><tbody id="tbody-condenacao-form"></tbody></table>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:16px 0 8px">Condenação de animal inteiro</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Condenação de peças</div>
+        <table class="tbl" id="tbl-condenacao-form"><thead><tr><th style="width:30%">Produto</th><th class="r" style="width:18%">Peças esperadas</th><th class="r" style="width:26%">Peças condenadas</th><th class="r" style="width:26%">Peso cond. (kg)</th></tr></thead><tbody id="tbody-condenacao-form"></tbody></table>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:16px 0 8px">Condenação de animal inteiro</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
           <div class="param-field"><label>Machos condenados</label><input type="number" step="1" min="0" id="cd-animal-macho" placeholder="0"></div>
+          <div class="param-field"><label>Peso machos cond. (kg)</label><input type="number" step="0.01" min="0" id="cd-animal-macho-peso" placeholder="0"></div>
           <div class="param-field"><label>Fêmeas condenadas</label><input type="number" step="1" min="0" id="cd-animal-femea" placeholder="0"></div>
+          <div class="param-field"><label>Peso fêmeas cond. (kg)</label><input type="number" step="0.01" min="0" id="cd-animal-femea-peso" placeholder="0"></div>
         </div>
       </div>
     </div>
@@ -1749,11 +1806,15 @@ function buildCarcacaForm(){
 
 // ── CONDENAÇÃO IMA ──
 const CONDENADOS=['Cabeça','Língua','Coração','Pulmão','Fígado','Rins','Intestino'];
+// Peças por animal (anatomia bovina)
+const PECAS_POR_ANIMAL={'Cabeça':1,'Língua':1,'Coração':1,'Pulmão':1,'Fígado':1,'Rins':2,'Intestino':1};
 function buildCondenacaoForm(){
   const tb=document.getElementById('tbody-condenacao-form');if(!tb)return;tb.innerHTML='';
+  const totalCab=(+(document.getElementById('m-machos')?.value)||0)+(+(document.getElementById('m-femeas')?.value)||0);
   CONDENADOS.forEach(p=>{
+    const esperadas=totalCab*(PECAS_POR_ANIMAL[p]||1);
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="font-weight:500">${p}</td><td class="r"><input type="number" step="1" min="0" id="cd-${p}-qtd" placeholder="0" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td>`;
+    tr.innerHTML=`<td style="font-weight:500">${p}</td><td class="r" style="color:var(--muted)">${totalCab>0?esperadas:'—'}</td><td class="r"><input type="number" step="1" min="0" id="cd-${p}-qtd" placeholder="0" style="width:80px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td><td class="r"><input type="number" step="0.01" min="0" id="cd-${p}-peso" placeholder="0" style="width:80px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px"></td>`;
     tb.appendChild(tr);
   });
 }
@@ -1810,6 +1871,47 @@ function calcML(nome){
   if(de){de.textContent=(dif>=0?'+':'') +dif.toFixed(2)+'%';de.style.color=dif>=0?'var(--green)':'var(--red-bg)';}
   checkMR();
 }
+// Calcula horas brutas, paradas e líquidas a partir de início/fim do box
+function calcHorasBox(){
+  function calcDuracao(idInicio,idFim){
+    const ini=document.getElementById(idInicio)?.value;
+    const fim=document.getElementById(idFim)?.value;
+    if(!ini||!fim)return null;
+    const[h1,m1]=ini.split(':').map(Number);const[h2,m2]=fim.split(':').map(Number);
+    let min=(h2*60+m2)-(h1*60+m1);if(min<0)min+=24*60; // overnight
+    return min;
+  }
+  const brutaBovMin=calcDuracao('m-box-inicio-bov','m-box-fim-bov');
+  const brutaSuiMin=calcDuracao('m-box-inicio-sui','m-box-fim-sui');
+  // Paradas
+  const pOperQtd=+(document.getElementById('m-parada-oper-qtd')?.value)||0;
+  const pOperMin=+(document.getElementById('m-parada-oper-min')?.value)||0;
+  const pManutQtd=+(document.getElementById('m-parada-manut-qtd')?.value)||0;
+  const pManutMin=+(document.getElementById('m-parada-manut-min')?.value)||0;
+  const pOutrasQtd=+(document.getElementById('m-parada-outras-qtd')?.value)||0;
+  const pOutrasMin=+(document.getElementById('m-parada-outras-min')?.value)||0;
+  const totalParadas=pOperQtd+pManutQtd+pOutrasQtd;
+  const totalParadasMin=pOperMin+pManutMin+pOutrasMin;
+  // Exibe
+  const fmtH=min=>min!==null?`${Math.floor(min/60)}h${String(min%60).padStart(2,'0')}`:'—';
+  set('m-horas-bruta-bov',fmtH(brutaBovMin));
+  set('m-horas-bruta-sui',fmtH(brutaSuiMin));
+  set('m-paradas-total',totalParadas);
+  set('m-paradas-min-total',totalParadasMin+' min');
+  // Líquida = bruta - paradas (distribuídas proporcionalmente se ambos bovino e suíno existem)
+  const liqBovMin=brutaBovMin!==null?Math.max(0,brutaBovMin-totalParadasMin):null;
+  const liqSuiMin=brutaSuiMin!==null?Math.max(0,brutaSuiMin-totalParadasMin):null;
+  set('m-horas-liq-bov',fmtH(liqBovMin));
+  set('m-horas-liq-sui',fmtH(liqSuiMin));
+  // Atualiza campos ocultos de horas para compatibilidade com cálculos de produtividade
+  // m-horas-bov e m-horas-sui são usados pelo renderDashboard
+  let elHB=document.getElementById('m-horas-bov');
+  if(!elHB){elHB=document.createElement('input');elHB.type='hidden';elHB.id='m-horas-bov';document.body.appendChild(elHB);}
+  elHB.value=brutaBovMin!==null?(brutaBovMin/60).toFixed(2):'8';
+  let elHS=document.getElementById('m-horas-sui');
+  if(!elHS){elHS=document.createElement('input');elHS.type='hidden';elHS.id='m-horas-sui';document.body.appendChild(elHS);}
+  elHS.value=brutaSuiMin!==null?(brutaSuiMin/60).toFixed(2):'8';
+}
 function calcMiudosTotais(){
   const mac=parseFloat(document.getElementById('m-machos')?.value)||0;
   const fem=parseFloat(document.getElementById('m-femeas')?.value)||0;
@@ -1823,6 +1925,8 @@ function calcMiudosTotais(){
   set('sum-media-bov-m',mediaMacho>0?fn(mediaMacho):'—');
   set('sum-media-bov-f',mediaFemea>0?fn(mediaFemea):'—');
   MIUDOS.forEach(m=>calcML(m.nome));checkMR();
+  // Atualiza peças esperadas na condenação quando número de animais mudar
+  buildCondenacaoForm();
 }
 function checkMR(){const date=document.getElementById('miudos-date')?.value;const tp=parseFloat(document.getElementById('m-total-peso')?.textContent?.replace(/\./g,'').replace(',','.'))||0;const btn=document.getElementById('btn-salvar-miudos');if(btn)btn.disabled=!date||tp<=0;}
 function onMiudosDateChange(){const date=document.getElementById('miudos-date')?.value;const lbl=document.getElementById('miudos-date-label');if(lbl&&date){const[y,m,d]=date.split('-');lbl.textContent=`${d}/${m}/${y}`;}checkMR();atualizarStatusDia(date);}
