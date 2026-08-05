@@ -219,7 +219,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-39</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-40</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -666,7 +666,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="subpanel active" id="sub-miudos-itens">
     <div class="card">
       <div class="card-hdr"><div class="card-title">Miúdos — nº de peças e peso</div><button class="btn btn-primary" onclick="salvarMiudos()" id="btn-salvar-miudos" disabled>Salvar no Sheets</button></div>
-      <div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-form"><thead><tr><th style="width:30%">Miúdo</th><th class="r" style="width:15%">Nº Peças</th><th class="r" style="width:15%">Peso (kg)</th><th class="r" style="width:12%">% Real</th><th class="r" style="width:12%">% Meta</th><th class="r" style="width:16%">Diferença</th></tr></thead><tbody id="tbody-miudos-form"></tbody></table></div>
+      <div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-form"><thead><tr><th style="width:28%">Miúdo</th><th class="r" style="width:12%">Peças</th><th class="r" style="width:18%">Peso (kg)</th><th class="r" style="width:12%">% Real</th><th class="r" style="width:12%">% Meta</th><th class="r" style="width:18%">Diferença</th></tr></thead><tbody id="tbody-miudos-form"></tbody></table></div>
     </div>
   </div>
 
@@ -1806,8 +1806,11 @@ function buildCarcacaForm(){
 
 // ── CONDENAÇÃO IMA ──
 const CONDENADOS=['Cabeça','Língua','Coração','Pulmão','Fígado','Rins','Intestino'];
-// Peças por animal (anatomia bovina)
-const PECAS_POR_ANIMAL={'Cabeça':1,'Língua':1,'Coração':1,'Pulmão':1,'Fígado':1,'Rins':2,'Intestino':1};
+// Peças por animal (anatomia bovina) — usadas para calcular peças esperadas automaticamente
+const PECAS_POR_ANIMAL={'Cabeça':1,'Língua':1,'Coração':1,'Pulmão':1,'Fígado':1,'Rins':2,'Intestino':1,
+  'Aorta':1,'Bucho':1,'Carne Industrial':1,'Colmeia':1,'Couro':1,'Diafragma':1,
+  'Esôfago':1,'Lombinho':1,'Mocotó':4,'Omaso':1,'Rabo':1,'Recortes':1,
+  'Sangria':1,'Tendão':1,'Traqueia':1,'Vergalho':1};
 function buildCondenacaoForm(){
   const tb=document.getElementById('tbody-condenacao-form');if(!tb)return;tb.innerHTML='';
   const totalCab=(+(document.getElementById('m-machos')?.value)||0)+(+(document.getElementById('m-femeas')?.value)||0);
@@ -1856,7 +1859,20 @@ async function carregarBenchmarkDoSheets(){
   }catch(e){/* Benchmark: usando fallback */}
 }
 const MIUDOS=[{nome:'Aorta',meta:0.08},{nome:'Bucho',meta:1.45},{nome:'Carne Industrial',meta:0.65},{nome:'Colmeia',meta:0.23},{nome:'Coração',meta:0.57},{nome:'Couro',meta:17.50},{nome:'Diafragma',meta:0.48},{nome:'Esôfago',meta:0.14},{nome:'Fígado',meta:2.08},{nome:'Língua',meta:0.36},{nome:'Lombinho',meta:0.25},{nome:'Mocotó',meta:0.54},{nome:'Omaso',meta:0.36},{nome:'Pulmão',meta:0.00},{nome:'Rabo',meta:0.57},{nome:'Recortes',meta:0.55},{nome:'Rins',meta:0.00},{nome:'Sangria',meta:1.17},{nome:'Tendão',meta:0.30},{nome:'Traqueia',meta:0.12},{nome:'Vergalho',meta:0.15}];
-function buildMiudosForm(){const tb=document.getElementById('tbody-miudos-form');if(!tb)return;tb.innerHTML='';MIUDOS.forEach(m=>{const tr=document.createElement('tr');tr.innerHTML=`<td style="font-weight:500">${m.nome}</td><td class="r"><input type="number" step="1" min="0" id="mp-${m.nome}-pec" placeholder="0" style="width:80px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r"><input type="number" step="0.01" min="0" id="mp-${m.nome}-kg" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-pct">—</td><td class="r"><input type="number" step="0.01" min="0" value="${m.meta.toFixed(2)}" id="mp-${m.nome}-meta" style="width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-dif">—</td>`;tb.appendChild(tr);});}
+function buildMiudosForm(){
+  const tb=document.getElementById('tbody-miudos-form');if(!tb)return;tb.innerHTML='';
+  const totalCab=(+(document.getElementById('m-machos')?.value)||0)+(+(document.getElementById('m-femeas')?.value)||0);
+  const machos=+(document.getElementById('m-machos')?.value)||0;
+  MIUDOS.forEach(m=>{
+    const ppa=PECAS_POR_ANIMAL[m.nome]||1;
+    // Vergalho só existe em machos
+    const base=m.nome==='Vergalho'?machos:totalCab;
+    const pecas=base*ppa;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-weight:500">${m.nome}${m.nome==='Vergalho'?'<span style="font-size:9px;color:var(--muted);margin-left:4px">só machos</span>':''}</td><td class="r" style="color:var(--muted)" id="mp-${m.nome}-pec">${totalCab>0?pecas:'—'}</td><td class="r"><input type="number" step="0.01" min="0" id="mp-${m.nome}-kg" placeholder="0,00" style="width:90px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-pct">—</td><td class="r"><input type="number" step="0.01" min="0" value="${m.meta.toFixed(2)}" id="mp-${m.nome}-meta" style="width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:right;font-size:12px" oninput="calcML('${m.nome}')"></td><td class="r" id="mp-${m.nome}-dif">—</td>`;
+    tb.appendChild(tr);
+  });
+}
 function calcML(nome){
   const kg=parseFloat(document.getElementById(`mp-${nome}-kg`)?.value)||0;
   // Vergalho só existe em bois (machos) — usa o peso de machos como base, não o total
@@ -1925,7 +1941,13 @@ function calcMiudosTotais(){
   set('sum-media-bov-m',mediaMacho>0?fn(mediaMacho):'—');
   set('sum-media-bov-f',mediaFemea>0?fn(mediaFemea):'—');
   MIUDOS.forEach(m=>calcML(m.nome));checkMR();
-  // Atualiza peças esperadas na condenação quando número de animais mudar
+  // Atualiza peças esperadas na condenação e miúdos quando número de animais mudar
+  // Preserva valores de peso já digitados antes de rebuild
+  const pesosSalvos={};
+  MIUDOS.forEach(m=>{const el=document.getElementById(`mp-${m.nome}-kg`);if(el&&el.value)pesosSalvos[m.nome]=el.value;});
+  buildMiudosForm();
+  // Restaura pesos
+  Object.entries(pesosSalvos).forEach(([nome,val])=>{const el=document.getElementById(`mp-${nome}-kg`);if(el){el.value=val;calcML(nome);}});
   buildCondenacaoForm();
 }
 function checkMR(){const date=document.getElementById('miudos-date')?.value;const tp=parseFloat(document.getElementById('m-total-peso')?.textContent?.replace(/\./g,'').replace(',','.'))||0;const btn=document.getElementById('btn-salvar-miudos');if(btn)btn.disabled=!date||tp<=0;}
@@ -1962,7 +1984,8 @@ async function salvarMiudos(){
   const btn=document.getElementById('btn-salvar-miudos');const al=document.getElementById('miudos-alert');
   btn.disabled=true;btn.textContent='Salvando...';salvarPrecos();
   const mm=MIUDOS.map(m=>{
-    const nr=parseFloat(document.getElementById(`mp-${m.nome}-pec`)?.value)||0;
+    const nrEl=document.getElementById(`mp-${m.nome}-pec`);
+    const nr=nrEl?(parseFloat(nrEl.textContent)||0):0;
     const kg=parseFloat(document.getElementById(`mp-${m.nome}-kg`)?.value)||0;
     // Vergalho só existe em bois (machos) — % calculado sobre peso de machos, não o total
     const base=m.nome==='Vergalho'?pesoMachos:tp;
