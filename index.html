@@ -219,7 +219,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-40</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-41</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -573,25 +573,43 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="sec-hdr">Lançamento diário — <span id="miudos-date-label">selecione uma data</span></div>
 
   <!-- SEÇÃO 1: Data + Animais abatidos -->
-  <div class="two-col" style="margin-bottom:14px">
-    <div class="card">
-      <div class="card-hdr"><div class="card-title">📅 Data de referência</div><input type="date" id="miudos-date" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--text);font-weight:600" onchange="onMiudosDateChange()"></div>
-      <div class="card-body"><div id="miudos-status-dia" style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0">Selecione uma data para ver o status</div></div>
+  <div style="margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div class="param-field" style="margin:0"><label>📅 Data de referência</label><input type="date" id="miudos-date" style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--text);font-weight:600" onchange="onMiudosDateChange()"></div>
+      <div id="miudos-status-dia" style="font-size:12px;color:var(--muted)"></div>
+      <div id="miudos-alert" class="alert hidden" style="margin:0;flex:1"></div>
     </div>
-    <div class="card">
-      <div class="card-hdr"><div class="card-title">🐂 Animais abatidos</div></div>
-      <div class="card-body">
-        <div id="miudos-alert" class="alert hidden"></div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">
-          <div class="param-field"><label>Machos (cabeças)</label><input type="number" id="m-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
-          <div class="param-field"><label>Fêmeas (cabeças)</label><input type="number" id="m-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
-          <div class="param-field"><label>Peso total machos (kg)</label><input type="number" id="m-peso-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
-          <div class="param-field"><label>Peso total fêmeas (kg)</label><input type="number" id="m-peso-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
+    <div class="two-col">
+      <div class="card" style="margin:0;border-left:3px solid var(--bov)">
+        <div class="card-hdr"><div class="card-title">🐂 Bovino</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px">
+            <div class="param-field"><label>Machos (cabeças)</label><input type="number" id="m-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
+            <div class="param-field"><label>Fêmeas (cabeças)</label><input type="number" id="m-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
+            <div class="param-field"><label>Peso total machos (kg)</label><input type="number" id="m-peso-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
+            <div class="param-field"><label>Peso total fêmeas (kg)</label><input type="number" id="m-peso-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            <div class="efic-mini"><div class="efic-mini-label">Total bov</div><div class="efic-mini-val" id="m-total-cab" style="color:var(--bov)">0</div></div>
+            <div class="efic-mini"><div class="efic-mini-label">Peso total</div><div class="efic-mini-val" id="m-total-peso" style="color:var(--bov)">0</div></div>
+            <div class="efic-mini"><div class="efic-mini-label">Média kg/cab</div><div class="efic-mini-val" id="m-media" style="color:var(--bov)">0</div></div>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <div class="efic-mini"><div class="efic-mini-label">Total cabeças</div><div class="efic-mini-val" id="m-total-cab" style="color:var(--bov)">0</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">Peso total (kg)</div><div class="efic-mini-val" id="m-total-peso" style="color:var(--bov)">0</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">Média kg/cab</div><div class="efic-mini-val" id="m-media" style="color:var(--bov)">0</div></div>
+      </div>
+      <div class="card" style="margin:0;border-left:3px solid var(--sui)">
+        <div class="card-hdr"><div class="card-title">🐷 Suíno</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px">
+            <div class="param-field"><label>Machos (cabeças)</label><input type="number" id="m-sui-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
+            <div class="param-field"><label>Fêmeas (cabeças)</label><input type="number" id="m-sui-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
+            <div class="param-field"><label>Peso total machos (kg)</label><input type="number" id="m-sui-peso-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
+            <div class="param-field"><label>Peso total fêmeas (kg)</label><input type="number" id="m-sui-peso-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            <div class="efic-mini"><div class="efic-mini-label">Total suí</div><div class="efic-mini-val" id="m-sui-total-cab" style="color:var(--sui)">0</div></div>
+            <div class="efic-mini"><div class="efic-mini-label">Peso total</div><div class="efic-mini-val" id="m-sui-total-peso" style="color:var(--sui)">0</div></div>
+            <div class="efic-mini"><div class="efic-mini-label">Média kg/cab</div><div class="efic-mini-val" id="m-sui-media" style="color:var(--sui)">0</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1940,15 +1958,21 @@ function calcMiudosTotais(){
   set('vol-media-total',me>0?fn(me):'—');
   set('sum-media-bov-m',mediaMacho>0?fn(mediaMacho):'—');
   set('sum-media-bov-f',mediaFemea>0?fn(mediaFemea):'—');
+  // Suíno
+  const smac=parseFloat(document.getElementById('m-sui-machos')?.value)||0;
+  const sfem=parseFloat(document.getElementById('m-sui-femeas')?.value)||0;
+  const spm=parseFloat(document.getElementById('m-sui-peso-machos')?.value)||0;
+  const spf=parseFloat(document.getElementById('m-sui-peso-femeas')?.value)||0;
+  const stc=smac+sfem;const stp=spm+spf;const sme=stc>0?(stp/stc):0;
+  set('m-sui-total-cab',fn(stc));set('m-sui-total-peso',fn(stp));set('m-sui-media',fn(sme));
   MIUDOS.forEach(m=>calcML(m.nome));checkMR();
-  // Atualiza peças esperadas na condenação e miúdos quando número de animais mudar
-  // Preserva valores de peso já digitados antes de rebuild
-  const pesosSalvos={};
+  const pesosSalvos={};const condSalvos={};
   MIUDOS.forEach(m=>{const el=document.getElementById(`mp-${m.nome}-kg`);if(el&&el.value)pesosSalvos[m.nome]=el.value;});
+  CONDENADOS.forEach(p=>{const el=document.getElementById(`cd-${p}-qtd`);const el2=document.getElementById(`cd-${p}-peso`);if(el&&el.value)condSalvos[p+'_qtd']=el.value;if(el2&&el2.value)condSalvos[p+'_peso']=el2.value;});
   buildMiudosForm();
-  // Restaura pesos
   Object.entries(pesosSalvos).forEach(([nome,val])=>{const el=document.getElementById(`mp-${nome}-kg`);if(el){el.value=val;calcML(nome);}});
   buildCondenacaoForm();
+  Object.entries(condSalvos).forEach(([k,val])=>{const[p,tipo]=k.split('_');const el=document.getElementById(`cd-${p}-${tipo}`);if(el)el.value=val;});
 }
 function checkMR(){const date=document.getElementById('miudos-date')?.value;const tp=parseFloat(document.getElementById('m-total-peso')?.textContent?.replace(/\./g,'').replace(',','.'))||0;const btn=document.getElementById('btn-salvar-miudos');if(btn)btn.disabled=!date||tp<=0;}
 function onMiudosDateChange(){const date=document.getElementById('miudos-date')?.value;const lbl=document.getElementById('miudos-date-label');if(lbl&&date){const[y,m,d]=date.split('-');lbl.textContent=`${d}/${m}/${y}`;}checkMR();atualizarStatusDia(date);}
