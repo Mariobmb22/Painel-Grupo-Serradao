@@ -139,7 +139,10 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 .sum-card-sub{font-size:11px;color:var(--muted);margin-top:4px;font-weight:500}
 .sum-card-sub .err{color:var(--red)}
 .sum-card-sub .ok{color:var(--green)}
-.chart-wrap{position:relative;height:200px}
+.extr-drop{border:2px dashed var(--border);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.extr-drop:hover,.extr-drop.drag{border-color:var(--primary);background:var(--primary-light)}
+.extr-drop.ok{border-color:var(--green-bg);background:#d1fae5;border-style:solid}
+.extr-drop.err{border-color:var(--red-bg);background:var(--red-light);border-style:solid}
 .trend-up{color:var(--red-bg);font-weight:700}
 .trend-dn{color:var(--green-bg);font-weight:700}
 .trend-eq{color:var(--muted);font-weight:700}
@@ -223,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-43</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-46</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -678,14 +681,106 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 
   <!-- SEÇÃO 3: Sub-abas -->
   <div class="subtabs no-print">
-    <div class="subtab active" onclick="showSubtab('miudos','sub-miudos-itens')" id="subtab-miudos-itens">Miúdos</div>
+    <div class="subtab active" onclick="showSubtab('miudos','sub-miudos-extracao')" id="subtab-miudos-extracao">📄 Extrair PDF</div>
+    <div class="subtab" onclick="showSubtab('miudos','sub-miudos-itens')" id="subtab-miudos-itens">Miúdos</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-carcaca')" id="subtab-miudos-carcaca">Carcaça</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-condenacao')" id="subtab-miudos-condenacao">Condenação</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-precos')" id="subtab-miudos-precos">Preços</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-import')" id="subtab-miudos-import">Importar histórico</div>
   </div>
 
-  <div class="subpanel active" id="sub-miudos-itens">
+  <div class="subpanel active" id="sub-miudos-extracao">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">📄 Extrair dados dos relatórios SisAtak</div><div style="font-size:11px;color:var(--muted)">Arraste os PDFs de cada empresa — os campos são preenchidos automaticamente</div></div>
+      <div class="card-body">
+        <div id="extr-alert" class="alert hidden" style="margin-bottom:12px"></div>
+
+        <!-- Frigobet -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <span style="width:8px;height:8px;background:var(--primary);border-radius:50%;display:inline-block"></span>Frigobet
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px">WRPRD004 — Abate + Miúdos</div>
+              <div id="extr-drop-fb-prd" class="extr-drop" ondrop="extHandleDrop(event,'fb-prd')" ondragover="extDragOver(event)" ondragleave="extDragLeave(event)" onclick="document.getElementById('extr-file-fb-prd').click()">
+                <div style="font-size:18px">📊</div><div style="font-size:11px;font-weight:600;color:var(--primary)">WRPRD004</div>
+                <div id="extr-res-fb-prd" style="font-size:10px;font-weight:600;margin-top:4px"></div>
+              </div>
+              <input type="file" id="extr-file-fb-prd" accept=".pdf" style="display:none" onchange="extHandleFile(event,'fb-prd')">
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px">WRABT650 — Resumo do Abate</div>
+              <div id="extr-drop-fb-abt" class="extr-drop" ondrop="extHandleDrop(event,'fb-abt')" ondragover="extDragOver(event)" ondragleave="extDragLeave(event)" onclick="document.getElementById('extr-file-fb-abt').click()">
+                <div style="font-size:18px">🐂</div><div style="font-size:11px;font-weight:600;color:var(--primary)">WRABT650</div>
+                <div id="extr-res-fb-abt" style="font-size:10px;font-weight:600;margin-top:4px"></div>
+              </div>
+              <input type="file" id="extr-file-fb-abt" accept=".pdf" style="display:none" onchange="extHandleFile(event,'fb-abt')">
+            </div>
+          </div>
+        </div>
+
+        <!-- Serradão -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <span style="width:8px;height:8px;background:#c2410c;border-radius:50%;display:inline-block"></span>Serradão
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px">WRABT012 — Resumo do Abate</div>
+              <div id="extr-drop-serr-abt" class="extr-drop" ondrop="extHandleDrop(event,'serr-abt')" ondragover="extDragOver(event)" ondragleave="extDragLeave(event)" onclick="document.getElementById('extr-file-serr-abt').click()">
+                <div style="font-size:18px">🐂</div><div style="font-size:11px;font-weight:600;color:#c2410c">WRABT012</div>
+                <div id="extr-res-serr-abt" style="font-size:10px;font-weight:600;margin-top:4px"></div>
+              </div>
+              <input type="file" id="extr-file-serr-abt" accept=".pdf" style="display:none" onchange="extHandleFile(event,'serr-abt')">
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px">WRMVE002 — Miúdos</div>
+              <div id="extr-drop-serr-miu" class="extr-drop" ondrop="extHandleDrop(event,'serr-miu')" ondragover="extDragOver(event)" ondragleave="extDragLeave(event)" onclick="document.getElementById('extr-file-serr-miu').click()">
+                <div style="font-size:18px">🫀</div><div style="font-size:11px;font-weight:600;color:#c2410c">WRMVE002</div>
+                <div id="extr-res-serr-miu" style="font-size:10px;font-weight:600;margin-top:4px"></div>
+              </div>
+              <input type="file" id="extr-file-serr-miu" accept=".pdf" style="display:none" onchange="extHandleFile(event,'serr-miu')">
+            </div>
+          </div>
+        </div>
+
+        <!-- Frigovitta -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <span style="width:8px;height:8px;background:#065f46;border-radius:50%;display:inline-block"></span>Frigovitta
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 3fr;gap:10px">
+            <div>
+              <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px">WRABT012 — Resumo do Abate</div>
+              <div id="extr-drop-fv-abt" class="extr-drop" ondrop="extHandleDrop(event,'fv-abt')" ondragover="extDragOver(event)" ondragleave="extDragLeave(event)" onclick="document.getElementById('extr-file-fv-abt').click()">
+                <div style="font-size:18px">🐂</div><div style="font-size:11px;font-weight:600;color:#065f46">WRABT012</div>
+                <div id="extr-res-fv-abt" style="font-size:10px;font-weight:600;margin-top:4px"></div>
+              </div>
+              <input type="file" id="extr-file-fv-abt" accept=".pdf" style="display:none" onchange="extHandleFile(event,'fv-abt')">
+            </div>
+            <div style="display:flex;align-items:center;padding:12px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);font-size:11px;color:var(--muted)">
+              ℹ️ Frigovitta ainda não tem relatório de miúdos — apenas o abate é extraído por enquanto.
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview + Aplicar -->
+        <div id="extr-preview" style="display:none;border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Dados extraídos — confira antes de aplicar</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px" id="extr-pv-resumo"></div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Miúdos extraídos</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:14px" id="extr-pv-miudos"></div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn btn-primary" onclick="extAplicar()">✓ Preencher formulário com esses dados</button>
+            <button class="btn btn-sec" onclick="extLimpar()">🗑 Limpar tudo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subpanel" id="sub-miudos-itens">
     <div class="card">
       <div class="card-hdr"><div class="card-title">Miúdos — nº de peças e peso</div><button class="btn btn-primary" onclick="salvarMiudos()" id="btn-salvar-miudos" disabled>Salvar no Sheets</button></div>
       <div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-form"><thead><tr><th style="width:28%">Miúdo</th><th class="r" style="width:12%">Peças</th><th class="r" style="width:18%">Peso (kg)</th><th class="r" style="width:12%">% Real</th><th class="r" style="width:12%">% Meta</th><th class="r" style="width:18%">Diferença</th></tr></thead><tbody id="tbody-miudos-form"></tbody></table></div>
@@ -1123,7 +1218,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       filtroAtual={ano:ultimaData.slice(0,4),mes:ultimaData.slice(5,7),dia:ultimaData.slice(8,10),empresa:''};
       atualizarResumoFiltro();
       renderDashboard();
-      // Carrega miúdos DEPOIS do histórico, não em paralelo
+      verificarDadosExtracao();
       setTimeout(()=>carregarMiudosCompletoDoSheets().then(d=>{miudosCache=d;renderAnaliseComparativa();}), 2000);
     }else{loadDemoData();}
   }catch(e){loadDemoData();}
@@ -1910,6 +2005,50 @@ function calcML(nome){
   checkMR();
 }
 // Calcula horas brutas, paradas e líquidas a partir de início/fim do box
+// Carrega dados extraídos pelo extrator de PDFs
+function carregarDadosExtracao(d){
+  if(!d)return;
+  // Data
+  if(d.data){
+    const el=document.getElementById('miudos-date');
+    if(el){el.value=d.data;onMiudosDateChange();}
+  }
+  // Bovino
+  if(d.bov){
+    const set=(id,v)=>{const el=document.getElementById(id);if(el&&v)el.value=v;};
+    set('m-machos',d.bov.machos||'');
+    set('m-femeas',d.bov.femeas||'');
+    set('m-peso-machos',d.bov.pesoMachos||'');
+    set('m-peso-femeas',d.bov.pesoFemeas||'');
+    calcMiudosTotais();
+  }
+  // Suíno
+  if(d.sui){
+    const set=(id,v)=>{const el=document.getElementById(id);if(el&&v)el.value=v;};
+    set('m-sui-machos','');set('m-sui-femeas',d.sui.total||'');
+    set('m-sui-peso-machos','');set('m-sui-peso-femeas',d.sui.pesoTotal||'');
+    calcMiudosTotais();
+  }
+  // Miúdos
+  if(d.miudos){
+    Object.entries(d.miudos).forEach(([nome,peso])=>{
+      const el=document.getElementById(`mp-${nome}-kg`);
+      if(el){el.value=peso;calcML(nome);}
+    });
+  }
+  // Vai para a aba de lançamento
+  showTab('miudos');
+  showSubtab('miudos','sub-miudos-itens');
+  // Mostra confirmação
+  const al=document.getElementById('miudos-alert');
+  if(al){al.className='alert ok';al.textContent=`✓ Dados carregados do extrator — ${d.empresa} · ${d.data?.split('-').reverse().join('/')}`;setTimeout(()=>{al.className='alert hidden';},5000);}
+}
+
+// Verifica ao abrir se tem dados pendentes do extrator
+function verificarDadosExtracao(){
+  const s=sessionStorage.getItem('frigobet-extracao');
+  if(s){try{carregarDadosExtracao(JSON.parse(s));sessionStorage.removeItem('frigobet-extracao');}catch(e){}}
+}
 function calcHorasBox(){
   function calcDuracao(idInicio,idFim){
     const ini=document.getElementById(idInicio)?.value;
@@ -2060,7 +2199,154 @@ function setEfic(vi,bi,pct,tipo){const el=document.getElementById(vi);const bar=
 function setPct(id,pct){const el=document.getElementById(id);if(!el)return;el.textContent=(pct>=0?'+':'') +pct.toFixed(1)+'%';el.className='trend '+(pct>=-5?'up':'down');}
 function showAlert(id,type,msg){const el=document.getElementById(id);if(!el)return;el.className='alert '+(type||'info');el.innerHTML=(type==='ok'?'✓ ':type==='err'?'✕ ':'') +msg;el.classList.remove('hidden');}
 // ── ANÁLISE COMPARATIVA DE RENDIMENTO ──
-// ── ANÁLISE COMPARATIVA ──
+// ── EXTRATOR DE PDFs SisAtak ──
+const EXT_MAP_MIUDOS={'FIGADO':'Fígado','CORACAO':'Coração','DOBRADINHA':'Bucho','RUMEN':'Bucho',
+  'LINGUA':'Língua','RABADA':'Rabo','RABO':'Rabo','RETICULO':'Omaso','OMASO':'Omaso',
+  'LOMBINHO':'Lombinho','SANGRIA':'Sangria','CUPIM':'Carne Industrial',
+  'CARNE DE CABECA':'Carne Industrial','CARNE INDUSTRIAL':'Carne Industrial',
+  'RECORTES':'Recortes','DIAFRAGMA':'Diafragma','FRALDINHA DO DIAFRAGMA':'Diafragma',
+  'MOCOTO':'Mocotó','RINS':'Rins','PULMAO':'Pulmão','TRAQUEIA':'Traqueia',
+  'VERGALHO':'Vergalho','ESOFAGO':'Esôfago','TENDOES':'Tendão','AORTA':'Aorta'};
+let extDados={empresa:'',data:'',bov:{machos:0,pesoMachos:0,femeas:0,pesoFemeas:0},sui:{total:0,pesoTotal:0},miudos:{}};
+
+function extDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag');}
+function extDragLeave(e){e.currentTarget.classList.remove('drag');}
+function extHandleDrop(e,slot){e.preventDefault();e.currentTarget.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)extProcessar(f,slot);}
+function extHandleFile(e,slot){const f=e.target.files[0];if(f)extProcessar(f,slot);}
+
+// Mapa de slots para empresa e tipo de relatório esperado
+const EXT_SLOT_MAP={
+  'fb-prd': {empresa:'Frigobet', tipo:'WRPRD004'},
+  'fb-abt': {empresa:'Frigobet', tipo:'WRABT650'},
+  'serr-abt': {empresa:'Serradão', tipo:'WRABT012'},
+  'serr-miu': {empresa:'Serradão', tipo:'WRMVE002'},
+  'fv-abt': {empresa:'Frigovitta', tipo:'WRABT012'},
+};
+
+async function extExtrairTexto(file){
+  const ab=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+  let txt='';
+  for(let i=1;i<=pdf.numPages;i++){
+    const pg=await pdf.getPage(i);
+    const tc=await pg.getTextContent();
+    txt+=tc.items.map(s=>s.str).join(' ')+'\n';
+  }
+  return txt;
+}
+
+function extParsePeso(s){return parseFloat((s||'').replace(/\./g,'').replace(',','.'))||0;}
+
+async function extProcessar(file,slot){
+  const dz=document.getElementById('extr-drop-'+slot);
+  const res=document.getElementById('extr-res-'+slot);
+  if(!dz||!res)return;
+  dz.className='extr-drop';res.textContent='⏳ Lendo...';res.style.color='var(--muted)';
+  try{
+    const txt=await extExtrairTexto(file);
+    const slotInfo=EXT_SLOT_MAP[slot]||{};
+    const emp=slotInfo.empresa||'';
+    // Data
+    let dm=txt.match(/(\d{4}-\d{2}-\d{2})/)||txt.match(/entre\s+(\d{2}\/\d{2}\/\d{4})/)||txt.match(/(\d{2})\/(\d{2})\/(\d{2,4})\s+\d{2}:\d{2}/);
+    if(dm){const d=dm[1];if(d.includes('-'))extDados.data=d;else if(d.includes('/')){const[dd,mm,yy]=d.split('/');extDados.data=`${yy.length===2?'20'+yy:yy}-${mm}-${dd}`;}}
+    if(emp)extDados.empresa=extDados.empresa||emp;
+    const tipo=slotInfo.tipo||'';
+    if(tipo==='WRABT012'){
+      const suiM=txt.match(/PORCO[^0-9]*(\d+)[^0-9]*([\d.]+,\d+)/);
+      const boiM=txt.match(/BOI VIVO[^0-9]*(\d+)[^0-9]*([\d.]+,\d+)/);
+      const vacaM=txt.match(/VACA VIVA[^0-9]*(\d+)[^0-9]*([\d.]+,\d+)/);
+      if(emp==='Serradão'){
+        if(suiM){extDados.sui.total+=parseInt(suiM[1]);extDados.sui.pesoTotal+=extParsePeso(suiM[2]);}
+        if(boiM){extDados.bov.machos+=parseInt(boiM[1]);extDados.bov.pesoMachos+=extParsePeso(boiM[2]);}
+      } else if(emp==='Frigovitta'){
+        if(boiM){extDados.bov.machos+=parseInt(boiM[1]);extDados.bov.pesoMachos+=extParsePeso(boiM[2]);}
+        if(vacaM){extDados.bov.femeas+=parseInt(vacaM[1]);extDados.bov.pesoFemeas+=extParsePeso(vacaM[2]);}
+      }
+    } else if(tipo==='WRABT650'){
+      const vacaM=txt.match(/VACA PARA ABATE\s+([\d]+)\s+([\d.]+,\d+)/);
+      const suiM=txt.match(/SUINO PARA ABATE\s+([\d]+)\s+([\d.]+,\d+)/);
+      if(vacaM){extDados.bov.femeas+=parseInt(vacaM[1]);extDados.bov.pesoFemeas+=extParsePeso(vacaM[2]);}
+      if(suiM){extDados.sui.total+=parseInt(suiM[1]);extDados.sui.pesoTotal+=extParsePeso(suiM[2]);}
+    } else if(tipo==='WRPRD004'){
+      const femM=txt.match(/F.meas Abatidas\s+([\d]+)\s+CB\s+([\d.]+,\d+)/);
+      const macM=txt.match(/Machos Abatidos\s+([\d]+)\s+CB\s+([\d.]+,\d+)/);
+      if(femM){extDados.bov.femeas+=parseInt(femM[1]);extDados.bov.pesoFemeas+=extParsePeso(femM[2]);}
+      if(macM){extDados.bov.machos+=parseInt(macM[1]);extDados.bov.pesoMachos+=extParsePeso(macM[2]);}
+      extExtrairMiudosPRD004(txt);
+    } else if(tipo==='WRMVE002'){
+      extExtrairMiudosMVE002(txt);
+    }
+    dz.className='extr-drop ok';res.textContent='✓ Carregado';res.style.color='var(--green)';
+    extAtualizarPreview();
+  }catch(e){dz.className='extr-drop err';res.textContent='✕ '+e.message;res.style.color='var(--red)';}
+}
+
+function extExtrairMiudosPRD004(txt){
+  const padroes=[['CARNE DE CABECA|CARNE INDUSTRIAL','Carne Industrial'],['RECORTES','Recortes'],
+    ['FRALDINHA DO DIAFRAGMA|DIAFRAGMA','Diafragma'],['OMASO BOVINO','Omaso'],['MOCOTO','Mocotó'],
+    ['FIGADO','Fígado'],['CORACAO','Coração'],['LINGUA','Língua'],['RABO','Rabo'],
+    ['RETICULO','Omaso'],['RUMEN','Bucho'],['RINS','Rins'],['PULMAO','Pulmão'],
+    ['TRAQUEIA','Traqueia'],['VERGALHO','Vergalho'],['ESOFAGO','Esôfago'],
+    ['TENDOES','Tendão'],['AORTA','Aorta'],['SANGRIA','Sangria'],['CUPIM','Carne Industrial'],['LOMBINHO','Lombinho']];
+  const grupoM=txt.split('GRUPO: M')[1]||txt;
+  padroes.forEach(([pat,nome])=>{
+    const re=new RegExp('('+pat+')[\\s\\S]{0,300}?(\\d{1,4}[.,]\\d{3})','i');
+    const m=grupoM.match(re);
+    if(m){const p=extParsePeso(m[2]);if(p>0){if(!extDados.miudos[nome])extDados.miudos[nome]=0;extDados.miudos[nome]+=p;}}
+  });
+}
+
+function extExtrairMiudosMVE002(txt){
+  const mapa=[['FIGADO','Fígado'],['CORACAO','Coração'],['DOBRADINHA','Bucho'],
+    ['LINGUA','Língua'],['RABADA','Rabo'],['LOMBINHO','Lombinho'],
+    ['SANGRIA','Sangria'],['CUPIM','Carne Industrial'],['RETICULO','Omaso']];
+  const nums=(txt.match(/\d{1,4},\d{3}/g)||[]).map(extParsePeso).filter(p=>p>0&&p<50000);
+  let i=0;
+  mapa.forEach(([k,v])=>{if(txt.toUpperCase().includes(k)&&nums[i]!==undefined){
+    if(!extDados.miudos[v])extDados.miudos[v]=0;extDados.miudos[v]+=nums[i];i++;}});
+}
+
+function extAtualizarPreview(){
+  const d=extDados;document.getElementById('extr-preview').style.display='';
+  const fmt=n=>n?n.toLocaleString('pt-BR',{maximumFractionDigits:2}):'0';
+  const pv=document.getElementById('extr-pv-resumo');
+  pv.innerHTML=[
+    ['Empresa',d.empresa||'—',''],['Data',d.data?d.data.split('-').reverse().join('/'):'—',''],
+    ['Machos bov',fmt(d.bov.machos),'cab'],['Peso machos',fmt(d.bov.pesoMachos),'kg'],
+    ['Fêmeas bov',fmt(d.bov.femeas),'cab'],['Peso fêmeas',fmt(d.bov.pesoFemeas),'kg'],
+    ['Total suíno',fmt(d.sui.total),'cab'],['Peso suíno',fmt(d.sui.pesoTotal),'kg'],
+  ].map(([l,v,s])=>`<div style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:2px">${l}</div><div style="font-size:15px;font-weight:800">${v}</div>${s?`<div style="font-size:10px;color:var(--muted)">${s}</div>`:''}</div>`).join('');
+  const pm=document.getElementById('extr-pv-miudos');
+  const miudos=Object.entries(d.miudos).filter(([,v])=>v>0);
+  pm.innerHTML=miudos.length?miudos.map(([n,v])=>`<div style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:2px">${n}</div><div style="font-size:14px;font-weight:800">${fmt(v)} kg</div></div>`).join(''):'<div style="color:var(--muted);font-size:12px">Nenhum miúdo extraído ainda — arraste o relatório de miúdos</div>';
+}
+
+function extAplicar(){
+  const d=extDados;
+  if(d.data){const el=document.getElementById('miudos-date');if(el){el.value=d.data;onMiudosDateChange();}}
+  const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  setEl('m-machos',d.bov.machos||'');setEl('m-femeas',d.bov.femeas||'');
+  setEl('m-peso-machos',d.bov.pesoMachos||'');setEl('m-peso-femeas',d.bov.pesoFemeas||'');
+  setEl('m-sui-femeas',d.sui.total||'');setEl('m-sui-peso-femeas',d.sui.pesoTotal||'');
+  calcMiudosTotais();
+  Object.entries(d.miudos).forEach(([nome,peso])=>{
+    const el=document.getElementById(`mp-${nome}-kg`);if(el){el.value=peso;calcML(nome);}
+  });
+  showSubtab('miudos','sub-miudos-itens');
+  const al=document.getElementById('miudos-alert');
+  if(al){al.className='alert ok';al.textContent=`✓ Dados do ${d.empresa} carregados — confira e complete as informações restantes`;setTimeout(()=>al.className='alert hidden',5000);}
+}
+
+function extLimpar(){
+  extDados={empresa:'',data:'',bov:{machos:0,pesoMachos:0,femeas:0,pesoFemeas:0},sui:{total:0,pesoTotal:0},miudos:{}};
+  Object.keys(EXT_SLOT_MAP).forEach(slot=>{
+    const dz=document.getElementById('extr-drop-'+slot);
+    const res=document.getElementById('extr-res-'+slot);
+    const fi=document.getElementById('extr-file-'+slot);
+    if(dz)dz.className='extr-drop';if(res)res.textContent='';if(fi)fi.value='';
+  });
+  document.getElementById('extr-preview').style.display='none';
+}
 function popularCompBase(){
   const selAno=document.getElementById('comp-base-ano');if(!selAno||!historico.length)return;
   const anos=[...new Set(historico.map(h=>h.data.slice(0,4)))].sort((a,b)=>a-b);
