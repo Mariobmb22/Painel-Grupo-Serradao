@@ -2678,6 +2678,9 @@ async function calcPesoMedio(diasFiltrados){
     if(!pesosCache) pesosCache=await carregarPesosDoSheets();
     // Diagnóstico: loga primeiras linhas para ver o que chegou
     if(pesosCache.length>0) console.log('[Peso] Amostra:', JSON.stringify(pesosCache[0]));
+    console.log('[Peso] diasFiltrados:', diasFiltrados.length, '| pesosCache:', pesosCache.length);
+    console.log('[Peso] datasFiltro ex:', [...datasSet].slice(0,3));
+    console.log('[Peso] datasPesos ex:', pesosCache.slice(0,3).map(p=>p.data));
     const datasSet=new Set(diasFiltrados.map(d=>d.data));
     const fn=v=>v>0?v.toFixed(1):'—';
     const regsBov=pesosCache.filter(p=>datasSet.has(p.data)&&p.pesoBovFV>0);
