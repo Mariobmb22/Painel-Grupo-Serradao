@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-46</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-48</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -579,45 +579,31 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 <div class="panel" id="panel-miudos">
   <div class="sec-hdr">Lançamento diário — <span id="miudos-date-label">selecione uma data</span></div>
 
-  <!-- SEÇÃO 1: Data + Animais abatidos -->
-  <div style="margin-bottom:14px">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-      <div class="param-field" style="margin:0"><label>📅 Data de referência</label><input type="date" id="miudos-date" style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--text);font-weight:600" onchange="onMiudosDateChange()"></div>
-      <div id="miudos-status-dia" style="font-size:12px;color:var(--muted)"></div>
-      <div id="miudos-alert" class="alert hidden" style="margin:0;flex:1"></div>
-    </div>
-    <div class="two-col">
-      <div class="card" style="margin:0;border-left:3px solid var(--bov)">
-        <div class="card-hdr"><div class="card-title">🐂 Bovino</div></div>
-        <div class="card-body">
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px">
-            <div class="param-field"><label>Machos (cabeças)</label><input type="number" id="m-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
-            <div class="param-field"><label>Fêmeas (cabeças)</label><input type="number" id="m-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
-            <div class="param-field"><label>Peso total machos (kg)</label><input type="number" id="m-peso-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
-            <div class="param-field"><label>Peso total fêmeas (kg)</label><input type="number" id="m-peso-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-            <div class="efic-mini"><div class="efic-mini-label">Total bov</div><div class="efic-mini-val" id="m-total-cab" style="color:var(--bov)">0</div></div>
-            <div class="efic-mini"><div class="efic-mini-label">Peso total</div><div class="efic-mini-val" id="m-total-peso" style="color:var(--bov)">0</div></div>
-            <div class="efic-mini"><div class="efic-mini-label">Média kg/cab</div><div class="efic-mini-val" id="m-media" style="color:var(--bov)">0</div></div>
-          </div>
-        </div>
-      </div>
-      <div class="card" style="margin:0;border-left:3px solid var(--sui)">
-        <div class="card-hdr"><div class="card-title">🐷 Suíno</div></div>
-        <div class="card-body">
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px">
-            <div class="param-field"><label>Machos (cabeças)</label><input type="number" id="m-sui-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
-            <div class="param-field"><label>Fêmeas (cabeças)</label><input type="number" id="m-sui-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
-            <div class="param-field"><label>Peso total machos (kg)</label><input type="number" id="m-sui-peso-machos" placeholder="0" oninput="calcMiudosTotais()"></div>
-            <div class="param-field"><label>Peso total fêmeas (kg)</label><input type="number" id="m-sui-peso-femeas" placeholder="0" oninput="calcMiudosTotais()"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-            <div class="efic-mini"><div class="efic-mini-label">Total suí</div><div class="efic-mini-val" id="m-sui-total-cab" style="color:var(--sui)">0</div></div>
-            <div class="efic-mini"><div class="efic-mini-label">Peso total</div><div class="efic-mini-val" id="m-sui-total-peso" style="color:var(--sui)">0</div></div>
-            <div class="efic-mini"><div class="efic-mini-label">Média kg/cab</div><div class="efic-mini-val" id="m-sui-media" style="color:var(--sui)">0</div></div>
-          </div>
-        </div>
+  <!-- CAMPOS OCULTOS para compatibilidade com cálculos (preenchidos pelo extrator) -->
+  <input type="hidden" id="m-machos" value="0"><input type="hidden" id="m-femeas" value="0">
+  <input type="hidden" id="m-peso-machos" value="0"><input type="hidden" id="m-peso-femeas" value="0">
+  <input type="hidden" id="m-sui-machos" value="0"><input type="hidden" id="m-sui-femeas" value="0">
+  <input type="hidden" id="m-sui-peso-machos" value="0"><input type="hidden" id="m-sui-peso-femeas" value="0">
+  <div id="m-total-cab" style="display:none">0</div>
+  <div id="m-total-peso" style="display:none">0</div>
+  <div id="m-media" style="display:none">0</div>
+  <div id="m-sui-total-cab" style="display:none">0</div>
+  <div id="m-sui-total-peso" style="display:none">0</div>
+  <div id="m-sui-media" style="display:none">0</div>
+
+  <!-- SEÇÃO 1: Data + Resumo extraído -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+    <div class="param-field" style="margin:0"><label>📅 Data de referência</label><input type="date" id="miudos-date" style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--text);font-weight:600" onchange="onMiudosDateChange()"></div>
+    <div id="miudos-status-dia" style="font-size:12px;color:var(--muted)"></div>
+    <div id="miudos-alert" class="alert hidden" style="margin:0;flex:1"></div>
+  </div>
+
+  <!-- Resumo do que o extrator preencheu -->
+  <div id="extr-resumo-card" style="display:none;margin-bottom:14px">
+    <div class="card" style="border-left:3px solid var(--green-bg)">
+      <div class="card-hdr"><div class="card-title" style="color:var(--green)">✓ Dados extraídos dos PDFs</div><button class="btn btn-sec" style="font-size:11px;padding:4px 10px" onclick="extLimpar()">Limpar</button></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px" id="extr-resumo-items"></div>
       </div>
     </div>
   </div>
@@ -626,9 +612,10 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="card" style="margin-bottom:14px">
     <div class="card-hdr"><div class="card-title">⏱️ Horários de abate e paradas</div></div>
     <div class="card-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px">
+      <!-- Horários bovino + suíno -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
         <div style="border:1px solid var(--border);border-radius:var(--r);padding:12px">
-          <div style="font-size:12px;font-weight:700;color:var(--bov);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Bovino</div>
+          <div style="font-size:12px;font-weight:700;color:var(--bov);margin-bottom:8px;text-transform:uppercase">🐂 Bovino</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="param-field"><label>Início do box</label><input type="time" id="m-box-inicio-bov" oninput="calcHorasBox()"></div>
             <div class="param-field"><label>Fim do box</label><input type="time" id="m-box-fim-bov" oninput="calcHorasBox()"></div>
@@ -637,7 +624,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
           </div>
         </div>
         <div style="border:1px solid var(--border);border-radius:var(--r);padding:12px">
-          <div style="font-size:12px;font-weight:700;color:var(--sui);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Suíno</div>
+          <div style="font-size:12px;font-weight:700;color:var(--sui);margin-bottom:8px;text-transform:uppercase">🐷 Suíno</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="param-field"><label>Início do box</label><input type="time" id="m-box-inicio-sui" oninput="calcHorasBox()"></div>
             <div class="param-field"><label>Fim do box</label><input type="time" id="m-box-fim-sui" oninput="calcHorasBox()"></div>
@@ -646,31 +633,15 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
           </div>
         </div>
       </div>
-      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Paradas no dia</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
-        <div style="border:1px solid var(--border);border-radius:var(--r);padding:10px">
-          <div style="font-size:11px;font-weight:600;color:var(--yellow);margin-bottom:6px">🔧 Operacional</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <div class="param-field"><label>Qtd</label><input type="number" id="m-parada-oper-qtd" placeholder="0" min="0" oninput="calcHorasBox()"></div>
-            <div class="param-field"><label>Duração (min)</label><input type="number" id="m-parada-oper-min" placeholder="0" min="0" oninput="calcHorasBox()"></div>
-          </div>
-        </div>
-        <div style="border:1px solid var(--border);border-radius:var(--r);padding:10px">
-          <div style="font-size:11px;font-weight:600;color:var(--red);margin-bottom:6px">🛠️ Manutenção</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <div class="param-field"><label>Qtd</label><input type="number" id="m-parada-manut-qtd" placeholder="0" min="0" oninput="calcHorasBox()"></div>
-            <div class="param-field"><label>Duração (min)</label><input type="number" id="m-parada-manut-min" placeholder="0" min="0" oninput="calcHorasBox()"></div>
-          </div>
-        </div>
-        <div style="border:1px solid var(--border);border-radius:var(--r);padding:10px">
-          <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">📋 Outras</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <div class="param-field"><label>Qtd</label><input type="number" id="m-parada-outras-qtd" placeholder="0" min="0" oninput="calcHorasBox()"></div>
-            <div class="param-field"><label>Duração (min)</label><input type="number" id="m-parada-outras-min" placeholder="0" min="0" oninput="calcHorasBox()"></div>
-          </div>
-        </div>
+
+      <!-- Paradas individuais -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Paradas</div>
+        <button class="btn btn-sec" style="font-size:11px;padding:4px 12px" onclick="adicionarParada()">+ Adicionar parada</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      <div id="paradas-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+      <!-- Resumo -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px">
         <div class="efic-mini" style="border-left:3px solid var(--muted)"><div class="efic-mini-label">Total paradas</div><div class="efic-mini-val" id="m-paradas-total" style="font-size:14px">0</div></div>
         <div class="efic-mini" style="border-left:3px solid var(--red)"><div class="efic-mini-label">Tempo parado</div><div class="efic-mini-val" id="m-paradas-min-total" style="font-size:14px;color:var(--red)">0 min</div></div>
         <div class="efic-mini" style="border-left:3px solid var(--bov)"><div class="efic-mini-label">Hora líquida bov</div><div class="efic-mini-val" id="m-horas-liq-bov" style="font-size:14px;color:var(--bov)">—</div></div>
@@ -702,7 +673,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div>
-              <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px">WRPRD004 — Abate + Miúdos</div>
+              <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px">WRPRD004 — Miúdos (use WRABT650 para animais)</div>
               <div id="extr-drop-fb-prd" class="extr-drop" ondrop="extHandleDrop(event,'fb-prd')" ondragover="extDragOver(event)" ondragleave="extDragLeave(event)" onclick="document.getElementById('extr-file-fb-prd').click()">
                 <div style="font-size:18px">📊</div><div style="font-size:11px;font-weight:600;color:var(--primary)">WRPRD004</div>
                 <div id="extr-res-fb-prd" style="font-size:10px;font-weight:600;margin-top:4px"></div>
@@ -2004,7 +1975,6 @@ function calcML(nome){
   if(de){de.textContent=(dif>=0?'+':'') +dif.toFixed(2)+'%';de.style.color=dif>=0?'var(--green)':'var(--red-bg)';}
   checkMR();
 }
-// Calcula horas brutas, paradas e líquidas a partir de início/fim do box
 // Carrega dados extraídos pelo extrator de PDFs
 function carregarDadosExtracao(d){
   if(!d)return;
@@ -2049,45 +2019,50 @@ function verificarDadosExtracao(){
   const s=sessionStorage.getItem('frigobet-extracao');
   if(s){try{carregarDadosExtracao(JSON.parse(s));sessionStorage.removeItem('frigobet-extracao');}catch(e){}}
 }
+let paradasLista=[];
+function adicionarParada(){
+  const id=Date.now();
+  paradasLista.push({id,inicio:'',fim:'',tipo:'Operacional',local:'',durMin:0});
+  renderParadas();
+}
+function removerParada(id){
+  paradasLista=paradasLista.filter(p=>p.id!==id);
+  renderParadas();calcHorasBox();
+}
+function renderParadas(){
+  const el=document.getElementById('paradas-lista');if(!el)return;
+  if(!paradasLista.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">Nenhuma parada registrada</div>';return;}
+  el.innerHTML=paradasLista.map(p=>`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr auto;gap:8px;align-items:end;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px">
+    <div class="param-field" style="margin:0"><label>Início</label><input type="time" value="${p.inicio}" onchange="updateParada(${p.id},'inicio',this.value)" style="width:100%"></div>
+    <div class="param-field" style="margin:0"><label>Fim</label><input type="time" value="${p.fim}" onchange="updateParada(${p.id},'fim',this.value)" style="width:100%"></div>
+    <div class="param-field" style="margin:0"><label>Tipo</label>
+      <select onchange="updateParada(${p.id},'tipo',this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
+        <option ${p.tipo==='Operacional'?'selected':''}>Operacional</option>
+        <option ${p.tipo==='Manutenção'?'selected':''}>Manutenção</option>
+        <option ${p.tipo==='Outras'?'selected':''}>Outras</option>
+      </select></div>
+    <div class="param-field" style="margin:0"><label>Local (a definir)</label><input type="text" value="${p.local}" placeholder="Ex: Linha bovino" oninput="updateParada(${p.id},'local',this.value)" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"></div>
+    <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:2px">
+      <span style="font-size:10px;color:var(--muted);white-space:nowrap">${p.durMin>0?p.durMin+' min':'—'}</span>
+      <button onclick="removerParada(${p.id})" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);background:var(--white);cursor:pointer;color:var(--red);font-size:11px">✕</button>
+    </div></div>`).join('');
+}
+function updateParada(id,campo,valor){
+  const p=paradasLista.find(x=>x.id===id);if(!p)return;p[campo]=valor;
+  if(p.inicio&&p.fim){const[h1,m1]=p.inicio.split(':').map(Number);const[h2,m2]=p.fim.split(':').map(Number);let min=(h2*60+m2)-(h1*60+m1);if(min<0)min+=24*60;p.durMin=min;}
+  calcHorasBox();
+}
 function calcHorasBox(){
-  function calcDuracao(idInicio,idFim){
-    const ini=document.getElementById(idInicio)?.value;
-    const fim=document.getElementById(idFim)?.value;
-    if(!ini||!fim)return null;
-    const[h1,m1]=ini.split(':').map(Number);const[h2,m2]=fim.split(':').map(Number);
-    let min=(h2*60+m2)-(h1*60+m1);if(min<0)min+=24*60; // overnight
-    return min;
-  }
-  const brutaBovMin=calcDuracao('m-box-inicio-bov','m-box-fim-bov');
-  const brutaSuiMin=calcDuracao('m-box-inicio-sui','m-box-fim-sui');
-  // Paradas
-  const pOperQtd=+(document.getElementById('m-parada-oper-qtd')?.value)||0;
-  const pOperMin=+(document.getElementById('m-parada-oper-min')?.value)||0;
-  const pManutQtd=+(document.getElementById('m-parada-manut-qtd')?.value)||0;
-  const pManutMin=+(document.getElementById('m-parada-manut-min')?.value)||0;
-  const pOutrasQtd=+(document.getElementById('m-parada-outras-qtd')?.value)||0;
-  const pOutrasMin=+(document.getElementById('m-parada-outras-min')?.value)||0;
-  const totalParadas=pOperQtd+pManutQtd+pOutrasQtd;
-  const totalParadasMin=pOperMin+pManutMin+pOutrasMin;
-  // Exibe
-  const fmtH=min=>min!==null?`${Math.floor(min/60)}h${String(min%60).padStart(2,'0')}`:'—';
-  set('m-horas-bruta-bov',fmtH(brutaBovMin));
-  set('m-horas-bruta-sui',fmtH(brutaSuiMin));
-  set('m-paradas-total',totalParadas);
-  set('m-paradas-min-total',totalParadasMin+' min');
-  // Líquida = bruta - paradas (distribuídas proporcionalmente se ambos bovino e suíno existem)
-  const liqBovMin=brutaBovMin!==null?Math.max(0,brutaBovMin-totalParadasMin):null;
-  const liqSuiMin=brutaSuiMin!==null?Math.max(0,brutaSuiMin-totalParadasMin):null;
-  set('m-horas-liq-bov',fmtH(liqBovMin));
-  set('m-horas-liq-sui',fmtH(liqSuiMin));
-  // Atualiza campos ocultos de horas para compatibilidade com cálculos de produtividade
-  // m-horas-bov e m-horas-sui são usados pelo renderDashboard
-  let elHB=document.getElementById('m-horas-bov');
-  if(!elHB){elHB=document.createElement('input');elHB.type='hidden';elHB.id='m-horas-bov';document.body.appendChild(elHB);}
-  elHB.value=brutaBovMin!==null?(brutaBovMin/60).toFixed(2):'8';
-  let elHS=document.getElementById('m-horas-sui');
-  if(!elHS){elHS=document.createElement('input');elHS.type='hidden';elHS.id='m-horas-sui';document.body.appendChild(elHS);}
-  elHS.value=brutaSuiMin!==null?(brutaSuiMin/60).toFixed(2):'8';
+  function dur(i,f){const ini=document.getElementById(i)?.value,fim=document.getElementById(f)?.value;if(!ini||!fim)return null;const[h1,m1]=ini.split(':').map(Number),[h2,m2]=fim.split(':').map(Number);let d=(h2*60+m2)-(h1*60+m1);if(d<0)d+=1440;return d;}
+  const bBov=dur('m-box-inicio-bov','m-box-fim-bov'),bSui=dur('m-box-inicio-sui','m-box-fim-sui');
+  const totMin=paradasLista.reduce((a,p)=>a+p.durMin,0);
+  const fH=m=>m!=null?`${Math.floor(m/60)}h${String(m%60).padStart(2,'0')}`:'—';
+  set('m-horas-bruta-bov',fH(bBov));set('m-horas-bruta-sui',fH(bSui));
+  set('m-paradas-total',paradasLista.length);set('m-paradas-min-total',totMin+' min');
+  set('m-horas-liq-bov',fH(bBov!=null?Math.max(0,bBov-totMin):null));
+  set('m-horas-liq-sui',fH(bSui!=null?Math.max(0,bSui-totMin):null));
+  let hb=document.getElementById('m-horas-bov');if(!hb){hb=document.createElement('input');hb.type='hidden';hb.id='m-horas-bov';document.body.appendChild(hb);}hb.value=bBov!=null?(bBov/60).toFixed(2):'8';
+  let hs=document.getElementById('m-horas-sui');if(!hs){hs=document.createElement('input');hs.type='hidden';hs.id='m-horas-sui';document.body.appendChild(hs);}hs.value=bSui!=null?(bSui/60).toFixed(2):'8';
 }
 function calcMiudosTotais(){
   const mac=parseFloat(document.getElementById('m-machos')?.value)||0;
@@ -2268,10 +2243,8 @@ async function extProcessar(file,slot){
       if(vacaM){extDados.bov.femeas+=parseInt(vacaM[1]);extDados.bov.pesoFemeas+=extParsePeso(vacaM[2]);}
       if(suiM){extDados.sui.total+=parseInt(suiM[1]);extDados.sui.pesoTotal+=extParsePeso(suiM[2]);}
     } else if(tipo==='WRPRD004'){
-      const femM=txt.match(/F.meas Abatidas\s+([\d]+)\s+CB\s+([\d.]+,\d+)/);
-      const macM=txt.match(/Machos Abatidos\s+([\d]+)\s+CB\s+([\d.]+,\d+)/);
-      if(femM){extDados.bov.femeas+=parseInt(femM[1]);extDados.bov.pesoFemeas+=extParsePeso(femM[2]);}
-      if(macM){extDados.bov.machos+=parseInt(macM[1]);extDados.bov.pesoMachos+=extParsePeso(macM[2]);}
+      // WRPRD004 mistura bovino e suíno no campo Machos/Fêmeas Abatidas
+      // Use WRABT650 para animais — aqui só extraímos miúdos
       extExtrairMiudosPRD004(txt);
     } else if(tipo==='WRMVE002'){
       extExtrairMiudosMVE002(txt);
@@ -2323,18 +2296,34 @@ function extAtualizarPreview(){
 
 function extAplicar(){
   const d=extDados;
-  if(d.data){const el=document.getElementById('miudos-date');if(el){el.value=d.data;onMiudosDateChange();}}
+  // Preenche campos ocultos (usados nos cálculos)
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  if(d.data){const el=document.getElementById('miudos-date');if(el){el.value=d.data;onMiudosDateChange();}}
   setEl('m-machos',d.bov.machos||'');setEl('m-femeas',d.bov.femeas||'');
   setEl('m-peso-machos',d.bov.pesoMachos||'');setEl('m-peso-femeas',d.bov.pesoFemeas||'');
-  setEl('m-sui-femeas',d.sui.total||'');setEl('m-sui-peso-femeas',d.sui.pesoTotal||'');
+  setEl('m-sui-machos','');setEl('m-sui-femeas',d.sui.total||'');
+  setEl('m-sui-peso-machos','');setEl('m-sui-peso-femeas',d.sui.pesoTotal||'');
   calcMiudosTotais();
+  // Preenche miúdos
   Object.entries(d.miudos).forEach(([nome,peso])=>{
     const el=document.getElementById(`mp-${nome}-kg`);if(el){el.value=peso;calcML(nome);}
   });
+  // Mostra card de resumo
+  const fmt=n=>n?n.toLocaleString('pt-BR',{maximumFractionDigits:1}):'0';
+  const resumoCard=document.getElementById('extr-resumo-card');
+  const resumoItems=document.getElementById('extr-resumo-items');
+  if(resumoCard&&resumoItems){
+    const itens=[
+      ['Empresa',d.empresa||'—'],['Data',d.data?d.data.split('-').reverse().join('/'):'—'],
+      ['Machos bov',fmt(d.bov.machos)+' cab'],['Fêmeas bov',fmt(d.bov.femeas)+' cab'],
+      ['Peso bov total',fmt(d.bov.pesoMachos+d.bov.pesoFemeas)+' kg'],
+      ['Total suíno',fmt(d.sui.total)+' cab'],['Peso suíno',fmt(d.sui.pesoTotal)+' kg'],
+      ['Miúdos extraídos',Object.keys(d.miudos).filter(k=>d.miudos[k]>0).length+' produtos'],
+    ];
+    resumoItems.innerHTML=itens.map(([l,v])=>`<div style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:2px">${l}</div><div style="font-size:13px;font-weight:700">${v}</div></div>`).join('');
+    resumoCard.style.display='';
+  }
   showSubtab('miudos','sub-miudos-itens');
-  const al=document.getElementById('miudos-alert');
-  if(al){al.className='alert ok';al.textContent=`✓ Dados do ${d.empresa} carregados — confira e complete as informações restantes`;setTimeout(()=>al.className='alert hidden',5000);}
 }
 
 function extLimpar(){
@@ -2346,6 +2335,7 @@ function extLimpar(){
     if(dz)dz.className='extr-drop';if(res)res.textContent='';if(fi)fi.value='';
   });
   document.getElementById('extr-preview').style.display='none';
+  const rc=document.getElementById('extr-resumo-card');if(rc)rc.style.display='none';
 }
 function popularCompBase(){
   const selAno=document.getElementById('comp-base-ano');if(!selAno||!historico.length)return;
