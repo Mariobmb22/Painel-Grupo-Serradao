@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-53</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-55</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -373,9 +373,9 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <div class="card-hdr"><div class="card-title">⚖️ Peso médio por animal</div><span style="font-size:10px;color:var(--muted)">dados do lançamento do dia</span></div>
       <div class="card-body">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div class="efic-mini" style="border-left:3px solid var(--bov);text-align:center"><div class="efic-mini-label">Boi (macho)</div><div class="efic-mini-val" id="sum-media-bov-m" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
-          <div class="efic-mini" style="border-left:3px solid #ec4899;text-align:center"><div class="efic-mini-label">Vaca (fêmea)</div><div class="efic-mini-val" id="sum-media-bov-f" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
-          <div class="efic-mini" style="border-left:3px solid var(--muted);text-align:center"><div class="efic-mini-label">Média total</div><div class="efic-mini-val" id="vol-media-total" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
+          <div class="efic-mini" style="border-left:3px solid var(--bov);text-align:center"><div class="efic-mini-label">Frigovitta</div><div class="efic-mini-val" id="sum-media-bov-m" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
+          <div class="efic-mini" style="border-left:3px solid #ec4899;text-align:center"><div class="efic-mini-label">Serradão</div><div class="efic-mini-val" id="sum-media-bov-f" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
+          <div class="efic-mini" style="border-left:3px solid var(--muted);text-align:center"><div class="efic-mini-label">Média geral</div><div class="efic-mini-val" id="vol-media-total" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
         </div>
       </div>
     </div>
@@ -1737,7 +1737,7 @@ async function carregarCarcacaDoSheets(){
   try{const rows=await sheetsRead('Carcaca');return rows.slice(1).filter(r=>r[0]).map(r=>({data:String(r[0]).slice(0,10),categoria:r[1],cabecas:+r[2]||0,kgCarcaca:+r[3]||0}));}catch(e){return[];}
 }
 async function carregarMiudosCompletoDoSheets(){
-  try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]).map(r=>({data:String(r[0]).slice(0,10),miudo:r[1],nrPecas:+r[2]||0,pesoKg:+r[3]||0,kgTotalAbate:+r[4]||0,pctReal:+r[5]||0,pctMeta:+r[6]||0}));}catch(e){return[];}
+  try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10&&!String(r[0]).startsWith('undefined')).map(r=>({data:String(r[0]).slice(0,10),miudo:r[1],nrPecas:+r[2]||0,pesoKg:+r[3]||0,kgTotalAbate:+r[4]||0,pctReal:+r[5]||0,pctMeta:+r[6]||0}));}catch(e){return[];}
 }
 async function renderRendimentoReal(tB,tS){
   if(!miudosCache) miudosCache=await carregarMiudosCompletoDoSheets();
@@ -2445,6 +2445,7 @@ function calcRendTotalMensal(filtroNome){
   const cache=filtroNome?miudosCache.filter(r=>r.miudo?.trim().toUpperCase()===filtroNome.toUpperCase()):miudosCache;
   const porDiaMes={};
   cache.forEach(r=>{
+    if(!r.data||typeof r.data!=='string'||r.data.length<7||r.data.startsWith('undefined'))return;
     const mes=r.data.slice(0,7);const dia=r.data;
     if(!porDiaMes[mes])porDiaMes[mes]={};
     if(!porDiaMes[mes][dia])porDiaMes[mes][dia]={peso:0,total:0};
@@ -2674,25 +2675,18 @@ async function calcPesoMedio(diasFiltrados){
   try{
     if(!pesosCache) pesosCache=await carregarPesosDoSheets();
     const datasSet=new Set(diasFiltrados.map(d=>d.data));
-    const regs=pesosCache.filter(p=>datasSet.has(p.data));
+    const regs=pesosCache.filter(p=>datasSet.has(p.data)&&(p.pesoBovFV>0||p.pesoBovSerr>0));
     if(!regs.length){set('sum-media-bov-m','—');set('sum-media-bov-f','—');set('vol-media-total','—');return;}
-    // Total abates bovino próprio e peso do período filtrado
-    let totalBov=0,pesoBov=0,totalSui=0,pesoSui=0;
-    diasFiltrados.forEach(h=>{
-      (h.bovino||[]).forEach(e=>{totalBov+=e.abatidos||0;});
-      (h.suino||[]).forEach(e=>{totalSui+=e.abatidos||0;});
-    });
-    regs.forEach(p=>{
-      pesoBov+=(p.pesoBovFV||0)+(p.pesoBovSerr||0);
-      pesoSui+=(p.pesoSuiSeali||0)+(p.pesoSuiSerr||0);
-    });
     const fn=v=>v>0?v.toFixed(1):'—';
-    const mediaBov=totalBov>0?(pesoBov/totalBov):0;
-    const mediaSui=totalSui>0?(pesoSui/totalSui):0;
-    const mediaTotal=(totalBov+totalSui)>0?((pesoBov+pesoSui)/(totalBov+totalSui)):0;
-    set('sum-media-bov-m',fn(mediaBov));
-    set('sum-media-bov-f',fn(mediaBov)); // usa bov geral pois peso não separa macho/fêmea
-    set('vol-media-total',fn(mediaTotal));
+    // Médias por empresa (já são kg/cab na aba Pesos)
+    const diasFV=regs.filter(p=>p.pesoBovFV>0);
+    const diasSerr=regs.filter(p=>p.pesoBovSerr>0);
+    const mediaFV=diasFV.length>0?(diasFV.reduce((a,p)=>a+p.pesoBovFV,0)/diasFV.length):0;
+    const mediaSerr=diasSerr.length>0?(diasSerr.reduce((a,p)=>a+p.pesoBovSerr,0)/diasSerr.length):0;
+    const mediaGeral=regs.length>0?(regs.reduce((a,p)=>a+(p.pesoBovFV||p.pesoBovSerr||0),0)/regs.length):0;
+    set('sum-media-bov-m',fn(mediaFV));
+    set('sum-media-bov-f',fn(mediaSerr));
+    set('vol-media-total',fn((mediaFV+mediaSerr)/2||mediaGeral));
   }catch(e){console.warn('Peso médio:',e);}
 }
 </script>
