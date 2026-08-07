@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-48</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-49</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -654,7 +654,6 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="subtabs no-print">
     <div class="subtab active" onclick="showSubtab('miudos','sub-miudos-extracao')" id="subtab-miudos-extracao">📄 Extrair PDF</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-itens')" id="subtab-miudos-itens">Miúdos</div>
-    <div class="subtab" onclick="showSubtab('miudos','sub-miudos-carcaca')" id="subtab-miudos-carcaca">Carcaça</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-condenacao')" id="subtab-miudos-condenacao">Condenação</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-precos')" id="subtab-miudos-precos">Preços</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-import')" id="subtab-miudos-import">Importar histórico</div>
@@ -755,13 +754,6 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     <div class="card">
       <div class="card-hdr"><div class="card-title">Miúdos — nº de peças e peso</div><button class="btn btn-primary" onclick="salvarMiudos()" id="btn-salvar-miudos" disabled>Salvar no Sheets</button></div>
       <div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-form"><thead><tr><th style="width:28%">Miúdo</th><th class="r" style="width:12%">Peças</th><th class="r" style="width:18%">Peso (kg)</th><th class="r" style="width:12%">% Real</th><th class="r" style="width:12%">% Meta</th><th class="r" style="width:18%">Diferença</th></tr></thead><tbody id="tbody-miudos-form"></tbody></table></div>
-    </div>
-  </div>
-
-  <div class="subpanel" id="sub-miudos-carcaca">
-    <div class="card">
-      <div class="card-hdr"><div class="card-title">Cabeças e carcaça por categoria</div><div style="font-size:11px;color:var(--muted)">Conferência cruzada com Abates/Pesos · salva junto com Miúdos</div></div>
-      <div class="card-body card-body-0"><table class="tbl" id="tbl-carcaca-form"><thead><tr><th style="width:40%">Categoria</th><th class="r" style="width:30%">Cabeças</th><th class="r" style="width:30%">Kg Carcaça</th></tr></thead><tbody id="tbody-carcaca-form"></tbody></table></div>
     </div>
   </div>
 
@@ -1167,7 +1159,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const ud=document.getElementById('upload-date');if(ud)ud.value=today;
   const md=document.getElementById('miudos-date');if(md)md.value=today;
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
-  loadParams();buildParamsGrid();buildMiudosForm();buildCarcacaForm();buildCondenacaoForm();
+  loadParams();buildParamsGrid();buildMiudosForm();buildCondenacaoForm();renderParadas();
   try{
     const [hist]=await Promise.all([carregarHistoricoCompleto(),carregarBenchmarkDoSheets(),carregarCondenacaoDoSheets().then(d=>{condenacaoCache=d;})]);
     if(hist.length){
@@ -2136,11 +2128,10 @@ async function salvarMiudos(){
     return{miudo:m.nome,nrPecas:nr,pesoKg:kg,pctReal:parseFloat(pr.toFixed(4)),pctMeta:metaEdit};
   }).filter(m=>m.pesoKg>0||m.nrPecas>0);
   const okM=await salvarMiudosNoSheets(date,mm,tp);
-  const okC=await salvarCarcacaNoSheets(date);
   const okCd=await salvarCondenacaoNoSheets(date);
-  const ok=okM&&okC&&okCd;
+  const ok=okM&&okCd;
   al.className='alert '+(ok?'ok':'err');
-  al.textContent=ok?`✓ ${mm.length} miúdos, carcaça e condenação salvos no Sheets!`:'✕ Erro ao salvar.';
+  al.textContent=ok?`✓ ${mm.length} miúdos e condenação salvos no Sheets!`:'✕ Erro ao salvar.';
   btn.disabled=false;btn.textContent='Salvar no Sheets';
   setTimeout(()=>{al.className='alert hidden';},4000);
   atualizarStatusDia(date);
