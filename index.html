@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-57</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-58</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2676,15 +2676,17 @@ function calcularIndicadoresExtra(tB,tS,nd){
 async function calcPesoMedio(diasFiltrados){
   try{
     if(!pesosCache) pesosCache=await carregarPesosDoSheets();
+    // Diagnóstico: loga primeiras linhas para ver o que chegou
+    if(pesosCache.length>0) console.log('[Peso] Amostra:', JSON.stringify(pesosCache[0]));
     const datasSet=new Set(diasFiltrados.map(d=>d.data));
-    const regs=pesosCache.filter(p=>datasSet.has(p.data)&&p.pesoBovFV>0);
-    if(!regs.length){set('sum-media-bov-m','—');set('sum-media-bov-f','—');set('vol-media-total','—');return;}
     const fn=v=>v>0?v.toFixed(1):'—';
-    // pesoBovFV já é kg/cab — faz média simples do período
-    const mediaBov=regs.reduce((a,p)=>a+p.pesoBovFV,0)/regs.length;
-    // Suíno: pesoSuiSeali ou pesoSuiSerr em kg/cab
+    const regsBov=pesosCache.filter(p=>datasSet.has(p.data)&&p.pesoBovFV>0);
+    const mediaBov=regsBov.length>0 ? regsBov.reduce((a,p)=>a+p.pesoBovFV,0)/regsBov.length : 0;
     const regsSui=pesosCache.filter(p=>datasSet.has(p.data)&&(p.pesoSuiSeali>0||p.pesoSuiSerr>0));
-    const mediaSui=regsSui.length>0?regsSui.reduce((a,p)=>a+(p.pesoSuiSeali||p.pesoSuiSerr||0),0)/regsSui.length:0;
+    const mediaSui=regsSui.length>0
+      ? regsSui.reduce((a,p)=>a+((p.pesoSuiSeali||0)+(p.pesoSuiSerr||0))/(p.pesoSuiSeali>0&&p.pesoSuiSerr>0?2:1),0)/regsSui.length
+      : 0;
+    console.log(`[Peso] mediaBov=${mediaBov.toFixed(1)} (${regsBov.length} dias) mediaSui=${mediaSui.toFixed(1)}`);
     set('sum-media-bov-m',fn(mediaBov));
     set('sum-media-bov-f',fn(mediaSui));
     set('vol-media-total',fn(mediaBov));
