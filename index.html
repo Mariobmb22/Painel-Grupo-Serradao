@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-59</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-60</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1004,7 +1004,7 @@ async function carregarHistoricoCompleto(){
     const porData={};
     abates.slice(1).forEach(r=>{
       const data=String(r[0]||'').slice(0,10);
-      if(!data)return;
+      if(!data||data==='Data'||data==='data'||!/^\d{4}-\d{2}-\d{2}$/.test(data))return;
       const empresa=r[1]||'';
       const tipo=r[2]||'';
       const bovAbat=+r[3]||0, bovMeta=+r[4]||0, suiAbat=+r[5]||0, suiMeta=+r[6]||0;
@@ -2676,20 +2676,12 @@ function calcularIndicadoresExtra(tB,tS,nd){
 async function calcPesoMedio(diasFiltrados){
   try{
     if(!pesosCache) pesosCache=await carregarPesosDoSheets();
-    // Diagnóstico: loga primeiras linhas para ver o que chegou
-    if(pesosCache.length>0) console.log('[Peso] Amostra:', JSON.stringify(pesosCache[0]));
-    console.log('[Peso] diasFiltrados:', diasFiltrados.length, '| pesosCache:', pesosCache.length);
-    console.log('[Peso] datasFiltro ex:', [...datasSet].slice(0,3));
-    console.log('[Peso] datasPesos ex:', pesosCache.slice(0,3).map(p=>p.data));
     const datasSet=new Set(diasFiltrados.map(d=>d.data));
     const fn=v=>v>0?v.toFixed(1):'—';
     const regsBov=pesosCache.filter(p=>datasSet.has(p.data)&&p.pesoBovFV>0);
-    const mediaBov=regsBov.length>0 ? regsBov.reduce((a,p)=>a+p.pesoBovFV,0)/regsBov.length : 0;
+    const mediaBov=regsBov.length>0?regsBov.reduce((a,p)=>a+p.pesoBovFV,0)/regsBov.length:0;
     const regsSui=pesosCache.filter(p=>datasSet.has(p.data)&&(p.pesoSuiSeali>0||p.pesoSuiSerr>0));
-    const mediaSui=regsSui.length>0
-      ? regsSui.reduce((a,p)=>a+((p.pesoSuiSeali||0)+(p.pesoSuiSerr||0))/(p.pesoSuiSeali>0&&p.pesoSuiSerr>0?2:1),0)/regsSui.length
-      : 0;
-    console.log(`[Peso] mediaBov=${mediaBov.toFixed(1)} (${regsBov.length} dias) mediaSui=${mediaSui.toFixed(1)}`);
+    const mediaSui=regsSui.length>0?regsSui.reduce((a,p)=>a+((p.pesoSuiSeali||0)+(p.pesoSuiSerr||0))/(p.pesoSuiSeali>0&&p.pesoSuiSerr>0?2:1),0)/regsSui.length:0;
     set('sum-media-bov-m',fn(mediaBov));
     set('sum-media-bov-f',fn(mediaSui));
     set('vol-media-total',fn(mediaBov));
