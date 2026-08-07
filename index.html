@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-55</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-56</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -373,9 +373,9 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <div class="card-hdr"><div class="card-title">⚖️ Peso médio por animal</div><span style="font-size:10px;color:var(--muted)">dados do lançamento do dia</span></div>
       <div class="card-body">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div class="efic-mini" style="border-left:3px solid var(--bov);text-align:center"><div class="efic-mini-label">Frigovitta</div><div class="efic-mini-val" id="sum-media-bov-m" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
-          <div class="efic-mini" style="border-left:3px solid #ec4899;text-align:center"><div class="efic-mini-label">Serradão</div><div class="efic-mini-val" id="sum-media-bov-f" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
-          <div class="efic-mini" style="border-left:3px solid var(--muted);text-align:center"><div class="efic-mini-label">Média geral</div><div class="efic-mini-val" id="vol-media-total" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
+          <div class="efic-mini" style="border-left:3px solid var(--bov);text-align:center"><div class="efic-mini-label">Bovino</div><div class="efic-mini-val" id="sum-media-bov-m" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
+          <div class="efic-mini" style="border-left:3px solid var(--sui);text-align:center"><div class="efic-mini-label">Suíno</div><div class="efic-mini-val" id="sum-media-bov-f" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
+          <div class="efic-mini" style="border-left:3px solid var(--muted);text-align:center"><div class="efic-mini-label">Média bov período</div><div class="efic-mini-val" id="vol-media-total" style="font-size:18px">—</div><div class="efic-mini-label">kg/cab</div></div>
         </div>
       </div>
     </div>
@@ -1650,12 +1650,14 @@ let pesosCache=null;
 async function carregarPesosDoSheets(){
   try{
     const rows=await sheetsRead('Pesos');
-    return rows.slice(1).filter(r=>r[1]).map(r=>({
+    return rows.slice(1).filter(r=>r[1]&&String(r[1]).length>=10).map(r=>({
       data:String(r[1]).slice(0,10),
-      pesoBovFV:+r[2]||0,
-      pesoBovSerr:+r[3]||0,
-      pesoSuiSeali:+r[4]||0,
-      pesoSuiSerr:+r[5]||0
+      realBov:+r[2]||0,      // cabeças bovino próprio
+      realSui:+r[3]||0,      // cabeças suíno próprio
+      pesoBovTotal:+r[4]||0, // kg total bovino próprio
+      pesoSuiTotal:+r[5]||0, // kg total suíno próprio
+      pesoBovFV:+r[6]||0,    // kg/cab bovino FV (média)
+      pesoBovSerr:+r[7]||0,  // @/cab bovino Serradão — NÃO usar para kg
     }));
   }catch(e){return[];}
 }
@@ -2675,18 +2677,21 @@ async function calcPesoMedio(diasFiltrados){
   try{
     if(!pesosCache) pesosCache=await carregarPesosDoSheets();
     const datasSet=new Set(diasFiltrados.map(d=>d.data));
-    const regs=pesosCache.filter(p=>datasSet.has(p.data)&&(p.pesoBovFV>0||p.pesoBovSerr>0));
+    const regs=pesosCache.filter(p=>datasSet.has(p.data)&&p.pesoBovTotal>0&&p.realBov>0);
     if(!regs.length){set('sum-media-bov-m','—');set('sum-media-bov-f','—');set('vol-media-total','—');return;}
     const fn=v=>v>0?v.toFixed(1):'—';
-    // Médias por empresa (já são kg/cab na aba Pesos)
-    const diasFV=regs.filter(p=>p.pesoBovFV>0);
-    const diasSerr=regs.filter(p=>p.pesoBovSerr>0);
-    const mediaFV=diasFV.length>0?(diasFV.reduce((a,p)=>a+p.pesoBovFV,0)/diasFV.length):0;
-    const mediaSerr=diasSerr.length>0?(diasSerr.reduce((a,p)=>a+p.pesoBovSerr,0)/diasSerr.length):0;
-    const mediaGeral=regs.length>0?(regs.reduce((a,p)=>a+(p.pesoBovFV||p.pesoBovSerr||0),0)/regs.length):0;
-    set('sum-media-bov-m',fn(mediaFV));
-    set('sum-media-bov-f',fn(mediaSerr));
-    set('vol-media-total',fn((mediaFV+mediaSerr)/2||mediaGeral));
+    // Peso médio bovino = soma(kg total) / soma(cabeças)
+    const totalKgBov=regs.reduce((a,p)=>a+p.pesoBovTotal,0);
+    const totalCabBov=regs.reduce((a,p)=>a+p.realBov,0);
+    const mediaBov=totalCabBov>0?(totalKgBov/totalCabBov):0;
+    // Suíno
+    const regsSui=pesosCache.filter(p=>datasSet.has(p.data)&&p.pesoSuiTotal>0&&p.realSui>0);
+    const totalKgSui=regsSui.reduce((a,p)=>a+p.pesoSuiTotal,0);
+    const totalCabSui=regsSui.reduce((a,p)=>a+p.realSui,0);
+    const mediaSui=totalCabSui>0?(totalKgSui/totalCabSui):0;
+    set('sum-media-bov-m',fn(mediaBov));
+    set('sum-media-bov-f',fn(mediaSui));
+    set('vol-media-total',fn(mediaBov)); // média total bovino (principal)
   }catch(e){console.warn('Peso médio:',e);}
 }
 </script>
