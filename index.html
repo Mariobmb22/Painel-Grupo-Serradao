@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-66</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-67</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1179,6 +1179,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const md=document.getElementById('miudos-date');if(md)md.value=today;
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
   loadParams();buildParamsGrid();buildMiudosForm();buildCondenacaoForm();renderParadas();
+  carregarPrecosDoSheets();
   try{
     const [hist]=await Promise.all([carregarHistoricoCompleto(),carregarBenchmarkDoSheets(),carregarCondenacaoDoSheets().then(d=>{condenacaoCache=d;})]);
     if(hist.length){
@@ -2215,13 +2216,33 @@ function salvarPrecos(){
   MIUDOS.forEach(m=>{params.precosMiudos[m.nome]=+(document.getElementById(`preco-${m.nome}`)||{value:0}).value;});
   localStorage.setItem('frigobet-params',JSON.stringify(params));
 }
-function salvarPrecosClick(){
+async function salvarPrecosNoSheets(){
+  const rows=MIUDOS.map(m=>([m.nome, params.precosMiudos[m.nome]||0]));
+  try{
+    await sheetsCall('clear',{sheet:'Preco'});
+    await sheetsAppend('Preco',[['Miudo','Preco_kg'],...rows]);
+    return true;
+  }catch(e){console.error(e);return false;}
+}
+async function carregarPrecosDoSheets(){
+  try{
+    const rows=await sheetsRead('Preco');
+    if(rows.length<2)return;
+    if(!params.precosMiudos)params.precosMiudos={};
+    rows.slice(1).forEach(r=>{
+      if(r[0]&&+r[1]>0) params.precosMiudos[String(r[0]).trim()]=+r[1];
+    });
+    buildPrecosGrid(); // atualiza campos visuais
+  }catch(e){console.warn('Preços Sheets:',e);}
+}
+async function salvarPrecosClick(){
   const btn=document.getElementById('btn-salvar-precos');const al=document.getElementById('precos-alert');
   if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   salvarPrecos();
+  const ok=await salvarPrecosNoSheets();
   if(historico.length)renderDashboard();
-  if(al){al.className='alert ok';al.textContent='✓ Preços salvos!';}
-  setTimeout(()=>{if(al)al.className='alert hidden';if(btn){btn.disabled=false;btn.textContent='Salvar preços';}},2500);
+  if(al){al.className='alert '+(ok?'ok':'err');al.textContent=ok?'✓ Preços salvos no Sheets!':'✕ Erro ao salvar. Preços salvos localmente.';}
+  setTimeout(()=>{if(al)al.className='alert hidden';if(btn){btn.disabled=false;btn.textContent='Salvar preços';}},3000);
 }
 async function salvarMiudos(){
   const date=document.getElementById('miudos-date')?.value;
