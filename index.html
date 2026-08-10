@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-65</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-66</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -452,7 +452,28 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       </div>
     </div>
   </div>
-
+  <!-- PARADAS -->
+  <div class="sec-hdr" style="margin-top:8px">Paradas de produção</div>
+  <div class="two-col" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">🐂 Bovino — por tipo</div><span class="card-date" id="par-bov-periodo">—</span></div>
+      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-bov-tipo"><thead><tr><th>Tipo</th><th class="r">Ocorrências</th><th class="r">Tempo (min)</th><th class="r">% do tempo</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">🐷 Suíno — por tipo</div><span class="card-date" id="par-sui-periodo">—</span></div>
+      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-sui-tipo"><thead><tr><th>Tipo</th><th class="r">Ocorrências</th><th class="r">Tempo (min)</th><th class="r">% do tempo</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">🐂 Bovino — por local</div></div>
+      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-bov-local"><thead><tr><th>Local</th><th class="r">Ocorrências</th><th class="r">Tempo (min)</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">🐷 Suíno — por local</div></div>
+      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-sui-local"><thead><tr><th>Local</th><th class="r">Ocorrências</th><th class="r">Tempo (min)</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
 
 </div>
 
@@ -1537,85 +1558,105 @@ function renderDashboard(){
   set('prod-bov-h',abHBov.toFixed(1));set('prod-sui-h',abHSui.toFixed(1));
   set('prod-colab-bov',(colabBov>0?mediaBov/colabBov:0).toFixed(1));set('prod-colab-sui',(colabSui>0?mediaSui/colabSui:0).toFixed(1));
   set('prod-ahh-bov',abHHBov.toFixed(4));set('prod-ahh-sui',abHHSui.toFixed(4));
-  renderCondenacaoReal(tB);renderRendimentoReal(tB,tS);renderProdutividadeReal();calcularIndicadoresExtra(tB,tS,d.nd);
+  renderCondenacaoReal(tB);renderRendimentoReal(tB,tS);renderProdutividadeReal();renderParadasReal();calcularIndicadoresExtra(tB,tS,d.nd);
 }
-function renderProdutividadeReal(){
+async function renderParadasReal(){
+  if(!paradasCache) paradasCache=await carregarParadasDoSheets();
+  const diasFiltrados=getHistoricoFiltrado();
+  if(!diasFiltrados.length||!paradasCache.length) return;
+  const datasSet=new Set(diasFiltrados.map(d=>d.data));
+  const regs=paradasCache.filter(p=>datasSet.has(p.data));
+  const bov=regs.filter(p=>p.linha.toLowerCase().includes('bovino'));
+  const sui=regs.filter(p=>p.linha.toLowerCase().includes('su'));
+
+  function agrupar(lista, campo){
+    const map={};
+    lista.forEach(p=>{
+      const k=p[campo]||'Outros';
+      if(!map[k])map[k]={qtd:0,min:0};
+      map[k].qtd++;map[k].min+=p.duracaoMin||0;
+    });
+    return Object.entries(map).sort((a,b)=>b[1].min-a[1].min);
+  }
+
+  function renderTabela(tbId, grupos, totalMin){
+    const tb=document.querySelector(`#${tbId} tbody`);if(!tb)return;
+    tb.innerHTML=grupos.map(([k,v])=>{
+      const pct=totalMin>0?(v.min/totalMin*100):0;
+      return`<tr><td style="font-weight:500">${k}</td><td class="r">${v.qtd}</td><td class="r">${v.min.toFixed(0)}</td><td class="r">${pct.toFixed(1)}%</td></tr>`;
+    }).join('')||'<tr><td colspan="4" style="color:var(--muted);text-align:center">Sem dados no período</td></tr>';
+  }
+  function renderTabelaLocal(tbId, grupos){
+    const tb=document.querySelector(`#${tbId} tbody`);if(!tb)return;
+    tb.innerHTML=grupos.map(([k,v])=>`<tr><td style="font-weight:500">${k}</td><td class="r">${v.qtd}</td><td class="r">${v.min.toFixed(0)}</td></tr>`).join('')||'<tr><td colspan="3" style="color:var(--muted);text-align:center">Sem dados</td></tr>';
+  }
+
+  const totalBovMin=bov.reduce((a,p)=>a+p.duracaoMin,0);
+  const totalSuiMin=sui.reduce((a,p)=>a+p.duracaoMin,0);
+  renderTabela('tbl-par-bov-tipo',agrupar(bov,'tipo'),totalBovMin);
+  renderTabela('tbl-par-sui-tipo',agrupar(sui,'tipo'),totalSuiMin);
+  renderTabelaLocal('tbl-par-bov-local',agrupar(bov,'local').slice(0,10));
+  renderTabelaLocal('tbl-par-sui-local',agrupar(sui,'local').slice(0,10));
+  const per=`${diasFiltrados.length} dias · ${bov.length} paradas · ${totalBovMin.toFixed(0)} min`;
+  const els=document.getElementById('par-bov-periodo');if(els)els.textContent=per;
+  const els2=document.getElementById('par-sui-periodo');if(els2)els2.textContent=`${sui.length} paradas · ${totalSuiMin.toFixed(0)} min`;
+}
+async function renderProdutividadeReal(){
   const diasFiltrados=getHistoricoFiltrado();
   if(!diasFiltrados.length)return;
-
+  if(!tempoAbateCache) tempoAbateCache=await carregarTempoAbateDoSheets();
   const empAtual=filtroAtual.empresa;
   const bovDoDia=h=>filtrarPorEmpresa(h.bovino).reduce((a,r)=>a+(r.abatidos||0),0);
   const suiDoDia=h=>filtrarPorEmpresa(h.suino).reduce((a,r)=>a+(r.abatidos||0),0);
-  const metaBovDoDia=h=>{
-    if(!empAtual)return h.metaBov||0;
-    const linha=(h.bovino||[]).find(r=>r.empresa===empAtual);
-    return linha?(linha.previsto||0):0;
-  };
-  const metaSuiDoDia=h=>{
-    if(!empAtual)return h.metaSui||0;
-    const linha=(h.suino||[]).find(r=>r.empresa===empAtual);
-    return linha?(linha.previsto||0):0;
-  };
-
-  // Mesma lógica de agregação das outras abas: só ano agrupa por mês, senão mostra dia a dia
-  let grupos; // array de {label, bov, sui, metaBov, metaSui, dias}
+  const metaBovDoDia=h=>{if(!empAtual)return h.metaBov||0;const l=(h.bovino||[]).find(r=>r.empresa===empAtual);return l?(l.previsto||0):0;};
+  const metaSuiDoDia=h=>{if(!empAtual)return h.metaSui||0;const l=(h.suino||[]).find(r=>r.empresa===empAtual);return l?(l.previsto||0):0;};
+  // Índice de tempo real por data e animal
+  const tempoIdx={};
+  (tempoAbateCache||[]).forEach(t=>{if(!tempoIdx[t.data])tempoIdx[t.data]={};tempoIdx[t.data][t.animal.toLowerCase()]=t;});
+  function getDadosReais(data,animal){const d=tempoIdx[data];if(!d)return null;return d[animal]||d[Object.keys(d).find(k=>k.includes(animal))]||null;}
+  let grupos;
   if(filtroAtual.ano&&!filtroAtual.mes){
-    const porMes={};
-    const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const porMes={};const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     diasFiltrados.forEach(h=>{
       const m=h.data.slice(5,7);
-      if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,labelIni:h.data,labelFim:h.data};
-      porMes[m].bov+=bovDoDia(h);
-      porMes[m].sui+=suiDoDia(h);
-      porMes[m].metaBov+=metaBovDoDia(h);porMes[m].metaSui+=metaSuiDoDia(h);
-      porMes[m].dias+=1;porMes[m].labelFim=h.data;
+      if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,horasBov:0,horasSui:0,colabBov:0,colabSui:0,diasReais:0};
+      porMes[m].bov+=bovDoDia(h);porMes[m].sui+=suiDoDia(h);
+      porMes[m].metaBov+=metaBovDoDia(h);porMes[m].metaSui+=metaSuiDoDia(h);porMes[m].dias+=1;
+      const tb=getDadosReais(h.data,'bovino');const ts=getDadosReais(h.data,'suíno')||getDadosReais(h.data,'suino');
+      if(tb){porMes[m].horasBov+=tb.tempoMin/60;porMes[m].colabBov+=tb.operadores;porMes[m].diasReais++;}
+      if(ts){porMes[m].horasSui+=ts.tempoMin/60;porMes[m].colabSui+=ts.operadores;}
     });
-    const mesesOrd=Object.keys(porMes).sort();
-    grupos=mesesOrd.map(m=>({label:nomesMeses[parseInt(m)],...porMes[m]}));
+    grupos=Object.keys(porMes).sort().map(m=>({label:nomesMeses[parseInt(m)],...porMes[m]}));
   }else{
-    grupos=diasFiltrados.map(h=>({
-      label:fmtBR(h.data),
-      bov:bovDoDia(h),
-      sui:suiDoDia(h),
-      metaBov:metaBovDoDia(h),metaSui:metaSuiDoDia(h),
-      dias:1
-    }));
+    grupos=diasFiltrados.map(h=>{
+      const tb=getDadosReais(h.data,'bovino');const ts=getDadosReais(h.data,'suíno')||getDadosReais(h.data,'suino');
+      return{label:fmtBR(h.data),bov:bovDoDia(h),sui:suiDoDia(h),metaBov:metaBovDoDia(h),metaSui:metaSuiDoDia(h),dias:1,
+        horasBov:tb?tb.tempoMin/60:0,horasSui:ts?ts.tempoMin/60:0,colabBov:tb?tb.operadores:0,colabSui:ts?ts.operadores:0,diasReais:tb?1:0};
+    });
   }
-
-  const labelsBov=[],bovH=[],bovHMeta=[],suiH=[],suiHMeta=[];
-  const linhasTabela=[];
+  const labelsBov=[],bovH=[],bovHMeta=[],suiH=[],suiHMeta=[],linhasTabela=[];
   grupos.forEach(g=>{
-    const horas=8*g.dias;
-    const colabBov=params.colabBov||90;
-    const colabSui=params.colabSui||80;
-    const mediaDiaBovG=g.dias>0?g.bov/g.dias:0;
-    const mediaDiaSuiG=g.dias>0?g.sui/g.dias:0;
-    const abateHBov=horas>0?g.bov/horas:0;
-    const abateHSui=horas>0?g.sui/horas:0;
-    const metaHBov=horas>0?g.metaBov/horas:0;
-    const metaHSui=horas>0?g.metaSui/horas:0;
-    const cabColBov=colabBov>0?mediaDiaBovG/colabBov:0;
-    const cabColSui=colabSui>0?mediaDiaSuiG/colabSui:0;
-    // abates/homem/hora = principal
-    const ahhBov=horas>0&&colabBov>0?g.bov/(horas*colabBov):0;
-    const ahhSui=horas>0&&colabSui>0?g.sui/(horas*colabSui):0;
-    // meta abates/homem/hora baseada na meta de abate/h e mesmos colaboradores
-    const metaAhhBov=horas>0&&colabBov>0?g.metaBov/(horas*colabBov):0;
-    const metaAhhSui=horas>0&&colabSui>0?g.metaSui/(horas*colabSui):0;
+    const horasBov=g.horasBov>0?g.horasBov:(8*g.dias);
+    const horasSui=g.horasSui>0?g.horasSui:(8*g.dias);
+    const colabBov=g.colabBov>0?(g.diasReais>0?Math.round(g.colabBov/g.diasReais):g.colabBov):(params.colabBov||90);
+    const colabSui=g.colabSui>0?(g.diasReais>0?Math.round(g.colabSui/g.diasReais):g.colabSui):(params.colabSui||80);
+    const mediaDiaBovG=g.dias>0?g.bov/g.dias:0;const mediaDiaSuiG=g.dias>0?g.sui/g.dias:0;
+    const abateHBov=horasBov>0?g.bov/horasBov:0;const abateHSui=horasSui>0?g.sui/horasSui:0;
+    const cabColBov=colabBov>0?mediaDiaBovG/colabBov:0;const cabColSui=colabSui>0?mediaDiaSuiG/colabSui:0;
+    const ahhBov=horasBov>0&&colabBov>0?g.bov/(horasBov*colabBov):0;
+    const ahhSui=horasSui>0&&colabSui>0?g.sui/(horasSui*colabSui):0;
+    const metaAhhBov=horasBov>0&&colabBov>0?g.metaBov/(horasBov*colabBov):0;
+    const metaAhhSui=horasSui>0&&colabSui>0?g.metaSui/(horasSui*colabSui):0;
     labelsBov.push(g.label);
     bovH.push(parseFloat(ahhBov.toFixed(4)));bovHMeta.push(parseFloat(metaAhhBov.toFixed(4)));
     suiH.push(parseFloat(ahhSui.toFixed(4)));suiHMeta.push(parseFloat(metaAhhSui.toFixed(4)));
     linhasTabela.push([g.label,ahhBov.toFixed(3),abateHBov.toFixed(1),cabColBov.toFixed(1),farol(metaAhhBov>0?(ahhBov-metaAhhBov)/metaAhhBov*100:0),ahhSui.toFixed(3),abateHSui.toFixed(1),cabColSui.toFixed(1),farol(metaAhhSui>0?(ahhSui-metaAhhSui)/metaAhhSui*100:0)]);
   });
-  if(labelsBov.length){
-    renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8');
-    renderBarChartLine('chart-prod-sui',labelsBov,suiH,suiHMeta,'#b45309');
-  }
+  if(labelsBov.length){renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8');renderBarChartLine('chart-prod-sui',labelsBov,suiH,suiHMeta,'#b45309');}
   const tb=document.getElementById('tbody-prod-semanal');
-  if(tb){
-    tb.innerHTML=linhasTabela.map(r=>`<tr><td>${r[0]}</td><td class="r"><b>${r[1]}</b></td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r" style="color:var(--muted)">${r[3]}</td><td class="r">${r[4]}</td><td class="r"><b>${r[5]}</b></td><td class="r" style="color:var(--muted)">${r[6]}</td><td class="r" style="color:var(--muted)">${r[7]}</td><td class="r">${r[8]}</td></tr>`).join('');
-  }
+  if(tb){tb.innerHTML=linhasTabela.map(r=>`<tr><td>${r[0]}</td><td class="r"><b>${r[1]}</b></td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r" style="color:var(--muted)">${r[3]}</td><td class="r">${r[4]}</td><td class="r"><b>${r[5]}</b></td><td class="r" style="color:var(--muted)">${r[6]}</td><td class="r" style="color:var(--muted)">${r[7]}</td><td class="r">${r[8]}</td></tr>`).join('');}
 }
+
 const EMPRESAS_PROPRIAS=['Serradão','Frigovitta'];
 function renderVolTable(id,rows,metaTotal,total){
   const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';
@@ -1643,6 +1684,38 @@ function renderVolTable(id,rows,metaTotal,total){
     terceiros.forEach(r=>tbody.appendChild(linhaEmp(r,false)));
   }
   if(rows.length>1){const tr=document.createElement('tr');tr.className='total';tr.style.borderTop='2px solid var(--border)';tr.innerHTML=`<td>Total</td><td class="r">${fmt(total)}</td><td class="r">${fmt(metaTotal)}</td><td class="r">${farol(metaTotal>0?(total-metaTotal)/metaTotal*100:0)}</td>`;tbody.appendChild(tr);}
+}
+let tempoAbateCache=null;
+let paradasCache=null;
+
+async function carregarTempoAbateDoSheets(){
+  try{
+    const rows=await sheetsRead('TempoAbate');
+    return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10).map(r=>({
+      data:String(r[0]).slice(0,10),
+      animal:String(r[1]||'').trim(),
+      inicioBox:String(r[2]||''),
+      fimBox:String(r[3]||''),
+      qtd:+r[4]||0,
+      totalKg:+r[5]||0,
+      operadores:+r[6]||0,
+      tempoMin:+r[7]||0
+    }));
+  }catch(e){return[];}
+}
+
+async function carregarParadasDoSheets(){
+  try{
+    const rows=await sheetsRead('Paradas');
+    return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10).map(r=>({
+      data:String(r[0]).slice(0,10),
+      linha:String(r[1]||'').trim(),
+      tipo:String(r[2]||'').trim(),
+      local:String(r[3]||'').trim(),
+      descricao:String(r[4]||'').trim(),
+      duracaoMin:+r[5]||0
+    }));
+  }catch(e){return[];}
 }
 let pesosCache=null;
 async function carregarPesosDoSheets(){
