@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-73</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-75</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1815,6 +1815,10 @@ async function carregarMiudosCompletoDoSheets(){
 async function renderRendimentoReal(tB,tS){
   if(!miudosCache) miudosCache=await carregarMiudosCompletoDoSheets();
   if(!carcacaCache) carcacaCache=await carregarCarcacaDoSheets();
+  // Garante que preços foram carregados do Sheets antes de calcular
+  if(!params.precosMiudos||Object.keys(params.precosMiudos).length===0){
+    await carregarPrecosDoSheets();
+  }
   const diasFiltrados=getHistoricoFiltrado();
   if(!diasFiltrados.length){renderDemoRendimento(tB,tS);return;}
   const datasSet=new Set(diasFiltrados.map(d=>d.data));
@@ -1905,11 +1909,11 @@ function renderMiudosTable(id,rows,totalAbtPadrao){
   rows.forEach(r=>{
     const diff=r.real-r.meta;
     const f=diff>=0?'<span class="f f-g"></span>':diff>-0.3?'<span class="f f-y"></span>':'<span class="f f-r"></span>';
-    // Perda: mostra R$ se tem preço, senão mostra kg de diferença
     let p='—';
     if(r.perda<0){
-      p=`<span style="color:var(--red)">R$${Math.abs(r.perda/1000).toFixed(1)}k</span>`;
-    } else if(r.diffKg!==undefined&&r.diffKg<0){
+      const abs=Math.abs(r.perda);
+      p=`<span style="color:var(--red)">${abs>=1000?'R$'+( abs/1000).toFixed(1)+'k':'R$'+abs.toFixed(0)}</span>`;
+    } else if(r.diffKg!==null&&r.diffKg<0&&r.pesoKg>0){
       p=`<span style="color:var(--yellow)">${Math.abs(r.diffKg).toFixed(0)}kg</span>`;
     }
     const vol=r.baseVol!==undefined?r.baseVol:totalAbtPadrao;
