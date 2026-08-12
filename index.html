@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-72</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-73</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1835,10 +1835,16 @@ async function renderRendimentoReal(tB,tS){
   });
 
   const precos=params.precosMiudos||{};
+  const PRECO_MAP={'Língua bov.':'Língua','Língua bovina congelada':'Língua',
+    'Fígado bovino congelado':'Fígado','Rúmen':'Bucho','Rúmen bovino congelado':'Bucho',
+    'Retículo':'Omaso','Retículo congelado':'Omaso',
+    'Sebo (Res.)':'Carne Industrial','Sebo (Res.) bov.':'Carne Industrial',
+    'Recorte suíno':'Recortes','Tripa':'Bucho','Couro tapete':'Couro'};
+  const getPreco=nome=>precos[nome]||precos[PRECO_MAP[nome]]||0;
   const linhas=Object.values(porMiudo).map(m=>{
     const pesoTotal=m.pesos.reduce((a,b)=>a+b,0);
     const pctMedioReal=m.pctReais.length?m.pctReais.reduce((a,b)=>a+b,0)/m.pctReais.length:0;
-    const preco=precos[m.nomeOriginal]||0;
+    const preco=getPreco(m.nomeOriginal);
     // Perda: diferença entre o % real e a meta, aplicada sobre o total abatido e o preço/kg
     // Vergalho só existe em bois — usa o peso de carcaça de boi do período, não o total bovino+suíno
     const baseEsperado=m.nomeOriginal==='Vergalho'?kgCarcacaBoiPeriodo:(tB+tS);
