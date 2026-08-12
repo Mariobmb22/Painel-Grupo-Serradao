@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-80</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-81</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1808,14 +1808,17 @@ async function renderCondenacaoReal(tBov){
 let miudosCache=null;
 let carcacaCache=null;
 async function carregarCarcacaDoSheets(){
-  try{const rows=await sheetsRead('Carcaca');return rows.slice(1).filter(r=>r[0]).map(r=>({data:String(r[0]).slice(0,10),categoria:r[1],cabecas:+r[2]||0,kgCarcaca:+r[3]||0}));}catch(e){return[];}
+  const pf=v=>parseFloat(String(v||0).replace(',','.'));
+  try{const rows=await sheetsRead('Carcaca');return rows.slice(1).filter(r=>r[0]).map(r=>({data:String(r[0]).slice(0,10),categoria:r[1],cabecas:pf(r[2]),kgCarcaca:pf(r[3])}));}catch(e){return[];}
 }
 async function carregarMiudosCompletoDoSheets(){
-  try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10&&!String(r[0]).startsWith('undefined')).map(r=>({data:String(r[0]).slice(0,10),miudo:r[1],nrPecas:+r[2]||0,pesoKg:+r[3]||0,kgTotalAbate:+r[4]||0,pctReal:+r[5]||0,pctMeta:+r[6]||0}));}catch(e){return[];}
+  const pf=v=>parseFloat(String(v||0).replace(',','.'));
+  try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10&&!String(r[0]).startsWith('undefined')).map(r=>({data:String(r[0]).slice(0,10),miudo:r[1],nrPecas:pf(r[2]),pesoKg:pf(r[3]),kgTotalAbate:pf(r[4]),pctReal:pf(r[5]),pctMeta:pf(r[6])}));}catch(e){return[];}
 }
 async function renderRendimentoReal(tB,tS){
-  if(!miudosCache) miudosCache=await carregarMiudosCompletoDoSheets();
-  if(!carcacaCache) carcacaCache=await carregarCarcacaDoSheets();
+  // Força recarregamento pois cache anterior tinha NaN por vírgula decimal
+  if(!miudosCache||miudosCache[0]?.pesoKg===0) miudosCache=await carregarMiudosCompletoDoSheets();
+  if(!carcacaCache||carcacaCache[0]?.kgCarcaca===0) carcacaCache=await carregarCarcacaDoSheets();
   // Garante que preços foram carregados do Sheets antes de calcular
   if(!params.precosMiudos||Object.keys(params.precosMiudos).length===0){
     await carregarPrecosDoSheets();
