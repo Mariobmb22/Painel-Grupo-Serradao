@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-83</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-84</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1862,7 +1862,7 @@ async function renderRendimentoReal(tB,tS){
     const kgReal=pesoTotal;
     const diffKg=kgReal-kgEsperado;
     // Só calcula perda se tiver dado real lançado
-    const perdaR=pesoTotal>0&&diffKg<0?diffKg*preco:0;
+    const perdaR=diffKg<0&&preco>0?diffKg*preco:0;
     if(m.nomeOriginal==='Aorta'||m.nomeOriginal==='Fígado')console.log(`[Perda ${m.nomeOriginal}] pesoTotal=${pesoTotal.toFixed(1)} kgEsperado=${kgEsperado.toFixed(1)} diffKg=${diffKg.toFixed(1)} preco=${preco} perdaR=${perdaR.toFixed(2)}`);
     const diffKgReal=pesoTotal>0?diffKg:null;
     return{nome:m.nomeOriginal,meta:m.meta,real:parseFloat(pctMedioReal.toFixed(2)),pesoKg:pesoTotal,perda:perdaR,diffKg:diffKgReal,baseVol:baseEsperado};
@@ -1996,7 +1996,7 @@ function buildCarcacaForm(){
 }
 
 // ── CONDENAÇÃO IMA ──
-const CONDENADOS=['Cabeça','Língua','Coração','Pulmão','Fígado','Rins','Intestino'];
+const CONDENADOS=['Rabo','Língua','Coração','Pulmão','Fígado','Rins','Bucho'];
 // Peças por animal (anatomia bovina) — usadas para calcular peças esperadas automaticamente
 const PECAS_POR_ANIMAL={'Cabeça':1,'Língua':1,'Coração':1,'Pulmão':1,'Fígado':1,'Rins':2,'Intestino':1,
   'Aorta':1,'Bucho':1,'Carne Industrial':1,'Colmeia':1,'Couro':1,'Diafragma':1,
