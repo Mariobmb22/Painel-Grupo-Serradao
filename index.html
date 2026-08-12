@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-82</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-83</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1816,9 +1816,9 @@ async function carregarMiudosCompletoDoSheets(){
   try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10&&!String(r[0]).startsWith('undefined')).map(r=>({data:String(r[0]).slice(0,10),miudo:r[1],nrPecas:pf(r[2]),pesoKg:pf(r[3]),kgTotalAbate:pf(r[4]),pctReal:pf(r[5]),pctMeta:pf(r[6])}));}catch(e){return[];}
 }
 async function renderRendimentoReal(tB,tS){
-  // Força recarregamento pois cache anterior tinha NaN por vírgula decimal
-  if(!miudosCache||miudosCache[0]?.pesoKg===0) miudosCache=await carregarMiudosCompletoDoSheets();
-  if(!carcacaCache||carcacaCache[0]?.kgCarcaca===0) carcacaCache=await carregarCarcacaDoSheets();
+  // Sempre recarrega para garantir dados frescos com vírgula decimal corrigida
+  miudosCache=await carregarMiudosCompletoDoSheets();
+  carcacaCache=await carregarCarcacaDoSheets();
   // Garante que preços foram carregados do Sheets antes de calcular
   if(!params.precosMiudos||Object.keys(params.precosMiudos).length===0){
     await carregarPrecosDoSheets();
