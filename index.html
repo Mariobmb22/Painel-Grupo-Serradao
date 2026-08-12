@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-81</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-82</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1832,14 +1832,14 @@ async function renderRendimentoReal(tB,tS){
   // Peso de carcaça só de Boi (sem Vaca) — filtra por "BOI" ou "Boi" independente de capitalização
   const kgCarcacaBoiPeriodo=carcacaCache.filter(c=>datasSet.has(c.data)&&c.categoria.toUpperCase().startsWith('BOI')).reduce((a,c)=>a+c.kgCarcaca,0);
 
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
   const porMiudo={};
-  MIUDOS.forEach(m=>{porMiudo[m.nome.toUpperCase()]={pesos:[],pctReais:[],meta:m.meta,nomeOriginal:m.nome};});
+  MIUDOS.forEach(m=>{porMiudo[norm(m.nome)]={pesos:[],pctReais:[],meta:m.meta,nomeOriginal:m.nome};});
   registros.forEach(r=>{
-    const key=String(r.miudo||'').toUpperCase().trim();
-    // tenta achar correspondência direta ou por aproximação simples
+    const key=norm(r.miudo);
     let match=porMiudo[key];
     if(!match){
-      match=Object.values(porMiudo).find(m=>m.nomeOriginal.toUpperCase()===key||key.includes(m.nomeOriginal.toUpperCase())||m.nomeOriginal.toUpperCase().includes(key));
+      match=Object.values(porMiudo).find(m=>norm(m.nomeOriginal)===key||key.includes(norm(m.nomeOriginal))||norm(m.nomeOriginal).includes(key));
     }
     if(match){match.pesos.push(r.pesoKg);match.pctReais.push(r.pctReal);}
   });
