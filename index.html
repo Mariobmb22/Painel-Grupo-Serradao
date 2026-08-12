@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-84</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-85</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2028,7 +2028,7 @@ async function salvarCondenacaoNoSheets(date){
     if(qtd>0) rows.push([date,'Peça',p,qtd,peso]);
   });
   animaisCondLista.forEach(a=>{
-    if(a.peso>0||a.motivo) rows.push([date,'Animal inteiro',a.sexo,1,a.peso,a.motivo]);
+    if(a.motivo||a.peso>0) rows.push([date,'Animal inteiro',a.sexo,1,a.peso,a.motivo,a.tipo||'Condenação Total',a.produtor||'',a.frigorifico||'']);
   });
   if(!rows.length) return true;
   try{await sheetsAppend('Condenacao',rows);return true;}catch(e){console.error(e);return false;}
@@ -2328,10 +2328,13 @@ function setPct(id,pct){const el=document.getElementById(id);if(!el)return;el.te
 function showAlert(id,type,msg){const el=document.getElementById(id);if(!el)return;el.className='alert '+(type||'info');el.innerHTML=(type==='ok'?'✓ ':type==='err'?'✕ ':'') +msg;el.classList.remove('hidden');}
 // ── ANÁLISE COMPARATIVA DE RENDIMENTO ──
 // ── ANIMAIS CONDENADOS ──
+const MOTIVOS_COND=['Cisticercose','Tuberculose','Mastite','Afecção Pulmonar','Alterações de Linfonodos','Caquexia','Contaminação','Contusão Generalizada','Icterícia','Linfadenite','Neoplasia','Outro'];
+const TIPOS_COND=['Condenação Total','Tratamento pelo Frio'];
+
 let animaisCondLista=[];
 function adicionarAnimalCondenado(){
   const id=Date.now();
-  animaisCondLista.push({id,sexo:'Macho',peso:0,motivo:''});
+  animaisCondLista.push({id,sexo:'Macho',peso:0,motivo:'',tipo:'Condenação Total',produtor:'',frigorifico:''});
   renderAnimaisCond();
 }
 function removerAnimalCond(id){
@@ -2348,7 +2351,7 @@ function renderAnimaisCond(){
     el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px">Nenhum animal condenado registrado</div>';return;
   }
   el.innerHTML=animaisCondLista.map(a=>`
-    <div style="display:grid;grid-template-columns:120px 120px 1fr auto;gap:8px;align-items:end;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px">
+    <div style="display:grid;grid-template-columns:90px 90px 1fr 1fr 1fr 110px auto;gap:8px;align-items:end;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px">
       <div class="param-field" style="margin:0"><label>Sexo</label>
         <select onchange="updateAnimalCond(${a.id},'sexo',this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
           <option ${a.sexo==='Macho'?'selected':''}>Macho</option>
@@ -2356,8 +2359,22 @@ function renderAnimaisCond(){
         </select></div>
       <div class="param-field" style="margin:0"><label>Peso (kg)</label>
         <input type="number" step="0.1" min="0" value="${a.peso||''}" placeholder="0" oninput="updateAnimalCond(${a.id},'peso',this.value)" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"></div>
-      <div class="param-field" style="margin:0"><label>Motivo (texto livre)</label>
-        <input type="text" value="${a.motivo||''}" placeholder="Ex: Tuberculose, lesão..." oninput="updateAnimalCond(${a.id},'motivo',this.value)" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"></div>
+      <div class="param-field" style="margin:0"><label>Motivo</label>
+        <select onchange="updateAnimalCond(${a.id},'motivo',this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
+          <option value="">Selecione...</option>
+          ${MOTIVOS_COND.map(m=>`<option value="${m}" ${a.motivo===m?'selected':''}>${m}</option>`).join('')}
+        </select></div>
+      <div class="param-field" style="margin:0"><label>Tipo</label>
+        <select onchange="updateAnimalCond(${a.id},'tipo',this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
+          ${TIPOS_COND.map(t=>`<option value="${t}" ${a.tipo===t?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      <div class="param-field" style="margin:0"><label>Produtor</label>
+        <input type="text" value="${a.produtor||''}" placeholder="Nome do produtor" oninput="updateAnimalCond(${a.id},'produtor',this.value)" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"></div>
+      <div class="param-field" style="margin:0"><label>Frigorífico</label>
+        <select onchange="updateAnimalCond(${a.id},'frigorifico',this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
+          <option value="">Selecione...</option>
+          ${['Frigobet','Serradão','Frigovitta'].map(f=>`<option value="${f}" ${a.frigorifico===f?'selected':''}>${f}</option>`).join('')}
+        </select></div>
       <div style="padding-bottom:2px">
         <button onclick="removerAnimalCond(${a.id})" style="padding:6px 8px;border:1px solid var(--border);border-radius:var(--r);background:var(--white);cursor:pointer;color:var(--red);font-size:12px">✕</button>
       </div>
