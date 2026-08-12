@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-77</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-78</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1463,7 +1463,9 @@ function agregarDias(dias){
   return{bovino:Object.values(bovMap),suino:Object.values(suiMap),metaBov,metaSui,capBov:params.capBov,capSui:params.capSui};
 }
 
+let _renderToken=0;
 async function renderDashboard(){
+  const token=++_renderToken;
   if(!historico.length)return;
   const diasFiltrados=getHistoricoFiltrado();
   if(!diasFiltrados.length){
@@ -1558,7 +1560,10 @@ async function renderDashboard(){
   set('prod-bov-h',abHBov.toFixed(1));set('prod-sui-h',abHSui.toFixed(1));
   set('prod-colab-bov',(colabBov>0?mediaBov/colabBov:0).toFixed(1));set('prod-colab-sui',(colabSui>0?mediaSui/colabSui:0).toFixed(1));
   set('prod-ahh-bov',abHHBov.toFixed(4));set('prod-ahh-sui',abHHSui.toFixed(4));
-  renderCondenacaoReal(tB);await renderRendimentoReal(tB,tS);renderProdutividadeReal();renderParadasReal();calcularIndicadoresExtra(tB,tS,d.nd);
+  if(token!==_renderToken)return; // render mais recente tomou precedência
+  renderCondenacaoReal(tB);await renderRendimentoReal(tB,tS);
+  if(token!==_renderToken)return;
+  renderProdutividadeReal();renderParadasReal();calcularIndicadoresExtra(tB,tS,d.nd);
 }
 async function renderParadasReal(){
   if(!paradasCache) paradasCache=await carregarParadasDoSheets();
