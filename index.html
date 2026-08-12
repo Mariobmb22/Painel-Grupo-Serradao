@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-71</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-72</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1845,8 +1845,10 @@ async function renderRendimentoReal(tB,tS){
     const kgEsperado=baseEsperado*(m.meta/100);
     const kgReal=pesoTotal;
     const diffKg=kgReal-kgEsperado;
-    const perdaR=diffKg<0?diffKg*preco:0;
-    return{nome:m.nomeOriginal,meta:m.meta,real:parseFloat(pctMedioReal.toFixed(2)),pesoKg:pesoTotal,perda:perdaR,diffKg,baseVol:baseEsperado};
+    // Só calcula perda se tiver dado real lançado
+    const perdaR=pesoTotal>0&&diffKg<0?diffKg*preco:0;
+    const diffKgReal=pesoTotal>0?diffKg:null;
+    return{nome:m.nomeOriginal,meta:m.meta,real:parseFloat(pctMedioReal.toFixed(2)),pesoKg:pesoTotal,perda:perdaR,diffKg:diffKgReal,baseVol:baseEsperado};
   });
 
   const perdaTotal=linhas.reduce((a,l)=>a+(l.perda<0?l.perda:0),0);
