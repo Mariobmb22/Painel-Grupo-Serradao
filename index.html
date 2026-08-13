@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-85</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-87</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -452,6 +452,19 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       </div>
     </div>
   </div>
+  <!-- GRÁFICOS CONDENAÇÃO ANIMAL -->
+  <div class="sec-hdr" style="margin-top:8px">Condenação de animais inteiros</div>
+  <div class="two-col" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">📊 Pareto por motivo</div><span class="card-date" id="cond-pareto-periodo">—</span></div>
+      <div class="card-body" style="height:240px;position:relative"><canvas id="chart-cond-pareto"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">📈 Condenações vs Abates</div><span class="card-date" id="cond-vol-periodo">—</span></div>
+      <div class="card-body" style="height:240px;position:relative"><canvas id="chart-cond-vol"></canvas></div>
+    </div>
+  </div>
+
   <!-- PARADAS -->
   <div class="sec-hdr" style="margin-top:8px">Paradas de produção</div>
   <div class="two-col" style="margin-bottom:14px">
@@ -675,7 +688,8 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="subtabs no-print">
     <div class="subtab active" onclick="showSubtab('miudos','sub-miudos-extracao')" id="subtab-miudos-extracao">📄 Extrair PDF</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-itens')" id="subtab-miudos-itens">Miúdos</div>
-    <div class="subtab" onclick="showSubtab('miudos','sub-miudos-condenacao')" id="subtab-miudos-condenacao">Condenação</div>
+    <div class="subtab" onclick="showSubtab('miudos','sub-miudos-condenacao')" id="subtab-miudos-condenacao">Condenação Peças</div>
+    <div class="subtab" onclick="showSubtab('miudos','sub-miudos-cond-animal')" id="subtab-miudos-cond-animal">Condenação Animal</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-precos')" id="subtab-miudos-precos">Preços</div>
     <div class="subtab" onclick="showSubtab('miudos','sub-miudos-import')" id="subtab-miudos-import">Importar histórico</div>
   </div>
@@ -784,15 +798,27 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <div class="card-body">
         <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Condenação de peças</div>
         <table class="tbl" id="tbl-condenacao-form"><thead><tr><th style="width:30%">Produto</th><th class="r" style="width:18%">Peças esperadas</th><th class="r" style="width:26%">Peças condenadas</th><th class="r" style="width:26%">Peso cond. (kg)</th></tr></thead><tbody id="tbody-condenacao-form"></tbody></table>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px">
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted)">Condenação de animal inteiro</div>
-          <button class="btn btn-sec" style="font-size:11px;padding:4px 12px" onclick="adicionarAnimalCondenado()">+ Adicionar animal</button>
-        </div>
-        <div id="animais-cond-lista" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
     </div>
   </div>
 
+
+  <div class="subpanel" id="sub-miudos-cond-animal">
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">🐄 Condenação de animal inteiro</div>
+        <button class="btn btn-sec" style="font-size:11px;padding:4px 12px" onclick="adicionarAnimalCondenado()">+ Adicionar animal</button>
+      </div>
+      <div class="card-body">
+        <div id="miudos-alert" style="display:none"></div>
+        <div id="animais-cond-lista" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" onclick="salvarCondenacaoAnimalClick()">💾 Salvar condenações</button>
+          <div id="cond-animal-alert" class="alert hidden" style="margin:0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="subpanel" id="sub-miudos-precos">
     <div class="card">
       <div class="card-hdr"><div class="card-title">Preço de venda por kg — miúdos</div><button class="btn btn-primary" onclick="salvarPrecosClick()" id="btn-salvar-precos">Salvar preços</button></div>
@@ -1558,7 +1584,7 @@ async function renderDashboard(){
   set('prod-bov-h',abHBov.toFixed(1));set('prod-sui-h',abHSui.toFixed(1));
   set('prod-colab-bov',(colabBov>0?mediaBov/colabBov:0).toFixed(1));set('prod-colab-sui',(colabSui>0?mediaSui/colabSui:0).toFixed(1));
   set('prod-ahh-bov',abHHBov.toFixed(4));set('prod-ahh-sui',abHHSui.toFixed(4));
-  renderCondenacaoReal(tB);await renderRendimentoReal(tB,tS);
+  renderCondenacaoReal(tB);renderCondenacaoAnimalCharts();await renderRendimentoReal(tB,tS);
   renderProdutividadeReal();renderParadasReal();calcularIndicadoresExtra(tB,tS,d.nd);
 }
 async function renderParadasReal(){
@@ -1738,18 +1764,93 @@ let condenacaoCache=null;
 async function carregarCondenacaoDoSheets(){
   try{
     const rows=await sheetsRead('Condenacao');
-    // Suporta formato novo (Data|Tipo|Produto|Qtd) e antigo (Data|Produto|Cont|Doenca|Total)
-    return rows.slice(1).filter(r=>r[0]).map(r=>{
+    return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10&&!/^data$/i.test(String(r[0]))).map(r=>{
       const data=String(r[0]).slice(0,10);
+      // Nova estrutura: Data | Motivo | Produtor | Frigorifico | Tipo
+      // Antiga: Data | Tipo(Peça/Animal) | Produto | Qtd | Peso | Motivo | ...
       if(r[1]==='Peça'||r[1]==='Animal inteiro'){
-        // Novo formato
-        return{data,tipo:r[1],produto:r[2]||'—',qtd:+r[3]||0};
-      } else {
-        // Formato antigo — converte: soma contaminacao+doenca como peça
-        return{data,tipo:'Peça',produto:r[1]||'—',qtd:(+r[2]||0)+(+r[3]||0)||(+r[4]||0)};
+        // Formato antigo — ignora (já será reimportado)
+        return null;
       }
-    }).filter(r=>r.qtd>0);
+      return{data,motivo:String(r[1]||'').trim(),produtor:String(r[2]||'').trim(),frigorifico:String(r[3]||'').trim(),tipo:String(r[4]||'Condenação Total').trim()};
+    }).filter(Boolean);
   }catch(e){return[];}
+}
+async function renderCondenacaoAnimalCharts(){
+  if(!condenacaoCache) condenacaoCache=await carregarCondenacaoDoSheets();
+  const diasFiltrados=getHistoricoFiltrado();
+  if(!diasFiltrados.length||!condenacaoCache.length) return;
+  const datasSet=new Set(diasFiltrados.map(d=>d.data));
+  const regs=condenacaoCache.filter(r=>datasSet.has(r.data));
+
+  // --- PARETO POR MOTIVO ---
+  const porMotivo={};
+  regs.forEach(r=>{const m=r.motivo||'Sem motivo';if(!porMotivo[m])porMotivo[m]=0;porMotivo[m]++;});
+  const motOrdenados=Object.entries(porMotivo).sort((a,b)=>b[1]-a[1]);
+  const totalMot=motOrdenados.reduce((a,[,v])=>a+v,0);
+  let acum=0;
+  const paretoLabels=motOrdenados.map(([k])=>k);
+  const paretoVals=motOrdenados.map(([,v])=>v);
+  const paretoPct=motOrdenados.map(([,v])=>{acum+=v;return parseFloat((acum/totalMot*100).toFixed(1));});
+
+  const ctxP=document.getElementById('chart-cond-pareto');
+  if(ctxP){
+    if(ctxP._chart)ctxP._chart.destroy();
+    ctxP._chart=new Chart(ctxP,{
+      data:{labels:paretoLabels,datasets:[
+        {type:'bar',label:'Qtd',data:paretoVals,backgroundColor:'rgba(15,41,71,0.7)',yAxisID:'y'},
+        {type:'line',label:'Acumulado %',data:paretoPct,borderColor:'#dc2626',borderWidth:2,pointRadius:3,yAxisID:'y2',fill:false}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:true,title:{display:true,text:'Qtd'}},
+          y2:{position:'right',min:0,max:100,title:{display:true,text:'%'},grid:{drawOnChartArea:false}}}}
+    });
+  }
+  set('cond-pareto-periodo',`${regs.length} animais`);
+
+  // --- COLUNAS POR PERÍODO + LINHA ABATES ---
+  const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  let labels=[],condVals=[],abateVals=[];
+
+  if(filtroAtual.ano&&!filtroAtual.mes){
+    // Agrupa por mês
+    const porMes={};
+    diasFiltrados.forEach(h=>{
+      const m=h.data.slice(5,7);
+      if(!porMes[m])porMes[m]={cond:0,bov:0};
+      porMes[m].bov+=(h.bovino||[]).reduce((a,r)=>a+(r.abatidos||0),0);
+    });
+    regs.forEach(r=>{const m=r.data.slice(5,7);if(porMes[m])porMes[m].cond++;});
+    const meses=Object.keys(porMes).sort();
+    labels=meses.map(m=>nomesMeses[parseInt(m)]);
+    condVals=meses.map(m=>porMes[m].cond);
+    abateVals=meses.map(m=>porMes[m].bov);
+  } else {
+    // Dia a dia
+    const porDia={};
+    diasFiltrados.forEach(h=>{porDia[h.data]={cond:0,bov:(h.bovino||[]).reduce((a,r)=>a+(r.abatidos||0),0)};});
+    regs.forEach(r=>{if(porDia[r.data])porDia[r.data].cond++;});
+    const dias=Object.keys(porDia).sort();
+    labels=dias.map(d=>fmtBR(d));
+    condVals=dias.map(d=>porDia[d].cond);
+    abateVals=dias.map(d=>porDia[d].bov);
+  }
+
+  const ctxV=document.getElementById('chart-cond-vol');
+  if(ctxV){
+    if(ctxV._chart)ctxV._chart.destroy();
+    ctxV._chart=new Chart(ctxV,{
+      data:{labels,datasets:[
+        {type:'bar',label:'Condenados',data:condVals,backgroundColor:'rgba(220,38,38,0.7)',yAxisID:'y'},
+        {type:'line',label:'Bovinos abatidos',data:abateVals,borderColor:'#0f2947',borderWidth:2,pointRadius:2,yAxisID:'y2',fill:false}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{font:{size:11}}}},
+        scales:{y:{beginAtZero:true,title:{display:true,text:'Condenados'}},
+          y2:{position:'right',beginAtZero:true,title:{display:true,text:'Abates'},grid:{drawOnChartArea:false}}}}
+    });
+  }
+  set('cond-vol-periodo',`${filtroAtual.mes?nomesMeses[parseInt(filtroAtual.mes)]:filtroAtual.ano}`);
 }
 async function renderCondenacaoReal(tBov){
   if(!condenacaoCache) condenacaoCache=await carregarCondenacaoDoSheets();
@@ -2330,11 +2431,13 @@ function showAlert(id,type,msg){const el=document.getElementById(id);if(!el)retu
 // ── ANIMAIS CONDENADOS ──
 const MOTIVOS_COND=['Cisticercose','Tuberculose','Mastite','Afecção Pulmonar','Alterações de Linfonodos','Caquexia','Contaminação','Contusão Generalizada','Icterícia','Linfadenite','Neoplasia','Outro'];
 const TIPOS_COND=['Condenação Total','Tratamento pelo Frio'];
+const PRODUTORES_COND=["ADAIR DE AFONSO GONZAGA", "ADALBERTO JEREMIAS OLIVEIRA SILVA", "ADILSON JOSÉ DE MELO", "ADRIANA CAETANO DOS SANTOS", "ADRIANA GOUVEA DUTRA TEIXEIRA", "AFONSO DA SILVA FERRÃO", "AFRANIO VASCONCELOS BARROS", "AGMAR LUIZ DA SILVA", "AGROPECUARIA PAULO SERGIO CAMARGO LTDA", "AGROPECUARIA SANTO ONOFRE LTDA", "AILTON BELUZIO", "AILTON RESENDE", "ALCIDES ROGÉRIO DOS SANTOS BRANCO", "ALEQUES DUARTE DE SOUZA", "ALESSANDRO JORGE BITENCOURT ANTUNES", "ALESSANDRO JOSÉ BITENCOURT ANTUNES", "ALEX PEREIRA DA SILVA", "ALEXANDRE OLIVEIRA AMARAL", "ALFONSO FONTANA", "ALFREDO PEREIRA DE RESENDE", "ALMERITA REIS DE ASSIS", "ALTO DA BOA VISTA MINERAÇAO LTDA", "AMARILDO DIAS BUENO", "ANA LUCIA DE FREITAS MOREIRA ABO GANEM", "ANDRE FURTADO SENA", "ANTONIO ALVIM SOBRINHO", "ANTONIO CARLOS RODRIGUES", "ANTONIO HENRIQUE DE PAULA FONSECA", "ANTONIO JOAO MARTINS", "ANTONIO JOÃO MARTINS", "ANTONIO MARTINS DE ARAÚJO", "ANTONIO PEDRO DA SILVA JUNIOR", "ANTONIO REIS DE ANDRAD", "ANTONIO REIS DE ANDRADE", "ANTÔNIO ANANIAS DA SILVA", "ARILSON PEREIRA DA SILVA", "Antonio Pedro da Silva Junior", "BARTOLOMEU TAVARES DO NASCIMENTO", "BENEDITO ALUIZIO CORTEZ", "BENEDITO MARCIO DOS REIS", "BRENDO LUIZ PIMENTA DE FIGUEIREDO", "CARLOS FERNANDO MOREIRA DA CUNHA", "CELSO DOS SANTOS", "CELSO MANICA", "CLAUDEMIR FERREIRA DA COSTA", "CLAUDIANO ALVES DA SILVA", "CLAUDINEI GOMES FERREIRA", "CODIL ALIMENTOS LTDA", "CRISTIANO DE CAMPOS E CURSINO", "CRISTIANO JOSÉ AZEVEDO", "CÁSSIO FERNANDO BRANT ABREU", "CÁSSIO RESENDE DINIZ", "DANIEL LUIZ DE AZEVEDO", "DANIEL MIRANDA BICALHO", "DANIEL MIRANDA BICALHO DE ALMEIDA", "DANIEL VALADARES CUNHA", "DARCI MENDONÇA DE OLIVEIRA", "DECIO RABELO MOREIRA", "DENILSON DE OLIVEIRA REIS", "DENIS VILAS BOAS REIS", "DENISE RIBEIRO LOBATO DE OLIVEIRA", "DERLY JOSE DA SILVA", "DIEGO MENEZES MARINO DA SILVA", "DILSON EDUARDO CORGOZINHO", "DIOGO MENDES FERNANDES", "DIRCEU FERREIRA DA SILVA", "EDEM JOSE BERNARDES ALVES", "EDILSON AFONSO DA SILVA", "EDMAR SOUZA DE REZENDE", "EDNILSON DIVINO VILARINHO", "EDVANI DANIEL DOS SANTOS", "ENEIAS JOSÉ DE PINHO", "ENIO FARIA CAETANO", "ENIR GOMES BARBOSA", "EUCLIDES SCHNEIDER", "EUSTÁQUIO NATALINO MONTEIRO DE SOUZA", "EVANDRO MARCIO RIBEIRO", "EXPEDITO GONÇALVES DE SOUZA E OUTROS", "FAZENDA SAN LUCAS LTDA", "FERNANDO ANTÔNIO DE OLIVEIRA", "FERNANDO FERRI AMARAL", "FERNANDO PAULO DA SILVA", "FERNANDO VIEIRA VINHAL", "FLORA GABRIEL DA COSTA MENEZES", "FRANCISCO AUGUSTO DO NASCIMENTO", "FRANCISCO PEREIRA AMORIM", "FRANCISCO RODRIGUES MAIA", "FÁBIO VILELA DE QUEIROZ", "GENOVAIS SOARES FIGUEIREDO", "GERALDO ALVES CORGOSINHO", "GERALDO ALVES MACIEL", "GERALDO MAGELA PEREIRA RESENDE", "GERALDO MAGELA TEIXEIRA SALLES", "GERSON RIBEIRO DA SILVA", "GILBERTO ANTÔNIO DE MOURA", "GILIARDY ANTONIO DA SILVA", "GILIARDY ANTÔNIO DA SILVA", "GILMAR DIAS DOS SANTOS", "GLAUCIO MARCELINO PIRES", "GUIGO RANGEL VAREJÃO", "GUSTAVO PINTO ABREU", "GUSTAVO SOUZA CALDEIRA", "GUSTAVO SOUZA CALDEIRA BRANT", "HELIA DO ROSARIO ALVES DE SOUSA", "HELIA EVA DE OLIVEIRA", "HENRIQUE MARTINS ARAÚJO", "HERÁZIO DO CARMO PEREIRA", "HIGOR LIVIO PEREIRA LAGE", "HILTON MANOEL DE FARIA", "HORIZONTINA MARIA DE JESUS", "ILCEU DE LÉLLIS E SILVA", "ILDEU PEREIRA BRANDAO", "ISRAEL DE FREITAS CAPANEMA", "ISRAEL DE JESUS PINTO", "ITALO SERGIO SOARES", "ITAMAR JOSE ARAUJO", "ITAMAR MOREIRA DA SILVA", "IVAIR DIAS DA SILVA", "IVAN GILSON PIMENTA DE FIGUEIREDO", "IVO JOSÉ LAGE", "JACINTO DIAS DOS SANTOS", "JADER ISMAEL GARCIA BIBIANO", "JEFERSON LUCAS CAMPOS GUIMARÃES", "JOANA BERENIZ TEIXEIRA", "JOAO BATISTA PASCHOALIN", "JOAO LUIZ DA SILVA", "JOAQUIM SOBRINHO ALVES DA CRUZ", "JOAQUIM TEIXEIRA GOMES", "JOB FELICIANO NETO", "JONAS EDUARDO DA SILVA FEIRREIRA", "JONAS EDUARDO DA SILVA FERREIRA", "JONI MAIA CARVALHO", "JOSE AFFONSO DE PAULA FILHO", "JOSE AFONSO DE PAULA FILHO", "JOSE EFIGENIO DE SOUZA", "JOSE EUSTAQUIO ALVES ARRIEIRO", "JOSE EUSTAQUIO BARBOSA NOGUEIRA", "JOSE EUSTAQUIO DOS SANTOS", "JOSE EUSTÁQUIO BARBOSA NOGUEIRA", "JOSE FRANCISCO VILAS BOAS", "JOSE GERALDO DE LIMA", "JOSE HELIO PAES", "JOSE LUIZ OLIVEIRA ALVARENGA", "JOSE MARCIO MOREIRA BICALHO", "JOSE MARCONI DE ALMEIDA", "JOSE MARIA NASCIMENTO CARNEIRO", "JOSE PAULINO NUNES", "JOSE PEREIRA DA SILVA", "JOSUE SOARES FIRMINO HOSTALACIO", "JOSÉ DARIO DA FONSECA", "JOSÉ DE ARIMATÉIA REIS CARVALHO", "JOSÉ FRANCISCO VILAS BOAS", "JOSÉ GERALDO DE LIMA", "JOSÉ HELVÉCIO OLIVEIRA RESENDE", "JOSÉ HÉLIO PAES", "JOSÉ JOÃO PEREIRA MODESTO DE CARVALHO", "JOSÉ LUCIO TRAJANO", "JOSÉ MARCOS DOS SANTOS", "JOSÉ MARIO DA SILVA", "JOSÉ OLINTO PIMENTA DE FIGUEIREDO", "JOSÉ PEREIRA DA SILVA", "JOSÉ RAFAEL DA SILVA", "JOSÉ RONALDO DE FREITAS", "JOVINO MOREIRA DE PAULA", "JOÃO BATISTA DE OLIVEIRA", "JOÃO BATISTA DINIZ", "JOÃO BATISTA PASCHOALIN", "JOÃO CARLOS DOS REIS", "JOÃO DE CAMPOS", "JOÃO DIONÍSIO CHAVES", "JULIO CESAR MARTINS MAGALHAES", "JULIO HENRIQUE JUNQUEIRA SANTOS", "JÚLIO CELIO OLIVEIRA VARGAS", "JÚLIO CÉSAR MARTINS", "LACERDINO LOURENÇO DE MEDEIROS", "LEIDERVAN ESTEVES DE OLIVEIRA", "LEONARDO BATISTA DE QUEIROZ", "LEONARDO DE SOUSA TEIXEIRA", "LEVI DA COSTA CAMPOS", "LIVIA MARIA SILVA SOARES", "LOCIR JOSÉ FAGUNDES", "LUCIANO PEREIRA FERRER", "LUIS GERVANIO PINTO", "LUIZ CARLOS DE MELO", "LUIZ CARLOS DE PAULA", "LUIZ CARLOS DE VILAS BOAS", "LUIZ CARLOS TELES CORREA", "LUIZ CESAR LOPES", "LUIZ CÉSAR LOPES", "LUIZ EDUARDO SALES CORTEZ", "LUIZ FERREIRA LIMA", "LUIZ MARQUES PARREIRAS", "LUIZ SILVEIRA", "LUTZ VIANA RODRIGUES", "LUTZ VIANA RODRIGUES JUNIOR", "LUTZ VIANA RODRIGUES JÚNIO", "LUTZ VIANA RODRIGUES JÚNIOR", "MANOEL EUSTÁQUIO GONÇALVES", "MANOEL JACY VILELA LIMA", "MANOEL OSCAR DE ARAUJO FILHO", "MANUEL MENDES DE CARVALHO", "MARCELO ANTONIO DA COSTA", "MARCELO AUGUSTO LUCAS PEREIRA", "MARCELO SOUSA DUART", "MARCELO SOUZA DUARTE", "MARCELO VERGA DE SOUSA", "MARCIO SILVEIRA", "MARCO AURELIO DE OLIVEIRA RESENDE", "MARCO AURELIO JOSE REIS JUNIOR", "MARCO AURELIO MENEZAS LIMA", "MARCO AURÉLIO JOSÉ REIS JÚNIOR", "MARCO PAULO DE ANDRADE FERREIRA", "MARCOS ANTONIO PEREIRA", "MARCOS LUIZ DA SILVA VILELA", "MARCOS VIEIRA DA COSTA E OUTROS", "MARIA GENI FONSECA CAMPOS", "MARIA VALDETE SANTOS TANNURE", "MARIA VANDA DOS SANTOS CORREA CAMPOS", "MARIA ZELIA DA MATA REIS", "MAURICIO VIEIRA DA ROCHA", "MIGUEL GECIEL FERREIRA", "MIGUEL GEICEL FERREIRA", "MIGUEL REINALDO DA SILVA", "MIKAEL FARIA DE MEDEIROS", "MILTON DE FARIA SALDANHA", "MIQUEIAS VITOR FONSECA", "MIQUEIAS VITOR FONSECA CAMPOS", "NAZARENO ALVES PINTO", "NELSON MIGUEL DA SILVA", "NEUZA DIAS CARDOSO", "NILSON JOSE DA SILVA", "NILTON FERNANDES DE SOUZA", "NILTON PORFIRIO MARQUES FILHO", "NILTON ROBERTO OLIVEIRA MELO", "NIVALDO DA SILVA MOREIRA", "OLINDO LUIZ DE OLIVEIRA PRADO", "ONEZIO FERREIRA LIMA", "ORESTES LINO PEREIRA", "OSANAN PEREIRA CAIXETA", "OSMAR GONÇALVES CABECEIRA", "OTONI LUIZ DE FREITAS MACHADO", "PAULO CESAR DE ANDRADE", "PAULO FURTADO DE ANDRADE", "PAULO HNEIQUE OLIVEIRA PAIVA", "PAULO SÉRGIO PINTO DE MAGALHÃES", "PEDRO BENEDITO VIEIRA GONÇALVES", "PEDRO ELYSIO DE FREITAS FIGUEIREDO", "PEDRO HENRIQUE CORDEIRO", "PEDRO PORTO GONÇALVES", "PIONEIRA SAGRANA AGROPECUÁRIA LTDA", "RAFAEL VINICIOS ROCHA", "RAIMUNDO DELFINO MAIA", "RAMON MENESES TAVARES", "RANDOLFO RODRIGUES LAGE", "REINALDO LUIZ COSTA", "REINALDO OLIVEIRA DA COSTA", "RENATO ANTONIO DE PAULA", "RENATO GARCIA DA COSTA", "RENATO GARCIA DA COSTA JUNIOR", "RENATO VIEIRA DE FREITAS", "RILDO DE LIMA ALBINO", "RIMA AGROFLORESTA LTDA", "ROBERTO JACI RESENDE", "ROBSON GONÇALVES", "RODRIGO JOSE CARNEIRO AZEVEDO", "ROGERIO SEBASTIAO PEREIRA", "ROMEU COELHO", "RONALDO DA COSTA COELHO", "RONALDO DE ASSIS NORONHA", "RONALDO RODRIGUES DA SILVA", "RONALDO SOARES HOSTALACIO", "RONALDO SOARES MAIA", "RONALDO TEIXEIRA BRAGA", "RONEY LEITE FONSECA", "SABRINA FONSECA CARDOSO MOURAO", "SANDRA FERREIRA ALVES", "SANDRA MARCIA DO CARMO", "SANTO ANTONIO AGROPECUARIA LTDA", "SANY FONSECA CARDOSO", "SEBASTIAO CRISTIANO DA SILVA", "SEBASTIÃO BATISTA LIMA", "SEBASTIÃO CLENIO DE OLIVEIRA", "SERGIO JOSE DA SILVEIRA", "SERGIO JOSE DA SILVEIRA", "SERGIO JOSÉ DA SILVEIRA", "SIMONE DUARTE SOARES BARROSO", "SIMPLY AGRO EMPREENDIMENTOS S/A", "STEFANO MARTINS ARPINI", "STELLA MARIS MENEZAS AZEVEDO", "SÉRGIO JOSE DA SILVEIRA", "Sérgio Rodrigues Nunes", "TADEU CAPANEMA REIS", "TALES TADEU TAVARES", "TIAGO OLIVEIRA CASTRO", "TULIO FERNANDO PEREIRA", "VAGNER VELOSO DA SILVA", "VALDEIR MAGNO ROCHA", "VALDEMAR MENDES DE SOUZA RIEIRO", "VALTEIR AZEVEDO SILVA", "VALTER ALVES DA SILVA", "VANDA HOLANDA DE ANDRADE SERPA", "VANDERLEI NUNES DA FONSECA", "VANDERSON LEITE MADUREIRA", "VENÍCIUS PEREIRA FILHO", "VICENTE DE PAULA BARROS DUTRA", "VICENTE OZANAN DA  SILVA", "VICTOR GABRIEL DA COSTA MENEZES", "WAGNAR ALVERES DE VARGAS", "WALCHIR DIAS AMARAL", "WALDIR POTROS FERREIRA", "WALDIR VICENTE VIEIRA", "WALQUIRIO JOSE DE ALMEIDA", "WALQUIRIO JOSÉ DE ALMEIDA", "WDSON DOS REIS VALADARES", "WELINTON LUCAS ABREU", "WEMERSON DE CASTRO GANDRA", "WILLIAM PEREIRA CAMPOS", "WILLIAM TENORIO PINHEIRO", "WILLIAM TENÓRIO PINHEIRO", "WILLIAN TENORIO PINHEIRO", "WILLIAN TÉNORIO PINHEIRO", "WILLIAN URQUIZA VELOSO", "WINNFRIED JORDAN FILHO", "Outros"];
+const FRIGORIFICOS_COND=["Frigocosta", "Frigomatos", "Frigovitta", "Guatu", "Hortsul", "Outros", "Serradão", "Outros"];
 
 let animaisCondLista=[];
 function adicionarAnimalCondenado(){
   const id=Date.now();
-  animaisCondLista.push({id,sexo:'Macho',peso:0,motivo:'',tipo:'Condenação Total',produtor:'',frigorifico:''});
+  animaisCondLista.push({id,motivo:'',tipo:'Condenação Total',produtor:'',frigorifico:''});
   renderAnimaisCond();
 }
 function removerAnimalCond(id){
@@ -2351,14 +2454,7 @@ function renderAnimaisCond(){
     el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px">Nenhum animal condenado registrado</div>';return;
   }
   el.innerHTML=animaisCondLista.map(a=>`
-    <div style="display:grid;grid-template-columns:90px 90px 1fr 1fr 1fr 110px auto;gap:8px;align-items:end;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px">
-      <div class="param-field" style="margin:0"><label>Sexo</label>
-        <select onchange="updateAnimalCond(${a.id},'sexo',this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
-          <option ${a.sexo==='Macho'?'selected':''}>Macho</option>
-          <option ${a.sexo==='Fêmea'?'selected':''}>Fêmea</option>
-        </select></div>
-      <div class="param-field" style="margin:0"><label>Peso (kg)</label>
-        <input type="number" step="0.1" min="0" value="${a.peso||''}" placeholder="0" oninput="updateAnimalCond(${a.id},'peso',this.value)" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;align-items:end;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px">
       <div class="param-field" style="margin:0"><label>Motivo</label>
         <select onchange="updateAnimalCond(${a.id},'motivo',this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
           <option value="">Selecione...</option>
@@ -2369,16 +2465,37 @@ function renderAnimaisCond(){
           ${TIPOS_COND.map(t=>`<option value="${t}" ${a.tipo===t?'selected':''}>${t}</option>`).join('')}
         </select></div>
       <div class="param-field" style="margin:0"><label>Produtor</label>
-        <input type="text" value="${a.produtor||''}" placeholder="Nome do produtor" oninput="updateAnimalCond(${a.id},'produtor',this.value)" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px"></div>
+        <select onchange="updateAnimalCond(${a.id},'produtor',this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
+          <option value="">Selecione...</option>
+          ${PRODUTORES_COND.map(p=>`<option value="${p}" ${a.produtor===p?'selected':''}>${p}</option>`).join('')}
+        </select></div>
       <div class="param-field" style="margin:0"><label>Frigorífico</label>
         <select onchange="updateAnimalCond(${a.id},'frigorifico',this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;width:100%">
           <option value="">Selecione...</option>
-          ${['Frigobet','Serradão','Frigovitta'].map(f=>`<option value="${f}" ${a.frigorifico===f?'selected':''}>${f}</option>`).join('')}
+          ${FRIGORIFICOS_COND.map(f=>`<option value="${f}" ${a.frigorifico===f?'selected':''}>${f}</option>`).join('')}
         </select></div>
       <div style="padding-bottom:2px">
         <button onclick="removerAnimalCond(${a.id})" style="padding:6px 8px;border:1px solid var(--border);border-radius:var(--r);background:var(--white);cursor:pointer;color:var(--red);font-size:12px">✕</button>
       </div>
     </div>`).join('');
+}
+async function salvarCondenacaoAnimalClick(){
+  const al=document.getElementById('cond-animal-alert');
+  const date=document.getElementById('miudos-date')?.value;
+  if(!date){if(al){al.className='alert err';al.textContent='Selecione uma data primeiro';al.style.display='';setTimeout(()=>al.style.display='none',3000);}return;}
+  const rows=[];
+  animaisCondLista.forEach(a=>{
+    if(a.motivo||a.produtor) rows.push([date,a.motivo||'',a.produtor||'',a.frigorifico||'',a.tipo||'Condenação Total']);
+  });
+  if(!rows.length){if(al){al.className='alert err';al.textContent='Nenhum animal para salvar';al.style.display='';setTimeout(()=>al.style.display='none',3000);}return;}
+  try{
+    await sheetsAppend('Condenacao',rows);
+    if(al){al.className='alert ok';al.textContent=`✓ ${rows.length} animal(is) salvos`;al.style.display='';}
+    animaisCondLista=[];renderAnimaisCond();
+    setTimeout(()=>{if(al)al.style.display='none';},3000);
+  }catch(e){
+    if(al){al.className='alert err';al.textContent='✕ Erro ao salvar';al.style.display='';}
+  }
 }
 // ── FIM ANIMAIS CONDENADOS ──
 const EXT_MAP_MIUDOS={'FIGADO':'Fígado','CORACAO':'Coração','DOBRADINHA':'Bucho','RUMEN':'Bucho',
