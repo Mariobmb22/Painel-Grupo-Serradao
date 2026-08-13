@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-88</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-89</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1803,9 +1803,12 @@ async function renderCondenacaoAnimalCharts(){
         {type:'line',label:'Acumulado %',data:paretoPct,borderColor:'#dc2626',borderWidth:2,pointRadius:3,yAxisID:'y2',fill:false,
           datalabels:{anchor:'center',align:'top',font:{size:9,weight:'700'},color:'#dc2626',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v+'%'}}
       ]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{}},
-        scales:{y:{beginAtZero:true,title:{display:true,text:'Qtd'}},
-          y2:{position:'right',min:0,max:100,title:{display:true,text:'%'},grid:{drawOnChartArea:false}}}},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
+        plugins:{legend:{display:false},datalabels:{}},
+        scales:{
+          y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:11}},title:{display:false}},
+          y2:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},ticks:{font:{size:11},callback:v=>v+'%'},title:{display:false}},
+          x:{grid:{display:false},ticks:{font:{size:10},maxRotation:35,minRotation:0}}}},
       plugins:[ChartDataLabels]
     });
   }
@@ -1849,10 +1852,12 @@ async function renderCondenacaoAnimalCharts(){
         {type:'line',label:'Bovinos abatidos',data:abateVals,borderColor:'#0f2947',borderWidth:2,pointRadius:3,yAxisID:'y2',fill:false,
           datalabels:{anchor:'center',align:'top',font:{size:9,weight:'700'},color:'#0f2947',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v?fmt(v):''}}
       ]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{position:'top',labels:{font:{size:11}}},datalabels:{}},
-        scales:{y:{beginAtZero:true,title:{display:true,text:'Condenados'}},
-          y2:{position:'right',beginAtZero:true,title:{display:true,text:'Abates'},grid:{drawOnChartArea:false}}}},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
+        plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},datalabels:{}},
+        scales:{
+          y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:11}},title:{display:false}},
+          y2:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:11}},title:{display:false}},
+          x:{grid:{display:false},ticks:{font:{size:10},maxRotation:35}}}},
       plugins:[ChartDataLabels]
     });
   }
@@ -1865,17 +1870,16 @@ async function renderCondenacaoReal(tBov){
   const datasSet=new Set(diasFiltrados.map(d=>d.data));
   const registros=condenacaoCache.filter(c=>datasSet.has(c.data));
   const precos=params.precosMiudos||{};
-  // Mapa de preços por produto (nome da peça → preço do miúdo correspondente)
-  const precoMap={'Cabeça':precos['Carne Industrial']||0,'Língua':precos['Língua']||0,
+  const precoMap={'Rabo':precos['Rabo']||0,'Língua':precos['Língua']||0,
     'Coração':precos['Coração']||0,'Pulmão':precos['Pulmão']||0,
-    'Fígado':precos['Fígado']||0,'Rins':precos['Rins']||0,'Intestino':precos['Bucho']||0};
-  // Peças condenadas
-  const pecas={};
-  CONDENADOS.forEach(p=>{pecas[p]={qtd:0};});
-  registros.filter(r=>r.tipo==='Peça').forEach(r=>{
-    if(pecas[r.produto]!==undefined) pecas[r.produto].qtd+=r.qtd;
+    'Fígado':precos['Fígado']||0,'Rins':precos['Rins']||0,'Bucho':precos['Bucho']||0};
+  const totalAbatidos=tBov||diasFiltrados.reduce((a,h)=>a+(h.bovino||[]).reduce((b,e)=>b+(e.abatidos||0),0),0);
+
+  // Peças condenadas — registros antigos ainda podem existir com tipo='Peça'
+  const pecas={};CONDENADOS.forEach(p=>{pecas[p]={qtd:0};});
+  registros.filter(r=>r.tipo==='Peça'||(!r.tipo&&r.produto)).forEach(r=>{
+    if(r.produto&&pecas[r.produto]!==undefined) pecas[r.produto].qtd+=(r.qtd||1);
   });
-  const totalAbatidos=tBov||diasFiltrados.reduce((a,h)=>a+h.bovino.reduce((b,e)=>b+(e.abatidos||0),0),0);
   const tbody=document.querySelector('#tbl-cond-pecas tbody');
   if(tbody){
     tbody.innerHTML='';
@@ -1894,21 +1898,23 @@ async function renderCondenacaoReal(tBov){
     set('cond-pecas-total-pct',totalPct.toFixed(3)+'%');
     set('cond-pecas-total-rs',totalRs>0?fmtMoeda(-totalRs):'—');
   }
-  // Animais inteiros — separado por macho/fêmea
-  const animaisMacho=registros.filter(r=>r.tipo==='Animal inteiro'&&r.produto==='Macho').reduce((a,r)=>a+r.qtd,0);
-  const animaisFemea=registros.filter(r=>r.tipo==='Animal inteiro'&&(r.produto==='Fêmea'||r.produto==='—')).reduce((a,r)=>a+r.qtd,0);
-  const totalAnimais=animaisMacho+animaisFemea;
+
+  // Animais inteiros — nova estrutura: cada registro = 1 animal com motivo/tipo
+  const animaisInteiros=registros.filter(r=>r.motivo||r.frigorifico); // nova estrutura
+  const totalAnimais=animaisInteiros.length;
   const pctAnimais=totalAbatidos>0?(totalAnimais/totalAbatidos*100):0;
   set('cond-animais-total',fmt(totalAnimais)||'0');
-  set('cond-animais-pct',(pctAnimais.toFixed(3))+'%');
+  set('cond-animais-pct',pctAnimais.toFixed(3)+'%');
   const listaEl=document.getElementById('cond-animais-lista');
   if(listaEl){
     if(!totalAnimais){listaEl.textContent='Nenhuma condenação de animal inteiro no período';}
     else{
-      let html='';
-      if(animaisMacho>0) html+=`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)"><span>Machos</span><span style="font-weight:600;color:var(--red)">${fmt(animaisMacho)} animal${animaisMacho>1?'is':''}</span></div>`;
-      if(animaisFemea>0) html+=`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)"><span>Fêmeas</span><span style="font-weight:600;color:var(--red)">${fmt(animaisFemea)} animal${animaisFemea>1?'is':''}</span></div>`;
-      listaEl.innerHTML=html;
+      // Agrupa por motivo
+      const porMotivo={};
+      animaisInteiros.forEach(r=>{const m=r.motivo||'Sem motivo';if(!porMotivo[m])porMotivo[m]=0;porMotivo[m]++;});
+      listaEl.innerHTML=Object.entries(porMotivo).sort((a,b)=>b[1]-a[1]).map(([m,q])=>
+        `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)"><span>${m}</span><span style="font-weight:600;color:var(--red)">${q} animal${q>1?'is':''}</span></div>`
+      ).join('');
     }
   }
 }
@@ -2066,29 +2072,35 @@ const CHART_OPTS_BASE={
       anchor:ctx=>ctx.dataset.type==='line'?'center':'end',
       align:ctx=>ctx.dataset.type==='line'?'top':'top',
       font:{size:10,weight:'700'},
-      color:ctx=>ctx.dataset.type==='line'?'#374151':'#374151',
-      backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.8)':'transparent',
+      color:ctx=>ctx.dataset.type==='line'?'#1e293b':'#1e293b',
+      backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'rgba(255,255,255,0.75)',
       borderRadius:3,
-      padding:ctx=>ctx.dataset.type==='line'?{top:1,bottom:1,left:3,right:3}:0,
+      padding:{top:2,bottom:2,left:4,right:4},
       formatter:(v,ctx)=>{
         if(!v&&v!==0)return'';
-        if(ctx.dataset.type==='line')return v?fmt(Math.round(v)):'';
         return v?fmt(Math.round(v)):'';
       }
     }
   },
+  layout:{padding:{top:28}},
   scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}
 };
 function renderBarChart(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
 function renderBarChartLine(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;
-  // Para gráficos de produtividade: casas decimais nos rótulos e eixo Y
   const maxVal=Math.max(...data,...meta);
-  const isSmall=maxVal<2; // números pequenos como abates/h/h
+  const isSmall=maxVal<2;
   const opts=JSON.parse(JSON.stringify(CHART_OPTS_BASE));
-  if(isSmall){
-    opts.plugins.datalabels={display:ctx=>ctx.dataset.type!=='line',anchor:'end',align:'top',font:{size:10,weight:'600'},color:'#374151',formatter:v=>v?v.toFixed(2):''};
-    opts.scales.y.ticks={font:{size:11},callback:v=>v.toFixed(2)};
-  }
+  opts.plugins.datalabels={
+    display:true,
+    anchor:'end',align:'top',
+    font:{size:10,weight:'700'},
+    color:'#1e293b',
+    backgroundColor:'rgba(255,255,255,0.85)',
+    borderRadius:3,
+    padding:{top:2,bottom:2,left:3,right:3},
+    formatter:v=>v?(isSmall?v.toFixed(3):fmt(Math.round(v))):''
+  };
+  if(isSmall) opts.scales.y.ticks={font:{size:11},callback:v=>v.toFixed(3)};
   CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:opts,plugins:[ChartDataLabels]});
 }
 function renderBarChartW(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},{label:'Meta',data:labels.map(()=>meta),type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
