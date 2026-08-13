@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-89</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-91</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -445,7 +445,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <div class="card-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
           <div class="efic-mini"><div class="efic-mini-label">Total animais condenados</div><div class="efic-mini-val" id="cond-animais-total" style="color:var(--red)">—</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">% sobre abatidos</div><div class="efic-mini-val" id="cond-animais-pct" style="color:var(--red)">—</div></div>
+          <div class="efic-mini"><div class="efic-mini-label">% sobre abatidos</div><div class="efic-mini-val" id="cond-animais-pct" style="color:var(--red)">—</div><div style="font-size:10px;color:var(--muted);margin-top:2px" id="cond-animais-abatidos">— abatidos</div></div>
         </div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase">Evolução no período</div>
         <div id="cond-animais-lista" style="font-size:12px;color:var(--muted)">Sem dados no período selecionado</div>
@@ -1235,7 +1235,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 // ── LOGIN ──
 // ── SENHA GERAL DO SITE ──
 // Troque aqui quando precisar revogar acesso de alguém ou divulgar o site
-const SENHA_SITE='123';
+const SENHA_SITE='GrupoSerradao2026';
 function verificarSenhaSite(){
   const v=document.getElementById('login-site-input')?.value;
   if(v===SENHA_SITE){
@@ -1905,6 +1905,7 @@ async function renderCondenacaoReal(tBov){
   const pctAnimais=totalAbatidos>0?(totalAnimais/totalAbatidos*100):0;
   set('cond-animais-total',fmt(totalAnimais)||'0');
   set('cond-animais-pct',pctAnimais.toFixed(3)+'%');
+  set('cond-animais-abatidos',fmt(totalAbatidos)+' abatidos');
   const listaEl=document.getElementById('cond-animais-lista');
   if(listaEl){
     if(!totalAnimais){listaEl.textContent='Nenhuma condenação de animal inteiro no período';}
@@ -1913,7 +1914,7 @@ async function renderCondenacaoReal(tBov){
       const porMotivo={};
       animaisInteiros.forEach(r=>{const m=r.motivo||'Sem motivo';if(!porMotivo[m])porMotivo[m]=0;porMotivo[m]++;});
       listaEl.innerHTML=Object.entries(porMotivo).sort((a,b)=>b[1]-a[1]).map(([m,q])=>
-        `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)"><span>${m}</span><span style="font-weight:600;color:var(--red)">${q} animal${q>1?'is':''}</span></div>`
+        `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)"><span>${m}</span><span style="font-weight:600;color:var(--red)">${q} ${q>1?'animais':'animal'}</span></div>`
       ).join('');
     }
   }
