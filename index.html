@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-91</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-92</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1746,6 +1746,7 @@ async function carregarParadasDoSheets(){
 }
 let pesosCache=null;
 async function carregarPesosDoSheets(){
+  const pf=v=>parseFloat(String(v||0).replace(',','.'))||0;
   try{
     const rows=await sheetsRead('Pesos');
     return rows.slice(1).filter(r=>r[1]).map(r=>{
@@ -1755,7 +1756,7 @@ async function carregarPesosDoSheets(){
       else if(typeof d==='number') data=new Date(Math.round((d-25569)*86400*1000)).toISOString().slice(0,10);
       else data=String(d).slice(0,10);
       if(!data||!/^\d{4}-\d{2}-\d{2}$/.test(data))return null;
-      return{data,pesoBovFV:+r[2]||0,pesoBovSerr:+r[3]||0,pesoSuiSeali:+r[4]||0,pesoSuiSerr:+r[5]||0};
+      return{data,pesoBovFV:pf(r[2]),pesoBovSerr:pf(r[3]),pesoSuiSeali:pf(r[4]),pesoSuiSerr:pf(r[5])};
     }).filter(Boolean);
   }catch(e){return[];}
 }
@@ -1965,21 +1966,28 @@ async function renderRendimentoReal(tB,tS){
     'Sebo (Res.)':'Carne Industrial','Sebo (Res.) bov.':'Carne Industrial',
     'Recorte suíno':'Recortes','Tripa':'Bucho','Couro tapete':'Couro'};
   const getPreco=nome=>precos[nome]||precos[PRECO_MAP[nome]]||0;
+
+  // KgTotal_Abate por dia — maior valor entre todos os miúdos do dia
+  // representa o peso total de carcaça — base para calcular meta em kg
+  const kgTotalPorDia={};
+  registros.forEach(r=>{
+    if(!kgTotalPorDia[r.data]||r.kgTotalAbate>kgTotalPorDia[r.data])
+      kgTotalPorDia[r.data]=r.kgTotalAbate||0;
+  });
+  const kgTotalAbatePeriodo=Object.values(kgTotalPorDia).reduce((a,b)=>a+b,0);
+
   const linhas=Object.values(porMiudo).map(m=>{
     const pesoTotal=m.pesos.reduce((a,b)=>a+b,0);
     const pctMedioReal=m.pctReais.length?m.pctReais.reduce((a,b)=>a+b,0)/m.pctReais.length:0;
     const preco=getPreco(m.nomeOriginal);
-    // Perda: diferença entre o % real e a meta, aplicada sobre o total abatido e o preço/kg
-    // Vergalho só existe em bois — usa o peso de carcaça de boi do período, não o total bovino+suíno
-    const baseEsperado=m.nomeOriginal==='Vergalho'?kgCarcacaBoiPeriodo:(tB+tS);
-    const kgEsperado=baseEsperado*(m.meta/100);
-    const kgReal=pesoTotal;
-    const diffKg=kgReal-kgEsperado;
-    // Só calcula perda se tiver dado real lançado
-    const perdaR=diffKg<0&&preco>0?diffKg*preco:0;
-    if(m.nomeOriginal==='Aorta'||m.nomeOriginal==='Fígado')console.log(`[Perda ${m.nomeOriginal}] pesoTotal=${pesoTotal.toFixed(1)} kgEsperado=${kgEsperado.toFixed(1)} diffKg=${diffKg.toFixed(1)} preco=${preco} perdaR=${perdaR.toFixed(2)}`);
+    // Base: kg total de carcaça do período (Vergalho usa só boi)
+    const base=m.nomeOriginal==='Vergalho'?kgCarcacaBoiPeriodo:kgTotalAbatePeriodo;
+    const kgEsperado=base*(m.meta/100);
+    const diffKg=pesoTotal-kgEsperado;
+    // Perda: só quando tem dado lançado (pesoTotal>0) e está abaixo da meta
+    const perdaR=pesoTotal>0&&diffKg<0&&preco>0?diffKg*preco:0;
     const diffKgReal=pesoTotal>0?diffKg:null;
-    return{nome:m.nomeOriginal,meta:m.meta,real:parseFloat(pctMedioReal.toFixed(2)),pesoKg:pesoTotal,perda:perdaR,diffKg:diffKgReal,baseVol:baseEsperado};
+    return{nome:m.nomeOriginal,meta:m.meta,real:parseFloat(pctMedioReal.toFixed(2)),pesoKg:pesoTotal,perda:perdaR,diffKg:diffKgReal,baseVol:base};
   });
 
   const perdaTotal=linhas.reduce((a,l)=>a+(l.perda<0?l.perda:0),0);
@@ -2997,16 +3005,41 @@ async function calcularIndicadoresExtra(tB,tS,nd){
 
 async function calcPesoMedio(diasFiltrados){
   try{
+    // Sempre recarrega pesos para garantir parse correto de vírgula decimal
+    pesosCache=await carregarPesosDoSheets();
+    if(!pesosCache.length){set('sum-media-bov-m','—');set('sum-media-bov-f','—');set('vol-media-total','—');return;}
+
     const fn=v=>v>0?v.toFixed(1):'—';
-    // pesosBov e pesosSui do histórico já têm media_kg por empresa por dia
-    let somaBov=0, contBov=0, somaSui=0, contSui=0;
-    diasFiltrados.forEach(d=>{
-      (d.pesosBov||[]).forEach(p=>{if(p.media_kg>0){somaBov+=p.media_kg;contBov++;}});
-      (d.pesosSui||[]).forEach(p=>{if(p.media_kg>0){somaSui+=p.media_kg;contSui++;}});
+    const pf=v=>parseFloat(String(v||0).replace(',','.'));
+
+    // Índice de pesos por data
+    const pesosIdx={};
+    pesosCache.forEach(p=>{pesosIdx[p.data]=p;});
+
+    // Para cada dia filtrado, soma peso total e cabeças cruzando com historico
+    let kgBovTotal=0, cabBovTotal=0, kgSuiTotal=0, cabSuiTotal=0;
+
+    diasFiltrados.forEach(h=>{
+      const p=pesosIdx[h.data];
+      if(!p) return;
+
+      // Bovino: peso total FV + Serradão dividido pelas cabeças abatidas
+      const kgBov=pf(p.pesoBovFV)+pf(p.pesoBovSerr);
+      const cabBov=(h.bovino||[]).reduce((a,e)=>a+(e.abatidos||0),0);
+      if(kgBov>0&&cabBov>0){kgBovTotal+=kgBov;cabBovTotal+=cabBov;}
+
+      // Suíno: peso total Seali + Serradão dividido pelas cabeças abatidas
+      const kgSui=pf(p.pesoSuiSeali)+pf(p.pesoSuiSerr);
+      const cabSui=(h.suino||[]).reduce((a,e)=>a+(e.abatidos||0),0);
+      if(kgSui>0&&cabSui>0){kgSuiTotal+=kgSui;cabSuiTotal+=cabSui;}
     });
-    set('sum-media-bov-m',fn(contBov>0?somaBov/contBov:0));
-    set('sum-media-bov-f',fn(contSui>0?somaSui/contSui:0));
-    set('vol-media-total',fn(contBov>0?somaBov/contBov:0));
+
+    const mediaBov=cabBovTotal>0?kgBovTotal/cabBovTotal:0;
+    const mediaSui=cabSuiTotal>0?kgSuiTotal/cabSuiTotal:0;
+
+    set('sum-media-bov-m',fn(mediaBov));
+    set('sum-media-bov-f',fn(mediaSui));
+    set('vol-media-total',fn(mediaBov));
   }catch(e){console.warn('Peso médio:',e);}
 }
 </script>
