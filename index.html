@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-100</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-102</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1071,15 +1071,13 @@ async function carregarHistoricoCompleto(){
       const m=metasPorData[d.data]||{};
       const tBov=d.bovino.reduce((a,e)=>a+e.abatidos,0);
       const tSui=d.suino.reduce((a,e)=>a+e.abatidos,0);
-      // Meta: soma das metas por empresa na aba Abates (já gravadas corretamente)
-      // Fallback para Historico_Diario se não tiver na aba Abates
       const metaBovAbates=d.bovino.reduce((a,e)=>a+(e.previsto||0),0);
       const metaSuiAbates=d.suino.reduce((a,e)=>a+(e.previsto||0),0);
       return{
         data:d.data,diaKey:d.diaKey,
         bovino:d.bovino,suino:d.suino,
-        metaBov:metaBovAbates||m.metaBov||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.bov||0),0):0),
-        metaSui:metaSuiAbates||m.metaSui||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.sui||0),0):0),
+        metaBov:m.metaBov||metaBovAbates,
+        metaSui:m.metaSui||metaSuiAbates,
         capBov:params.capBov,capSui:params.capSui,
         pesosBov:[],pesosSui:[]
       };
@@ -2116,22 +2114,19 @@ const CHART_OPTS_BASE={
       }
     },
     datalabels:{
-      display:true,
-      anchor:ctx=>ctx.dataset.type==='line'?'center':'end',
-      align:ctx=>ctx.dataset.type==='line'?'top':'top',
-      font:{size:10,weight:'700'},
-      color:ctx=>ctx.dataset.type==='line'?'#1e293b':'#1e293b',
-      backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'rgba(255,255,255,0.75)',
+      display:ctx=>ctx.dataset.type!=='line',
+      anchor:'end',
+      align:'top',
+      font:{size:9,weight:'700'},
+      color:'#1e293b',
+      backgroundColor:'rgba(255,255,255,0.85)',
       borderRadius:3,
-      padding:{top:2,bottom:2,left:4,right:4},
-      formatter:(v,ctx)=>{
-        if(!v&&v!==0)return'';
-        return v?fmt(Math.round(v)):'';
-      }
+      padding:{top:2,bottom:2,left:3,right:3},
+      formatter:(v)=>v?fmt(Math.round(v)):''
     }
   },
-  layout:{padding:{top:28}},
-  scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}
+  layout:{padding:{top:32}},
+  scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:10},maxRotation:0}}}
 };
 function renderBarChart(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
 function renderBarChartLine(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;
