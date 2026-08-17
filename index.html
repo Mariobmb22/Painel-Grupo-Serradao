@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-103</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-104</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1055,16 +1055,24 @@ async function carregarHistoricoCompleto(){
     hist.forEach(h=>{metasPorData[h.data]={metaBov:h.metaBov,metaSui:h.metaSui};});
 
     const porData={};
+    const pf=v=>parseFloat(String(v||0).replace(',','.'))||0;
     abates.slice(1).forEach(r=>{
       const data=String(r[0]||'').slice(0,10);
       if(!data||data==='Data'||data==='data'||!/^\d{4}-\d{2}-\d{2}$/.test(data))return;
       const empresa=r[1]||'';
-      const tipo=r[2]||'';
-      const bovAbat=+r[3]||0, bovMeta=+r[4]||0, suiAbat=+r[5]||0, suiMeta=+r[6]||0;
-      const diaKey=r[7]||'Segunda';
-      if(!porData[data]) porData[data]={data,bovino:[],suino:[],diaKey};
-      if(tipo==='bovino'&&(bovAbat>0||bovMeta>0)) porData[data].bovino.push({empresa,abatidos:bovAbat,previsto:bovMeta});
-      if(tipo==='suino'&&(suiAbat>0||suiMeta>0)) porData[data].suino.push({empresa,abatidos:suiAbat,previsto:suiMeta});
+      const bovAbat=pf(r[3]), bovMeta=pf(r[4]), suiAbat=pf(r[5]), suiMeta=pf(r[6]);
+      const diaKey=String(r[7]||'Segunda').trim();
+      if(!porData[data]) porData[data]={data,bovino:[],suino:[],diaKey,bovEmpVisto:{},suiEmpVisto:{}};
+      // Bovino: adiciona se tem abate ou meta, evita duplicar empresa
+      if((bovAbat>0||bovMeta>0)&&!porData[data].bovEmpVisto[empresa]){
+        porData[data].bovino.push({empresa,abatidos:bovAbat,previsto:bovMeta});
+        porData[data].bovEmpVisto[empresa]=true;
+      }
+      // Suíno: adiciona se tem abate ou meta, evita duplicar empresa
+      if((suiAbat>0||suiMeta>0)&&!porData[data].suiEmpVisto[empresa]){
+        porData[data].suino.push({empresa,abatidos:suiAbat,previsto:suiMeta});
+        porData[data].suiEmpVisto[empresa]=true;
+      }
     });
 
     return Object.values(porData).map(d=>{
@@ -2114,12 +2122,12 @@ const CHART_OPTS_BASE={
       }
     },
     datalabels:{
-      display:ctx=>ctx.dataset.type!=='line',
-      anchor:'end',
-      align:'top',
+      display:true,
+      anchor:ctx=>ctx.dataset.type==='line'?'end':'end',
+      align:ctx=>ctx.dataset.type==='line'?'bottom':'top',
       font:{size:9,weight:'700'},
-      color:'#1e293b',
-      backgroundColor:'rgba(255,255,255,0.85)',
+      color:ctx=>ctx.dataset.type==='line'?'#374151':'#1e293b',
+      backgroundColor:'rgba(255,255,255,0.9)',
       borderRadius:3,
       padding:{top:2,bottom:2,left:3,right:3},
       formatter:(v)=>v?fmt(Math.round(v)):''
