@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-111</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-113</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -507,7 +507,6 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   </div>
   <div class="two-col">
     <div class="card"><div class="card-hdr"><div class="card-title">Rendimento miúdos suíno <span class="badge badge-sui">Suíno</span></div><span class="card-date">dia</span></div><div class="card-body card-body-0"><table class="tbl" id="tbl-miudos-sui"><thead><tr><th>Miúdo</th><th class="r">Meta%</th><th class="r">Real%</th><th class="r">Vol.Abt</th><th class="r">Perda (R$)</th><th class="r">F</th></tr></thead><tbody></tbody></table></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Subprodutos</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-subprod"><thead><tr><th>Subproduto</th><th class="r">Meta/sem</th><th class="r">Sem 1</th><th class="r">Sem 2</th><th class="r">Acum.</th><th class="r">F</th></tr></thead><tbody></tbody></table></div></div>
   </div>
 
   <!-- ANÁLISE COMPARATIVA -->
@@ -2103,9 +2102,7 @@ function renderDemoRendimento(tB,tS){
   const re=document.getElementById('ranking-bov');re.innerHTML='';rankBov.forEach((r,i)=>{const pct=Math.round(r.val/rankBov[0].val*100);re.innerHTML+=`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>${i+1}. ${r.nome}</span><span style="color:var(--red);font-weight:700">-R$${(r.val/1000).toFixed(1)}k</span></div><div style="height:4px;background:var(--border);border-radius:2px"><div style="height:4px;background:var(--red);border-radius:2px;width:${pct}%"></div></div></div>`;});
   renderMiudosTable('tbl-miudos-bov',[{nome:'Coração',meta:0.53,real:0.63,perda:0},{nome:'Diafragma',meta:2.00,real:2.14,perda:0},{nome:'Fígado',meta:0.50,real:0.43,perda:-55180},{nome:'Língua bov.',meta:1.40,real:1.73,perda:-97600},{nome:'Mocotó',meta:0.40,real:0.45,perda:0},{nome:'Retículo',meta:0.90,real:0.79,perda:-9430},{nome:'Rúmen',meta:2.00,real:3.01,perda:-38000},{nome:'Sebo (Res.)',meta:2.00,real:3.01,perda:0}],tB);
   renderMiudosTable('tbl-miudos-sui',[{nome:'Coração',meta:0.35,real:0.40,perda:-12000},{nome:'Tripa',meta:0.95,real:1.12,perda:0},{nome:'Língua',meta:0.00,real:0.25,perda:0},{nome:'Recorte suíno',meta:0.10,real:0.09,perda:-60300}],tS);
-  const sp=[{nome:'Bolsas sangue fetal',meta:60,s1:40,s2:29,acum:94},{nome:'Couro tapete',meta:117,s1:0,s2:33,acum:58},{nome:'Bolsas fita rompidas',meta:0,s1:25,s2:33,acum:58}];
-  const tb=document.querySelector('#tbl-subprod tbody');tb.innerHTML='';sp.forEach(r=>{const f=r.acum>=r.meta&&r.meta>0?'<span class="f f-g"></span>':'<span class="f f-r"></span>';tb.innerHTML+=`<tr><td>${r.nome}</td><td class="r">${r.meta}</td><td class="r">${r.s1}</td><td class="r">${r.s2}</td><td class="r"><b>${r.acum}</b></td><td class="r">${r.meta>0?f:'—'}</td></tr>`;});
-}
+  const sp=[{nome:'Bolsas sangue fetal',meta:60,s1:40,s2:29,acum:94},{nome:'Couro tapete',meta:117,s1:0,s2:33,acum:58},{nome:'Bolsas fita rompidas',meta:0,s1:25,s2:33,acum:58}];}
 function renderMiudosTable(id,rows,totalAbtPadrao){
   const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';
   rows.forEach(r=>{
@@ -2178,9 +2175,9 @@ function renderBarChartLine(id,labels,data,meta,color){if(CI[id])CI[id].destroy(
     backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
     borderRadius:3,
     padding:{top:2,bottom:2,left:3,right:3},
-    formatter:v=>v?(isSmall?v.toFixed(3):fmt(Math.round(v))):''
+    formatter:v=>v?(isSmall?v.toFixed(4):fmt(Math.round(v))):''
   };
-  if(isSmall) opts.scales.y.ticks={font:{size:11},callback:v=>v.toFixed(3)};
+  if(isSmall) opts.scales.y.ticks={font:{size:11},callback:v=>v.toFixed(4)};
   CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:opts,plugins:[ChartDataLabels]});
 }
 function renderBarChartW(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},{label:'Meta',data:labels.map(()=>meta),type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
@@ -3026,76 +3023,54 @@ function exportPDF(){
   setTimeout(()=>document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active')),1000);
 }
 function printRelatorio(painel){
-  // Relatório do dia — gera PDF personalizado com dados da aba Volume
   const filtro=document.getElementById('filtro-resumo')?.textContent||'';
-  const g=v=>document.getElementById(v)?.textContent||'—';
-  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-  <title>Relatório Operacional</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,sans-serif;background:#fff;color:#0f172a;padding:28px 32px;font-size:12px;max-width:900px;margin:0 auto}
-    .header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #0f2947;padding-bottom:14px;margin-bottom:20px}
-    .header h1{font-size:18px;font-weight:800;color:#0f2947}
-    .header .sub{font-size:11px;color:#64748b;margin-top:3px}
-    .header .data{font-size:13px;font-weight:700;color:#0f2947;text-align:right;background:#e8eef5;padding:6px 12px;border-radius:6px}
-    .sec{margin-bottom:18px}
-    .sec-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
-    .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
-    .card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px}
-    .card.bov{border-left:4px solid #1a5ca8}
-    .card.sui{border-left:4px solid #c2410c}
-    .lbl{font-size:9px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:3px}
-    .val{font-size:20px;font-weight:900;color:#0f2947}
-    .val-sm{font-size:14px;font-weight:800;color:#0f2947}
-    .unit{font-size:10px;color:#94a3b8;font-weight:400;margin-left:2px}
-    .footer{margin-top:24px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:9px;color:#94a3b8;display:flex;justify-content:space-between}
-    @media print{body{padding:16px 20px}button{display:none}}
-    .print-btn{margin-bottom:16px;background:#0f2947;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700}
-  </style></head><body>
+  const g=v=>{const el=document.getElementById(v);return el?el.textContent.trim():'—';};
+  const bovTotal=g('sum-bov-total'),bovMeta=g('sum-bov-meta'),bovPct=g('sum-bov-pct');
+  const suiTotal=g('sum-sui-total'),suiMeta=g('sum-sui-meta'),suiPct=g('sum-sui-pct');
+  const eficBovDia=g('efic-bov-dia'),eficBovAcum=g('efic-bov-acum');
+  const eficSuiDia=g('efic-sui-dia'),eficSuiAcum=g('efic-sui-acum');
+  const capBov=g('sum-cap-bov'),capSui=g('sum-cap-sui');
+  const mediaBov=g('sum-media-bov-m'),mediaSui=g('sum-media-bov-f');
+  const mediaDiaBov=g('ind-media-dia-bov'),mediaDiaSui=g('ind-media-dia-sui');
+  const ahhBov=g('prod-ahh-bov'),ahhSui=g('prod-ahh-sui');
+  const abateHBov=g('prod-bov-h'),abateHSui=g('prod-sui-h');
+  const colabBov=g('prod-colab-bov'),colabSui=g('prod-colab-sui');
+  const custoCond=g('ind-custo-cond-animal'),perdaCond=g('ind-perda-cond-total');
+  const aprovAnimal=g('ind-aprov-animal');
+  const css=`*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#fff;color:#0f172a;padding:20px 24px;font-size:11px;max-width:960px;margin:0 auto}.print-btn{margin-bottom:12px;background:#0f2947;color:#fff;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700}.header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #0f2947;padding-bottom:12px;margin-bottom:16px}.header h1{font-size:16px;font-weight:800;color:#0f2947}.header .sub{font-size:10px;color:#64748b;margin-top:2px}.fb{background:#e8eef5;color:#0f2947;font-size:12px;font-weight:700;padding:5px 12px;border-radius:6px}.sec{margin-bottom:14px}.st{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:7px;padding-bottom:3px;border-bottom:1px solid #e2e8f0}.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.c{background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:9px 11px}.bov{border-left:4px solid #1a5ca8}.sui{border-left:4px solid #c2410c}.grn{border-left:4px solid #16a34a}.red{border-left:4px solid #dc2626}.lbl{font-size:9px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:2px}.val{font-size:18px;font-weight:900;color:#0f2947;line-height:1.1}.vsm{font-size:13px;font-weight:800;color:#0f2947}.vred{color:#dc2626}.vgrn{color:#16a34a}.sv{font-size:9px;color:#64748b;margin-top:2px}.footer{margin-top:16px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:9px;color:#94a3b8;display:flex;justify-content:space-between}@media print{.print-btn{display:none}body{padding:10px 14px}}`;
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Operacional</title><style>${css}</style></head><body>
   <button class="print-btn" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
-  <div class="header">
-    <div>
-      <h1>Relatório Operacional Diário</h1>
-      <div class="sub">Frigorífico Serradão · Grupo Aquila</div>
-    </div>
-    <div class="data">${filtro}</div>
-  </div>
-  <div class="sec">
-    <div class="sec-title">🐂 Bovino</div>
-    <div class="card bov">
-      <div class="g4">
-        <div><div class="lbl">Abatidos</div><div class="val">${g('vol-total-bov')}</div></div>
-        <div><div class="lbl">Meta</div><div class="val">${g('vol-meta-bov')}</div></div>
-        <div><div class="lbl">Eficiência</div><div class="val">${g('vol-efic-bov')}</div></div>
-        <div><div class="lbl">Capacidade</div><div class="val">${g('vol-cap-bov')}</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="sec">
-    <div class="sec-title">🐷 Suíno</div>
-    <div class="card sui">
-      <div class="g4">
-        <div><div class="lbl">Abatidos</div><div class="val">${g('vol-total-sui')}</div></div>
-        <div><div class="lbl">Meta</div><div class="val">${g('vol-meta-sui')}</div></div>
-        <div><div class="lbl">Eficiência</div><div class="val">${g('vol-efic-sui')}</div></div>
-        <div><div class="lbl">Capacidade</div><div class="val">${g('vol-cap-sui')}</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="sec">
-    <div class="sec-title">Peso Médio por Animal</div>
-    <div class="g2">
-      <div class="card bov"><div class="lbl">Bovino</div><div class="val-sm">${g('sum-media-bov-m')}<span class="unit">kg/cab</span></div></div>
-      <div class="card sui"><div class="lbl">Suíno</div><div class="val-sm">${g('sum-media-bov-f')}<span class="unit">kg/cab</span></div></div>
-    </div>
-  </div>
-  <div class="footer">
-    <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
-    <span>Dashboard Operacional · Grupo Aquila</span>
-  </div>
+  <div class="header"><div><h1>Relatório Operacional Diário</h1><div class="sub">Frigorífico Serradão · Grupo Aquila</div></div><div class="fb">${filtro}</div></div>
+  <div class="sec"><div class="st">🐂 Bovino — Volume & Eficiência</div>
+  <div class="g4">
+    <div class="c bov"><div class="lbl">Abatidos no período</div><div class="val">${bovTotal}</div><div class="sv">Meta: ${bovMeta}</div></div>
+    <div class="c bov"><div class="lbl">vs Meta</div><div class="val ${bovPct.includes('-')?'vred':'vgrn'}">${bovPct}</div></div>
+    <div class="c bov"><div class="lbl">Eficiência do dia</div><div class="val">${eficBovDia}</div></div>
+    <div class="c bov"><div class="lbl">Eficiência acumulada</div><div class="val">${eficBovAcum}</div><div class="sv">Cap: ${capBov}/dia</div></div>
+  </div></div>
+  <div class="sec"><div class="st">🐷 Suíno — Volume & Eficiência</div>
+  <div class="g4">
+    <div class="c sui"><div class="lbl">Abatidos no período</div><div class="val">${suiTotal}</div><div class="sv">Meta: ${suiMeta}</div></div>
+    <div class="c sui"><div class="lbl">vs Meta</div><div class="val ${suiPct.includes('-')?'vred':'vgrn'}">${suiPct}</div></div>
+    <div class="c sui"><div class="lbl">Eficiência do dia</div><div class="val">${eficSuiDia}</div></div>
+    <div class="c sui"><div class="lbl">Eficiência acumulada</div><div class="val">${eficSuiAcum}</div><div class="sv">Cap: ${capSui}/dia</div></div>
+  </div></div>
+  <div class="sec"><div class="st">⚖️ Peso Médio · ⚡ Produtividade</div>
+  <div class="g4">
+    <div class="c bov"><div class="lbl">Peso médio bovino</div><div class="vsm">${mediaBov} <span style="font-size:9px;color:#94a3b8">kg/cab</span></div></div>
+    <div class="c sui"><div class="lbl">Peso médio suíno</div><div class="vsm">${mediaSui} <span style="font-size:9px;color:#94a3b8">kg/cab</span></div></div>
+    <div class="c bov"><div class="lbl">Ab/Hom/Hora bov</div><div class="val">${ahhBov}</div></div>
+    <div class="c sui"><div class="lbl">Ab/Hom/Hora suí</div><div class="val">${ahhSui}</div></div>
+  </div></div>
+  <div class="sec"><div class="st">🔴 Qualidade & Perdas</div>
+  <div class="g3">
+    <div class="c red"><div class="lbl">Custo cond./animal</div><div class="vsm vred">${custoCond}</div></div>
+    <div class="c red"><div class="lbl">Perda total condenação</div><div class="vsm vred">${perdaCond}</div></div>
+    <div class="c grn"><div class="lbl">Aproveitamento animal</div><div class="vsm vgrn">${aprovAnimal}</div></div>
+  </div></div>
+  <div class="footer"><span>Gerado em ${new Date().toLocaleString('pt-BR')}</span><span>Dashboard Operacional · Grupo Aquila</span></div>
   </body></html>`;
-  const win=window.open('','_blank','width=960,height=720');
+  const win=window.open('','_blank','width=1000,height=780');
   if(win){win.document.write(html);win.document.close();}
 }
 
