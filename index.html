@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-99</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-100</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1252,14 +1252,18 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(hrEl) hrEl.textContent=`Histórico: ${hist[0]?.data?.slice(0,7)} → ${hist[hist.length-1]?.data?.slice(0,7)} (${hist.length} dias)`;
       popularFiltrosPeriodo();
       popularCompBase();
-      // Seleciona automaticamente o último dia disponível
-      const ultimaData=historico[historico.length-1].data;
-      document.getElementById('filtro-ano').value=ultimaData.slice(0,4);
+      // Seleciona ano e mês atuais por padrão
+      const hoje=new Date();
+      const anoAtual=String(hoje.getFullYear());
+      const mesAtual=String(hoje.getMonth()+1).padStart(2,'0');
+      document.getElementById('filtro-ano').value=anoAtual;
       popularMesesDoAno();
-      document.getElementById('filtro-mes').value=ultimaData.slice(5,7);
+      const selMes=document.getElementById('filtro-mes');
+      if(selMes&&[...selMes.options].some(o=>o.value===mesAtual)){
+        selMes.value=mesAtual;
+      }
       popularDiasDoMes();
-      document.getElementById('filtro-dia').value=ultimaData.slice(8,10);
-      filtroAtual={ano:ultimaData.slice(0,4),mes:ultimaData.slice(5,7),dia:ultimaData.slice(8,10),empresa:''};
+      filtroAtual={ano:anoAtual,mes:selMes?.value||null,dia:null,empresa:''};
       atualizarResumoFiltro();
       renderDashboard();
       verificarDadosExtracao();
