@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-102</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-103</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1076,8 +1076,8 @@ async function carregarHistoricoCompleto(){
       return{
         data:d.data,diaKey:d.diaKey,
         bovino:d.bovino,suino:d.suino,
-        metaBov:m.metaBov||metaBovAbates,
-        metaSui:m.metaSui||metaSuiAbates,
+        metaBov:+m.metaBov>0?+m.metaBov:metaBovAbates,
+        metaSui:+m.metaSui>0?+m.metaSui:metaSuiAbates,
         capBov:params.capBov,capSui:params.capSui,
         pesosBov:[],pesosSui:[]
       };
