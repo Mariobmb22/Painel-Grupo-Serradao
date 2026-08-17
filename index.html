@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-117</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-120</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1664,20 +1664,31 @@ async function renderDashboard(){
   renderBarChart('chart-bov',labelsChart,bovChart,metaBovChart,'#1a5ca8');
   renderBarChart('chart-sui',labelsChart,suiChart,metaSuiChart,'#b45309');
 
-  const horasBov=parseFloat(document.getElementById('m-horas-bov')?.value)||8; // horas/dia
+  const horasBov=parseFloat(document.getElementById('m-horas-bov')?.value)||8;
   const horasSui=parseFloat(document.getElementById('m-horas-sui')?.value)||8;
   const colabBov=parseFloat(document.getElementById('m-colab-bov')?.value)||params.colabBov||90;
   const colabSui=parseFloat(document.getElementById('m-colab-sui')?.value)||params.colabSui||80;
-  // Usa média diária para indicadores de ritmo (não acumulado do período)
   const mediaBov=tB/d.nd;
   const mediaSui=tS/d.nd;
+  // Ritmo = cabeças/hora (abate/hora)
   const abHBov=horasBov>0?mediaBov/horasBov:0;
   const abHSui=horasSui>0?mediaSui/horasSui:0;
-  const abHHBov=horasBov>0&&colabBov>0?mediaBov/(horasBov*colabBov):0;
-  const abHHSui=horasSui>0&&colabSui>0?mediaSui/(horasSui*colabSui):0;
+  // Kg/homem/hora: usa Total_Kg do TempoAbate se disponível
+  if(!tempoAbateCache) tempoAbateCache=await carregarTempoAbateDoSheets();
+  const datasSet2=new Set(getHistoricoFiltrado().map(h=>h.data));
+  const temposBov=(tempoAbateCache||[]).filter(t=>datasSet2.has(t.data)&&t.animal.toLowerCase().includes('bovino'));
+  const temposSui=(tempoAbateCache||[]).filter(t=>datasSet2.has(t.data)&&(t.animal.toLowerCase().includes('su')||t.animal.toLowerCase().includes('suí')));
+  const kgBovTotal=temposBov.reduce((a,t)=>a+t.totalKg,0);
+  const kgSuiTotal=temposSui.reduce((a,t)=>a+t.totalKg,0);
+  const horasBovReal=temposBov.reduce((a,t)=>a+t.tempoMin/60,0)||horasBov*d.nd;
+  const horasSuiReal=temposSui.reduce((a,t)=>a+t.tempoMin/60,0)||horasSui*d.nd;
+  const colabBovReal=temposBov.length?temposBov.reduce((a,t)=>a+t.operadores,0)/temposBov.length:colabBov;
+  const colabSuiReal=temposSui.length?temposSui.reduce((a,t)=>a+t.operadores,0)/temposSui.length:colabSui;
+  const kgHHBov=horasBovReal>0&&colabBovReal>0?kgBovTotal/(horasBovReal*colabBovReal):0;
+  const kgHHSui=horasSuiReal>0&&colabSuiReal>0?kgSuiTotal/(horasSuiReal*colabSuiReal):0;
   set('prod-bov-h',abHBov.toFixed(1));set('prod-sui-h',abHSui.toFixed(1));
-  set('prod-colab-bov',(colabBov>0?mediaBov/colabBov:0).toFixed(1));set('prod-colab-sui',(colabSui>0?mediaSui/colabSui:0).toFixed(1));
-  set('prod-ahh-bov',abHHBov.toFixed(2));set('prod-ahh-sui',abHHSui.toFixed(2));
+  set('prod-colab-bov',(colabBovReal>0?mediaBov/colabBovReal:0).toFixed(1));set('prod-colab-sui',(colabSuiReal>0?mediaSui/colabSuiReal:0).toFixed(1));
+  set('prod-ahh-bov',kgHHBov.toFixed(2));set('prod-ahh-sui',kgHHSui.toFixed(2));
   renderCondenacaoReal(tB);renderCondenacaoAnimalCharts();await renderRendimentoReal(tB,tS);
   renderProdutividadeReal();renderParadasReal();calcularIndicadoresExtra(tB,tS,d.nd);
 }
@@ -2083,18 +2094,6 @@ async function renderRendimentoReal(tB,tS){
   const datasSet=new Set(diasFiltrados.map(d=>d.data));
   const registros=miudosCache.filter(m=>datasSet.has(m.data));
   console.log(`[Rend] registros no filtro: ${registros.length} | ex datas hist:`,[...datasSet].slice(0,3),'| ex datas miudos:',miudosCache.slice(0,3).map(m=>m.data));
-  // Peso de carcaça só de Boi (sem Vaca) — filtra por "BOI" ou "Boi" independente de capitalização
-  // Base do Vergalho: peso total de carcaça bovina do período (aba Pesos)
-  if(!pesosCache) pesosCache=await carregarPesosDoSheets();
-  const pf2=v=>parseFloat(String(v||0).replace(',','.'))||0;
-  const kgCarcacaBoiPeriodo=pesosCache
-    .filter(p=>datasSet.has(p.data))
-    .reduce((a,p)=>a+pf2(p.pesoBovFV)+pf2(p.pesoBovSerr),0)
-    ||(carcacaCache.filter(c=>{
-      if(!datasSet.has(c.data))return false;
-      const cat=c.categoria.toUpperCase();
-      return cat.startsWith('BOI')||cat.startsWith('MAC')||cat.includes('BOVI')||cat.includes('MACHO');
-    }).reduce((a,c)=>a+c.kgCarcaca,0));
 
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
   const porMiudo={};
@@ -2118,6 +2117,11 @@ async function renderRendimentoReal(tB,tS){
 
   // KgTotal_Abate por dia — maior valor entre todos os miúdos do dia
   // representa o peso total de carcaça — base para calcular meta em kg
+  // Base do Vergalho: só peso de machos bovinos (Boi, não Vaca)
+  const kgCarcacaBoiPeriodo=carcacaCache
+    .filter(c=>datasSet.has(c.data)&&/^Boi\s/i.test(c.categoria.trim()))
+    .reduce((a,c)=>a+c.kgCarcaca,0);
+
   const kgTotalPorDia={};
   registros.forEach(r=>{
     if(!kgTotalPorDia[r.data]||r.kgTotalAbate>kgTotalPorDia[r.data])
@@ -2813,6 +2817,18 @@ function extAplicar(){
   setEl('m-peso-machos',d.bov.pesoMachos||'');setEl('m-peso-femeas',d.bov.pesoFemeas||'');
   setEl('m-sui-machos','');setEl('m-sui-femeas',d.sui.total||'');
   setEl('m-sui-peso-machos','');setEl('m-sui-peso-femeas',d.sui.pesoTotal||'');
+  // Preenche formulário de carcaça automaticamente
+  if(d.empresa&&d.bov.machos){
+    const emp=d.empresa; // 'Frigobet', 'Serradão', 'Frigovitta'
+    const setCarcaca=(cat,cab,kg)=>{
+      const elCab=document.getElementById(`cc-${cat}-cab`);
+      const elKg=document.getElementById(`cc-${cat}-kg`);
+      if(elCab)elCab.value=cab||'';
+      if(elKg)elKg.value=kg||'';
+    };
+    setCarcaca(`Boi ${emp}`,d.bov.machos,d.bov.pesoMachos);
+    setCarcaca(`Vaca ${emp}`,d.bov.femeas,d.bov.pesoFemeas);
+  }
   calcMiudosTotais();
   // Preenche miúdos
   Object.entries(d.miudos).forEach(([nome,peso])=>{
