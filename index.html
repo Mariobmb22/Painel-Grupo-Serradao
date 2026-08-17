@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-97</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-98</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1071,11 +1071,15 @@ async function carregarHistoricoCompleto(){
       const m=metasPorData[d.data]||{};
       const tBov=d.bovino.reduce((a,e)=>a+e.abatidos,0);
       const tSui=d.suino.reduce((a,e)=>a+e.abatidos,0);
+      // Meta: soma das metas por empresa na aba Abates (já gravadas corretamente)
+      // Fallback para Historico_Diario se não tiver na aba Abates
+      const metaBovAbates=d.bovino.reduce((a,e)=>a+(e.previsto||0),0);
+      const metaSuiAbates=d.suino.reduce((a,e)=>a+(e.previsto||0),0);
       return{
         data:d.data,diaKey:d.diaKey,
         bovino:d.bovino,suino:d.suino,
-        metaBov:(m.metaBov>0?m.metaBov:null)||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.bov||0),0):0),
-        metaSui:(m.metaSui>0?m.metaSui:null)||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.sui||0),0):0),
+        metaBov:metaBovAbates||m.metaBov||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.bov||0),0):0),
+        metaSui:metaSuiAbates||m.metaSui||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.sui||0),0):0),
         capBov:params.capBov,capSui:params.capSui,
         pesosBov:[],pesosSui:[]
       };
