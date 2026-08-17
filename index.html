@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-106</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-107</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1855,7 +1855,7 @@ async function renderCondenacaoAnimalCharts(){
         scales:{
           y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:11}},title:{display:false}},
           y2:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},ticks:{font:{size:11},callback:v=>v+'%'},title:{display:false}},
-          x:{grid:{display:false},ticks:{font:{size:10},maxRotation:35,minRotation:0}}}},
+          x:{grid:{display:false},ticks:{font:{size:10},maxRotation:35,minRotation:0}}}},layout:{padding:{top:24}},
       plugins:[ChartDataLabels]
     });
   }
@@ -2110,7 +2110,7 @@ const CHART_OPTS_BASE={
   responsive:true,maintainAspectRatio:false,
   plugins:{
     legend:{
-      display:true,position:'top',align:'end',
+      display:true,position:'bottom',align:'center',
       labels:{
         boxWidth:10,boxHeight:10,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
         generateLabels:()=>[
@@ -2143,10 +2143,11 @@ function renderBarChartLine(id,labels,data,meta,color){if(CI[id])CI[id].destroy(
   const opts=JSON.parse(JSON.stringify(CHART_OPTS_BASE));
   opts.plugins.datalabels={
     display:true,
-    anchor:'end',align:'top',
-    font:{size:10,weight:'700'},
-    color:'#1e293b',
-    backgroundColor:'rgba(255,255,255,0.85)',
+    anchor:ctx=>ctx.dataset.type==='line'?'end':'center',
+    align:ctx=>ctx.dataset.type==='line'?'top':'center',
+    font:{size:9,weight:'800'},
+    color:ctx=>ctx.dataset.type==='line'?'#374151':'#ffffff',
+    backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
     borderRadius:3,
     padding:{top:2,bottom:2,left:3,right:3},
     formatter:v=>v?(isSmall?v.toFixed(3):fmt(Math.round(v))):''
@@ -2948,7 +2949,7 @@ async function renderAnaliseComparativa(){
       {label:'Meta',data:mesesOrd.map(()=>metaTot),borderColor:'#374151',borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false},
     ];
     if(benchTot)datasets.push({label:'Benchmark',data:mesesOrd.map(()=>benchTot),borderColor:'#6366f1',borderDash:[3,3],borderWidth:1.5,pointRadius:0,fill:false});
-    CI['chart-comp-evolucao']=new Chart(ctxEv,{type:'line',data:{labels:labEv,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:10,usePointStyle:true}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw.toFixed(2)+'%'}},datalabels:{display:true,anchor:'top',align:'top',font:{size:9,weight:'700'},color:'#374151',backgroundColor:'rgba(255,255,255,0.8)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v?v.toFixed(2)+'%':''}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},callback:v=>v.toFixed(2)+'%'}},x:{grid:{color:'#f9fafb'},ticks:{font:{size:10},maxRotation:45}}}},plugins:[ChartDataLabels]});
+    CI['chart-comp-evolucao']=new Chart(ctxEv,{type:'line',data:{labels:labEv,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw.toFixed(2)+'%'}},datalabels:{display:false}},scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},callback:v=>v.toFixed(2)+'%'}},x:{grid:{color:'#f9fafb'},ticks:{font:{size:10},maxRotation:45}}}},plugins:[ChartDataLabels]});
   }
 
   // ── GRÁFICO 2: Barras — ganho mensal vs potencial por miúdo ──
@@ -2967,7 +2968,7 @@ async function renderAnaliseComparativa(){
       {label:'✅ Ganho mensal (R$ mil)',data:dG,backgroundColor:dG.map(v=>v>=0?'rgba(22,163,74,0.8)':'rgba(220,38,38,0.7)'),borderRadius:4,borderSkipped:false},
       {label:'🎯 Ainda perde/mês (R$ mil)',data:dM,backgroundColor:'rgba(202,138,4,0.75)',borderRadius:4,borderSkipped:false}
     ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{
-      legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12,usePointStyle:true}},
+      legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},
       datalabels:{display:ctx=>Math.abs(ctx.dataset.data[ctx.dataIndex]||0)>=0.01,anchor:'center',align:'center',font:{size:10,weight:'600'},color:ctx=>{const v=ctx.dataset.data[ctx.dataIndex]||0;return Math.abs(v)>1?'#fff':'#374151';},formatter:v=>v===0?'':((v>0?'+':'')+v.toFixed(1)+'k')}
     },scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v>0?'+':'')+v.toFixed(0)+'k'},grace:'10%'},y:{grid:{display:false},ticks:{font:{size:11},padding:4}}}},plugins:[ChartDataLabels]});
   }
