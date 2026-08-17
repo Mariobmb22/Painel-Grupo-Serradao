@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-104</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-105</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2123,11 +2123,11 @@ const CHART_OPTS_BASE={
     },
     datalabels:{
       display:true,
-      anchor:ctx=>ctx.dataset.type==='line'?'end':'end',
-      align:ctx=>ctx.dataset.type==='line'?'bottom':'top',
-      font:{size:9,weight:'700'},
-      color:ctx=>ctx.dataset.type==='line'?'#374151':'#1e293b',
-      backgroundColor:'rgba(255,255,255,0.9)',
+      anchor:ctx=>ctx.dataset.type==='line'?'center':'center',
+      align:ctx=>ctx.dataset.type==='line'?'bottom':'center',
+      font:{size:10,weight:'800'},
+      color:ctx=>ctx.dataset.type==='line'?'#374151':'#ffffff',
+      backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
       borderRadius:3,
       padding:{top:2,bottom:2,left:3,right:3},
       formatter:(v)=>v?fmt(Math.round(v)):''
