@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-116</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-117</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -385,29 +385,29 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 <!-- PRODUTIVIDADE -->
 <div class="panel" id="panel-produtividade">
   <div class="sec-hdr">Produtividade operacional</div>
-  <!-- Indicador principal: abates/homem/hora -->
+  <!-- Indicador principal: kg/homem/hora -->
   <div class="two-col" style="margin-bottom:0">
     <div class="card" style="border:2px solid var(--bov)">
-      <div class="card-hdr"><div class="card-title" style="color:var(--bov)">Abates / homem / hora — Bovino</div><span class="badge badge-bov">Principal</span></div>
+      <div class="card-hdr"><div class="card-title" style="color:var(--bov)">Kg / homem / hora — Bovino</div><span class="badge badge-bov">Principal</span></div>
       <div class="card-body" style="text-align:center;padding:20px 12px">
         <div style="font-size:36px;font-weight:800;color:var(--bov)" id="prod-ahh-bov">—</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">cab/homem/hora · média do período</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">kg/homem/hora · média do período</div>
         <div class="efic-bar" style="margin-top:12px"><div class="efic-bar-fill" id="prod-ahh-bov-bar" style="background:var(--bov);width:0%"></div></div>
       </div>
     </div>
     <div class="card" style="border:2px solid var(--sui)">
-      <div class="card-hdr"><div class="card-title" style="color:var(--sui)">Abates / homem / hora — Suíno</div><span class="badge badge-sui">Principal</span></div>
+      <div class="card-hdr"><div class="card-title" style="color:var(--sui)">Kg / homem / hora — Suíno</div><span class="badge badge-sui">Principal</span></div>
       <div class="card-body" style="text-align:center;padding:20px 12px">
         <div style="font-size:36px;font-weight:800;color:var(--sui)" id="prod-ahh-sui">—</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">cab/homem/hora · média do período</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">kg/homem/hora · média do período</div>
         <div class="efic-bar" style="margin-top:12px"><div class="efic-bar-fill" id="prod-ahh-sui-bar" style="background:var(--sui);width:0%"></div></div>
       </div>
     </div>
   </div>
   <!-- Auxiliares -->
   <div class="sum-cards" style="margin-top:12px">
-    <div class="sum-card"><div class="sum-card-label">Abate/hora bovino</div><div class="sum-card-val" id="prod-bov-h">—</div><div class="sum-card-sub">cab/hora · média/dia</div></div>
-    <div class="sum-card"><div class="sum-card-label">Abate/hora suíno</div><div class="sum-card-val" id="prod-sui-h">—</div><div class="sum-card-sub">cab/hora · média/dia</div></div>
+    <div class="sum-card"><div class="sum-card-label">Ritmo bovino</div><div class="sum-card-val" id="prod-bov-h">—</div><div class="sum-card-sub">cab/hora · ritmo de abate</div></div>
+    <div class="sum-card"><div class="sum-card-label">Ritmo suíno</div><div class="sum-card-val" id="prod-sui-h">—</div><div class="sum-card-sub">cab/hora · ritmo de abate</div></div>
     <div class="sum-card"><div class="sum-card-label">Cab/colaborador bovino</div><div class="sum-card-val" id="prod-colab-bov">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
     <div class="sum-card"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
   </div>
@@ -421,21 +421,42 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="two-col" style="margin-bottom:14px">
     <div class="card">
       <div class="card-hdr"><div class="card-title">🐂 Bovino — por tipo</div><span class="card-date" id="par-bov-periodo">—</span></div>
-      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-bov-tipo"><thead><tr><th>Tipo</th><th class="r">Ocorrências</th><th class="r">Tempo (min)</th><th class="r">% do tempo</th></tr></thead><tbody></tbody></table></div>
+      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-bov-tipo"><thead><tr><th>Tipo</th><th class="r">Ocorrências</th><th class="r">Horas</th><th class="r">% do tempo</th></tr></thead><tbody></tbody></table></div>
     </div>
     <div class="card">
       <div class="card-hdr"><div class="card-title">🐷 Suíno — por tipo</div><span class="card-date" id="par-sui-periodo">—</span></div>
-      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-sui-tipo"><thead><tr><th>Tipo</th><th class="r">Ocorrências</th><th class="r">Tempo (min)</th><th class="r">% do tempo</th></tr></thead><tbody></tbody></table></div>
+      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-sui-tipo"><thead><tr><th>Tipo</th><th class="r">Ocorrências</th><th class="r">Horas</th><th class="r">% do tempo</th></tr></thead><tbody></tbody></table></div>
     </div>
   </div>
   <div class="two-col">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">🐂 Bovino — por local</div></div>
-      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-bov-local"><thead><tr><th>Local</th><th class="r">Ocorrências</th><th class="r">Tempo (min)</th></tr></thead><tbody></tbody></table></div>
+      <div class="card-hdr"><div class="card-title">🐂 Bovino — por motivo</div></div>
+      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-bov-local"><thead><tr><th>Motivo</th><th class="r">Ocorrências</th><th class="r">Horas</th></tr></thead><tbody></tbody></table></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">🐷 Suíno — por local</div></div>
-      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-sui-local"><thead><tr><th>Local</th><th class="r">Ocorrências</th><th class="r">Tempo (min)</th></tr></thead><tbody></tbody></table></div>
+      <div class="card-hdr"><div class="card-title">🐷 Suíno — por motivo</div></div>
+      <div class="card-body card-body-0"><table class="tbl" id="tbl-par-sui-local"><thead><tr><th>Motivo</th><th class="r">Ocorrências</th><th class="r">Horas</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+  <!-- Gráficos de paradas -->
+  <div class="two-col" style="margin-top:14px">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">📊 Pareto de motivos — Bovino</div></div>
+      <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-bov-pareto"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">📊 Pareto de motivos — Suíno</div></div>
+      <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-sui-pareto"></canvas></div>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top:14px">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Bovino</div></div>
+      <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-bov-pizza"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Suíno</div></div>
+      <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-sui-pizza"></canvas></div>
     </div>
   </div>
 
@@ -1669,37 +1690,83 @@ async function renderParadasReal(){
   const bov=regs.filter(p=>p.linha.toLowerCase().includes('bovino'));
   const sui=regs.filter(p=>p.linha.toLowerCase().includes('su'));
 
-  function agrupar(lista, campo){
+  function agrupar(lista,campo){
     const map={};
-    lista.forEach(p=>{
-      const k=p[campo]||'Outros';
-      if(!map[k])map[k]={qtd:0,min:0};
-      map[k].qtd++;map[k].min+=p.duracaoMin||0;
-    });
+    lista.forEach(p=>{const k=p[campo]||'Outros';if(!map[k])map[k]={qtd:0,min:0};map[k].qtd++;map[k].min+=p.duracaoMin||0;});
     return Object.entries(map).sort((a,b)=>b[1].min-a[1].min);
   }
 
-  function renderTabela(tbId, grupos, totalMin){
+  function renderTabela(tbId,grupos,totalMin){
     const tb=document.querySelector(`#${tbId} tbody`);if(!tb)return;
     tb.innerHTML=grupos.map(([k,v])=>{
       const pct=totalMin>0?(v.min/totalMin*100):0;
-      return`<tr><td style="font-weight:500">${k}</td><td class="r">${v.qtd}</td><td class="r">${v.min.toFixed(0)}</td><td class="r">${pct.toFixed(1)}%</td></tr>`;
+      const hrs=(v.min/60).toFixed(1);
+      return`<tr><td style="font-weight:500">${k}</td><td class="r">${v.qtd}</td><td class="r">${hrs}h</td><td class="r">${pct.toFixed(1)}%</td></tr>`;
     }).join('')||'<tr><td colspan="4" style="color:var(--muted);text-align:center">Sem dados no período</td></tr>';
   }
-  function renderTabelaLocal(tbId, grupos){
+  function renderTabelaMotivo(tbId,grupos){
     const tb=document.querySelector(`#${tbId} tbody`);if(!tb)return;
-    tb.innerHTML=grupos.map(([k,v])=>`<tr><td style="font-weight:500">${k}</td><td class="r">${v.qtd}</td><td class="r">${v.min.toFixed(0)}</td></tr>`).join('')||'<tr><td colspan="3" style="color:var(--muted);text-align:center">Sem dados</td></tr>';
+    tb.innerHTML=grupos.map(([k,v])=>`<tr><td style="font-weight:500">${k}</td><td class="r">${v.qtd}</td><td class="r">${(v.min/60).toFixed(1)}h</td></tr>`).join('')||'<tr><td colspan="3" style="color:var(--muted);text-align:center">Sem dados</td></tr>';
   }
 
   const totalBovMin=bov.reduce((a,p)=>a+p.duracaoMin,0);
   const totalSuiMin=sui.reduce((a,p)=>a+p.duracaoMin,0);
   renderTabela('tbl-par-bov-tipo',agrupar(bov,'tipo'),totalBovMin);
   renderTabela('tbl-par-sui-tipo',agrupar(sui,'tipo'),totalSuiMin);
-  renderTabelaLocal('tbl-par-bov-local',agrupar(bov,'local').slice(0,10));
-  renderTabelaLocal('tbl-par-sui-local',agrupar(sui,'local').slice(0,10));
-  const per=`${diasFiltrados.length} dias · ${bov.length} paradas · ${totalBovMin.toFixed(0)} min`;
+  renderTabelaMotivo('tbl-par-bov-local',agrupar(bov,'descricao').slice(0,10));
+  renderTabelaMotivo('tbl-par-sui-local',agrupar(sui,'descricao').slice(0,10));
+
+  const per=`${diasFiltrados.length} dias · ${bov.length} paradas · ${(totalBovMin/60).toFixed(1)}h`;
   const els=document.getElementById('par-bov-periodo');if(els)els.textContent=per;
-  const els2=document.getElementById('par-sui-periodo');if(els2)els2.textContent=`${sui.length} paradas · ${totalSuiMin.toFixed(0)} min`;
+  const els2=document.getElementById('par-sui-periodo');if(els2)els2.textContent=`${sui.length} paradas · ${(totalSuiMin/60).toFixed(1)}h`;
+
+  // Pareto de motivos
+  function renderPareto(ctxId,grupos,totalMin){
+    const ctx=document.getElementById(ctxId);if(!ctx)return;
+    if(ctx._chart)ctx._chart.destroy();
+    const top=grupos.slice(0,8);
+    const labels=top.map(([k])=>k.length>20?k.slice(0,18)+'…':k);
+    const vals=top.map(([,v])=>parseFloat((v.min/60).toFixed(1)));
+    let acum=0;const totalH=totalMin/60;
+    const pcts=top.map(([,v])=>{acum+=v.min/60;return parseFloat((acum/totalH*100).toFixed(1));});
+    ctx._chart=new Chart(ctx,{
+      data:{labels,datasets:[
+        {type:'bar',label:'Horas',data:vals,backgroundColor:'rgba(15,41,71,0.75)',yAxisID:'y',
+          datalabels:{anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}},
+        {type:'line',label:'Acumulado %',data:pcts,borderColor:'#dc2626',borderWidth:2,pointRadius:3,yAxisID:'y2',fill:false,
+          datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:'#dc2626',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v+'%'}}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
+        plugins:{legend:{display:false},datalabels:{}},
+        scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10}}},
+          y2:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},ticks:{font:{size:10},callback:v=>v+'%'}},
+          x:{grid:{display:false},ticks:{font:{size:9},maxRotation:35}}}},
+      plugins:[ChartDataLabels]
+    });
+  }
+
+  // Pizza de tipos
+  const PIZZA_CORES=['#0f2947','#1a5ca8','#2563eb','#93c5fd','#c2410c','#f97316','#fbbf24','#86efac'];
+  function renderPizza(ctxId,grupos){
+    const ctx=document.getElementById(ctxId);if(!ctx)return;
+    if(ctx._chart)ctx._chart.destroy();
+    const labels=grupos.map(([k])=>k);
+    const vals=grupos.map(([,v])=>parseFloat((v.min/60).toFixed(1)));
+    ctx._chart=new Chart(ctx,{
+      type:'doughnut',
+      data:{labels,datasets:[{data:vals,backgroundColor:PIZZA_CORES.slice(0,labels.length),borderWidth:2,borderColor:'#fff'}]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:8},
+        plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10}},
+          datalabels:{display:true,font:{size:9,weight:'700'},color:'#fff',formatter:(v,ctx)=>{const tot=ctx.dataset.data.reduce((a,b)=>a+b,0);const pct=tot>0?Math.round(v/tot*100):0;return pct>5?pct+'%':'';}}
+        }},
+      plugins:[ChartDataLabels]
+    });
+  }
+
+  renderPareto('chart-par-bov-pareto',agrupar(bov,'descricao'),totalBovMin);
+  renderPareto('chart-par-sui-pareto',agrupar(sui,'descricao'),totalSuiMin);
+  renderPizza('chart-par-bov-pizza',agrupar(bov,'tipo'));
+  renderPizza('chart-par-sui-pizza',agrupar(sui,'tipo'));
 }
 async function renderProdutividadeReal(){
   const diasFiltrados=getHistoricoFiltrado();
@@ -2017,11 +2084,17 @@ async function renderRendimentoReal(tB,tS){
   const registros=miudosCache.filter(m=>datasSet.has(m.data));
   console.log(`[Rend] registros no filtro: ${registros.length} | ex datas hist:`,[...datasSet].slice(0,3),'| ex datas miudos:',miudosCache.slice(0,3).map(m=>m.data));
   // Peso de carcaça só de Boi (sem Vaca) — filtra por "BOI" ou "Boi" independente de capitalização
-  const kgCarcacaBoiPeriodo=carcacaCache.filter(c=>{
-    if(!datasSet.has(c.data))return false;
-    const cat=c.categoria.toUpperCase();
-    return cat.startsWith('BOI')||cat.startsWith('MAC')||cat.includes('BOVI')||cat.includes('MACHO');
-  }).reduce((a,c)=>a+c.kgCarcaca,0);
+  // Base do Vergalho: peso total de carcaça bovina do período (aba Pesos)
+  if(!pesosCache) pesosCache=await carregarPesosDoSheets();
+  const pf2=v=>parseFloat(String(v||0).replace(',','.'))||0;
+  const kgCarcacaBoiPeriodo=pesosCache
+    .filter(p=>datasSet.has(p.data))
+    .reduce((a,p)=>a+pf2(p.pesoBovFV)+pf2(p.pesoBovSerr),0)
+    ||(carcacaCache.filter(c=>{
+      if(!datasSet.has(c.data))return false;
+      const cat=c.categoria.toUpperCase();
+      return cat.startsWith('BOI')||cat.startsWith('MAC')||cat.includes('BOVI')||cat.includes('MACHO');
+    }).reduce((a,c)=>a+c.kgCarcaca,0));
 
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
   const porMiudo={};
@@ -2144,7 +2217,7 @@ const CHART_OPTS_BASE={
         boxWidth:10,boxHeight:10,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
         generateLabels:()=>[
           {text:'Dentro da meta',fillStyle:'#16a34a',strokeStyle:'#16a34a',pointStyle:'rectRounded'},
-          {text:'Tolerância',fillStyle:'#ca8a04',strokeStyle:'#ca8a04',pointStyle:'rectRounded'},
+          {text:'Desvio ≤5%',fillStyle:'#ca8a04',strokeStyle:'#ca8a04',pointStyle:'rectRounded'},
           {text:'Fora da meta',fillStyle:'#dc2626',strokeStyle:'#dc2626',pointStyle:'rectRounded'},
           {text:'Meta',fillStyle:'#374151',strokeStyle:'#374151',pointStyle:'line'}
         ]
