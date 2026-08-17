@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-95</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-97</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -994,8 +994,14 @@ async function initSheets(){}
 async function salvarDiaNoSheets(d){
   try{
     const abateRows=[];
-    d.bovino.forEach(emp=>abateRows.push([d.data,emp.empresa,'bovino',emp.abatidos||0,emp.previsto||0,0,0,d.diaKey]));
-    d.suino.forEach(emp=>{const ex=abateRows.find(r=>r[1]===emp.empresa);if(ex){ex[5]=emp.abatidos||0;ex[6]=emp.previsto||0;}else abateRows.push([d.data,emp.empresa,'suino',0,0,emp.abatidos||0,emp.previsto||0,d.diaKey]);});
+    const getMetaEmp=(empresa,tipo)=>{
+      if(!params.metasEmp||!d.diaKey)return 0;
+      const m=params.metasEmp[empresa];
+      if(!m||!m[d.diaKey])return 0;
+      return tipo==='bov'?(m[d.diaKey].bov||0):(m[d.diaKey].sui||0);
+    };
+    d.bovino.forEach(emp=>abateRows.push([d.data,emp.empresa,'bovino',emp.abatidos||0,getMetaEmp(emp.empresa,'bov'),0,0,d.diaKey]));
+    d.suino.forEach(emp=>{const ex=abateRows.find(r=>r[1]===emp.empresa);if(ex){ex[5]=emp.abatidos||0;ex[6]=getMetaEmp(emp.empresa,'sui');}else abateRows.push([d.data,emp.empresa,'suino',0,0,emp.abatidos||0,getMetaEmp(emp.empresa,'sui'),d.diaKey]);});
     if(abateRows.length){
       const abateExist=await sheetsRead('Abates');
       const jaTem=abateExist.slice(1).some(r=>r[0]===d.data);
@@ -1068,8 +1074,8 @@ async function carregarHistoricoCompleto(){
       return{
         data:d.data,diaKey:d.diaKey,
         bovino:d.bovino,suino:d.suino,
-        metaBov:m.metaBov||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.bov||0),0):0),
-        metaSui:m.metaSui||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.sui||0),0):0),
+        metaBov:(m.metaBov>0?m.metaBov:null)||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.bov||0),0):0),
+        metaSui:(m.metaSui>0?m.metaSui:null)||(params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>a+(v[d.diaKey]?.sui||0),0):0),
         capBov:params.capBov,capSui:params.capSui,
         pesosBov:[],pesosSui:[]
       };
@@ -1078,6 +1084,23 @@ async function carregarHistoricoCompleto(){
 }
 async function carregarMiudosDoSheets(data){
   try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]===data).map(r=>({miudo:r[1],nrPecas:+r[2]||0,pesoKg:+r[3]||0,kgTotalAbate:+r[4]||0,pctReal:+r[5]||0,pctMeta:+r[6]||0}));}catch(e){return[];}
+}
+async function carregarParametrosDoSheets(){
+  try{
+    const rows=await sheetsRead('Parametros');
+    if(rows.length<2)return;
+    if(!params.metasEmp)params.metasEmp={};
+    rows.slice(1).forEach(r=>{
+      const emp=String(r[0]||'').trim();
+      const dia=String(r[1]||'').trim();
+      const bov=+r[2]||0;
+      const sui=+r[3]||0;
+      if(!emp||!dia)return;
+      if(!params.metasEmp[emp])params.metasEmp[emp]={};
+      params.metasEmp[emp][dia]={bov,sui};
+    });
+    localStorage.setItem('frigobet-params',JSON.stringify(params));
+  }catch(e){console.warn('Params Sheets:',e);}
 }
 async function salvarParametrosNoSheets(metasEmp){
   try{await sheetsClearRange('Parametros');const rows=[];Object.entries(metasEmp).forEach(([emp,dias])=>Object.entries(dias).forEach(([dia,v])=>rows.push([emp,dia,v.bov||0,v.sui||0])));if(rows.length)await sheetsAppend('Parametros',rows);return true;}catch(e){return false;}
@@ -1208,7 +1231,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const su=document.getElementById('input-script-url');if(su&&APPS_SCRIPT_URL)su.value=APPS_SCRIPT_URL;
   loadParams();buildParamsGrid();buildMiudosForm();buildCondenacaoForm();renderParadas();
   try{
-    const [hist]=await Promise.all([carregarHistoricoCompleto(),carregarBenchmarkDoSheets(),carregarCondenacaoDoSheets().then(d=>{condenacaoCache=d;}),carregarPrecosDoSheets()]);
+    const [hist]=await Promise.all([carregarHistoricoCompleto(),carregarBenchmarkDoSheets(),carregarCondenacaoDoSheets().then(d=>{condenacaoCache=d;}),carregarPrecosDoSheets(),carregarParametrosDoSheets()]);
     if(hist.length){
       historico=hist;
       dadosDia=historico[historico.length-1];
