@@ -10,7 +10,7 @@
 <style>
 :root{
   /* Cores primárias — paleta Aquila corporativa */
-  --primary:#0f2947; --primary-dark:#081b31; --primary-light:#e8eef5;
+  --primary:#0f2947; --primary-dark:#081b31; --primary-light:#e8eef5; --page-bg:#0d1f35;
   --accent:#2196f3; --accent-light:#e3f2fd;
   --bov:#0f2947; --bov-light:#e8eef5;
   --sui:#c2410c; --sui-light:#fff1e6;
@@ -21,14 +21,14 @@
   /* Neutros */
   --border:#e2e8f0; --border2:#f1f5f9;
   --text:#0f172a; --text-soft:#334155; --muted:#64748b; --muted2:#94a3b8;
-  --white:#fff; --bg:#f8fafc; --bg-elev:#fff;
+  --white:#fff; --bg:#f1f5f9; --bg-elev:#fff;
   --r:8px; --rlg:12px;
   --shadow-sm:0 1px 2px rgba(15,41,71,.05);
   --shadow:0 1px 3px rgba(15,41,71,.08),0 1px 2px rgba(15,41,71,.04);
   --shadow-md:0 4px 12px rgba(15,41,71,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0d1f35;color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
 
 /* TOPBAR — mais alto, com logos e branding */
 .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}
@@ -84,7 +84,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 .tab-lock+.tab-lock{margin-left:0}
 
 /* MAIN */
-.main{padding:20px 24px;max-width:100%;margin:0 auto}
+.main{padding:20px 24px;max-width:100%;margin:0 auto;background:#0d1f35;min-height:calc(100vh - 130px)}
 @media(min-width:1600px){.main{padding:20px 40px}}
 .panel{display:none;width:100%}
 .panel.active{display:block}
@@ -126,13 +126,13 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 .f-y{background:var(--yellow-bg)}
 .f-r{background:var(--red-bg)}
 .efic-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border2)}
-.efic-mini{background:var(--bg);border-radius:var(--r);padding:10px 12px;border:1px solid var(--border2)}
+.efic-mini{background:#f8fafc;border-radius:var(--r);padding:10px 12px;border:1px solid var(--border2)}
 .efic-mini-label{font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 .efic-mini-val{font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.01em}
 .efic-bar{height:4px;border-radius:2px;background:var(--border);margin-top:5px;overflow:hidden}
 .efic-bar-fill{height:100%;border-radius:2px}
 .sum-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
-.sum-card{background:var(--white);border:1px solid var(--border);border-radius:var(--rlg);padding:14px 16px;box-shadow:var(--shadow-sm);border-left:3px solid var(--primary);transition:transform .15s,box-shadow .15s}
+.sum-card{background:#fff;border:1px solid var(--border);border-radius:var(--rlg);padding:14px 16px;box-shadow:var(--shadow-sm);border-left:3px solid var(--primary);transition:transform .15s,box-shadow .15s}
 .sum-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
 .sum-card-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .sum-card-val{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.1}
@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-110</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-111</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -238,7 +238,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Relatório do dia
     </button>
-    <button class="btn-top no-print" onclick="exportPDF()" title="Exportar aba atual em PDF">
+    <button class="btn-top no-print" onclick="exportarPDF()" title="Exportar aba atual em PDF">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/><path d="M4 18h16v2H4z"/></svg>
       Exportar PDF
     </button>
@@ -349,8 +349,8 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     </div>
   </div>
   <div class="two-col">
-    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — bovino (cabeças) <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — suíno (cabeças) <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="chart-sui"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — bovino (cabeças) <span class="badge badge-bov">Bovino</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-bov','Abate_Bovino')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — suíno (cabeças) <span class="badge badge-sui">Suíno</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-sui','Abate_Suino')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-sui"></canvas></div></div></div>
   </div>
   <div class="two-col">
     <div class="card">
@@ -412,8 +412,8 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     <div class="sum-card"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
   </div>
   <div class="two-col" style="margin-top:12px">
-    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — bovino <span class="badge badge-bov">Bovino</span></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — suíno <span class="badge badge-sui">Suíno</span></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-sui"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — bovino <span class="badge badge-bov">Bovino</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-prod-bov','Produtividade_Bovino')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — suíno <span class="badge badge-sui">Suíno</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-prod-sui','Produtividade_Suino')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-sui"></canvas></div></div></div>
   </div>
   <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Abts/H/h Bov</th><th class="r">Abate/h Bov</th><th class="r">Cab/Col Bov</th><th class="r">F</th><th class="r">Abts/H/h Suí</th><th class="r">Abate/h Suí</th><th class="r">Cab/Col Suí</th><th class="r">F</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
   <!-- PARADAS -->
@@ -480,11 +480,11 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="sec-hdr" style="margin-top:8px">Condenação de animais inteiros</div>
   <div class="two-col" style="margin-bottom:14px">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">📊 Pareto por motivo</div><span class="card-date" id="cond-pareto-periodo">—</span></div>
+      <div class="card-hdr"><div class="card-title">📊 Pareto por motivo</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-pareto','Pareto_Condenacao')">⬇ PNG</button><span class="card-date" id="cond-pareto-periodo">—</span></div>
       <div class="card-body" style="height:240px;position:relative"><canvas id="chart-cond-pareto"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">📈 Condenações vs Abates</div><span class="card-date" id="cond-vol-periodo">—</span></div>
+      <div class="card-hdr"><div class="card-title">📈 Condenações vs Abates</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-vol','Condenacoes_Abates')">⬇ PNG</button><span class="card-date" id="cond-vol-periodo">—</span></div>
       <div class="card-body" style="height:240px;position:relative"><canvas id="chart-cond-vol"></canvas></div>
     </div>
   </div>
@@ -1279,6 +1279,22 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }else{loadDemoData();}
   }catch(e){loadDemoData();}
 });
+
+
+function downloadChart(canvasId, nome){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const link=document.createElement('a');
+  link.download=nome.replace(/[^a-z0-9]/gi,'_')+'.png';
+  // White background
+  const tmp=document.createElement('canvas');
+  tmp.width=canvas.width;tmp.height=canvas.height;
+  const ctx2=tmp.getContext('2d');
+  ctx2.fillStyle='#ffffff';ctx2.fillRect(0,0,tmp.width,tmp.height);
+  ctx2.drawImage(canvas,0,0);
+  link.href=tmp.toDataURL('image/png');
+  link.click();
+}
 
 // ── LOGIN ──
 // ── SENHA GERAL DO SITE ──
@@ -3010,18 +3026,90 @@ function exportPDF(){
   setTimeout(()=>document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active')),1000);
 }
 function printRelatorio(painel){
-  // Muda para o painel antes de imprimir e gera o relatório formatado
-  showTab(painel);
+  // Relatório do dia — gera PDF personalizado com dados da aba Volume
+  const filtro=document.getElementById('filtro-resumo')?.textContent||'';
+  const g=v=>document.getElementById(v)?.textContent||'—';
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Relatório Operacional</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;background:#fff;color:#0f172a;padding:28px 32px;font-size:12px;max-width:900px;margin:0 auto}
+    .header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #0f2947;padding-bottom:14px;margin-bottom:20px}
+    .header h1{font-size:18px;font-weight:800;color:#0f2947}
+    .header .sub{font-size:11px;color:#64748b;margin-top:3px}
+    .header .data{font-size:13px;font-weight:700;color:#0f2947;text-align:right;background:#e8eef5;padding:6px 12px;border-radius:6px}
+    .sec{margin-bottom:18px}
+    .sec-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+    .card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px}
+    .card.bov{border-left:4px solid #1a5ca8}
+    .card.sui{border-left:4px solid #c2410c}
+    .lbl{font-size:9px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:3px}
+    .val{font-size:20px;font-weight:900;color:#0f2947}
+    .val-sm{font-size:14px;font-weight:800;color:#0f2947}
+    .unit{font-size:10px;color:#94a3b8;font-weight:400;margin-left:2px}
+    .footer{margin-top:24px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:9px;color:#94a3b8;display:flex;justify-content:space-between}
+    @media print{body{padding:16px 20px}button{display:none}}
+    .print-btn{margin-bottom:16px;background:#0f2947;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700}
+  </style></head><body>
+  <button class="print-btn" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+  <div class="header">
+    <div>
+      <h1>Relatório Operacional Diário</h1>
+      <div class="sub">Frigorífico Serradão · Grupo Aquila</div>
+    </div>
+    <div class="data">${filtro}</div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">🐂 Bovino</div>
+    <div class="card bov">
+      <div class="g4">
+        <div><div class="lbl">Abatidos</div><div class="val">${g('vol-total-bov')}</div></div>
+        <div><div class="lbl">Meta</div><div class="val">${g('vol-meta-bov')}</div></div>
+        <div><div class="lbl">Eficiência</div><div class="val">${g('vol-efic-bov')}</div></div>
+        <div><div class="lbl">Capacidade</div><div class="val">${g('vol-cap-bov')}</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">🐷 Suíno</div>
+    <div class="card sui">
+      <div class="g4">
+        <div><div class="lbl">Abatidos</div><div class="val">${g('vol-total-sui')}</div></div>
+        <div><div class="lbl">Meta</div><div class="val">${g('vol-meta-sui')}</div></div>
+        <div><div class="lbl">Eficiência</div><div class="val">${g('vol-efic-sui')}</div></div>
+        <div><div class="lbl">Capacidade</div><div class="val">${g('vol-cap-sui')}</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">Peso Médio por Animal</div>
+    <div class="g2">
+      <div class="card bov"><div class="lbl">Bovino</div><div class="val-sm">${g('sum-media-bov-m')}<span class="unit">kg/cab</span></div></div>
+      <div class="card sui"><div class="lbl">Suíno</div><div class="val-sm">${g('sum-media-bov-f')}<span class="unit">kg/cab</span></div></div>
+    </div>
+  </div>
+  <div class="footer">
+    <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+    <span>Dashboard Operacional · Grupo Aquila</span>
+  </div>
+  </body></html>`;
+  const win=window.open('','_blank','width=960,height=720');
+  if(win){win.document.write(html);win.document.close();}
+}
+
+function exportarPDF(){
+  // Exportar PDF — imprime a aba atual completa
+  const abas=['volume','produtividade','qualidade','rendimento'];
+  const abaAtiva=abas.find(a=>document.getElementById('panel-'+a)?.style.display!=='none')||'volume';
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active'));
-  const el=document.getElementById('panel-'+painel);if(el)el.classList.add('print-active');
+  const el=document.getElementById('panel-'+abaAtiva);if(el)el.classList.add('print-active');
   const sub=document.getElementById('print-header-sub');
   const dt=document.getElementById('print-header-date');
   if(sub) sub.textContent=document.getElementById('filtro-resumo')?.textContent||'';
   if(dt) dt.textContent='Emitido em '+new Date().toLocaleString('pt-BR');
-  setTimeout(()=>{
-    window.print();
-    setTimeout(()=>document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active')),500);
-  },300);
+  setTimeout(()=>{window.print();setTimeout(()=>document.querySelectorAll('.panel').forEach(p=>p.classList.remove('print-active')),500);},300);
 }
 
 // Novos indicadores calculados a partir do período filtrado
