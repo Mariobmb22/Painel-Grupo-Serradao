@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-115</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-116</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1752,7 +1752,7 @@ async function renderProdutividadeReal(){
     suiH.push(parseFloat(ahhSui.toFixed(2)));suiHMeta.push(parseFloat(metaAhhSui.toFixed(2)));
     linhasTabela.push([g.label,ahhBov.toFixed(2),abateHBov.toFixed(1),cabColBov.toFixed(1),farol(metaAhhBov>0?(ahhBov-metaAhhBov)/metaAhhBov*100:0),ahhSui.toFixed(2),abateHSui.toFixed(1),cabColSui.toFixed(1),farol(metaAhhSui>0?(ahhSui-metaAhhSui)/metaAhhSui*100:0)]);
   });
-  if(labelsBov.length){renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8');renderBarChartLine('chart-prod-sui',labelsBov,suiH,suiHMeta,'#b45309');}
+  if(labelsBov.length){renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8',2);renderBarChartLine('chart-prod-sui',labelsBov,suiH,suiHMeta,'#b45309',2);}
   const tb=document.getElementById('tbody-prod-semanal');
   if(tb){tb.innerHTML=linhasTabela.map(r=>`<tr><td>${r[0]}</td><td class="r"><b>${r[1]}</b></td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r" style="color:var(--muted)">${r[3]}</td><td class="r">${r[4]}</td><td class="r"><b>${r[5]}</b></td><td class="r" style="color:var(--muted)">${r[6]}</td><td class="r" style="color:var(--muted)">${r[7]}</td><td class="r">${r[8]}</td></tr>`).join('');}
 }
@@ -2017,7 +2017,11 @@ async function renderRendimentoReal(tB,tS){
   const registros=miudosCache.filter(m=>datasSet.has(m.data));
   console.log(`[Rend] registros no filtro: ${registros.length} | ex datas hist:`,[...datasSet].slice(0,3),'| ex datas miudos:',miudosCache.slice(0,3).map(m=>m.data));
   // Peso de carcaça só de Boi (sem Vaca) — filtra por "BOI" ou "Boi" independente de capitalização
-  const kgCarcacaBoiPeriodo=carcacaCache.filter(c=>datasSet.has(c.data)&&c.categoria.toUpperCase().startsWith('BOI')).reduce((a,c)=>a+c.kgCarcaca,0);
+  const kgCarcacaBoiPeriodo=carcacaCache.filter(c=>{
+    if(!datasSet.has(c.data))return false;
+    const cat=c.categoria.toUpperCase();
+    return cat.startsWith('BOI')||cat.startsWith('MAC')||cat.includes('BOVI')||cat.includes('MACHO');
+  }).reduce((a,c)=>a+c.kgCarcaca,0);
 
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
   const porMiudo={};
@@ -2162,9 +2166,10 @@ const CHART_OPTS_BASE={
   scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:10},maxRotation:0}}}
 };
 function renderBarChart(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
-function renderBarChartLine(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;
+function renderBarChartLine(id,labels,data,meta,color,decimais){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;
   const maxVal=Math.max(...data,...meta);
-  const isSmall=maxVal<2;
+  const dec=decimais!=null?decimais:(maxVal<10?2:0);
+  const fmt2=v=>v!=null?v.toFixed(dec):'';
   const opts=JSON.parse(JSON.stringify(CHART_OPTS_BASE));
   opts.plugins.datalabels={
     display:true,
@@ -2175,9 +2180,9 @@ function renderBarChartLine(id,labels,data,meta,color){if(CI[id])CI[id].destroy(
     backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
     borderRadius:3,
     padding:{top:2,bottom:2,left:3,right:3},
-    formatter:v=>v?(isSmall?v.toFixed(2):fmt(Math.round(v))):''
+    formatter:v=>v?fmt2(v):''
   };
-  if(isSmall) opts.scales.y.ticks={font:{size:11},callback:v=>v.toFixed(2)};
+  if(dec>0) opts.scales.y.ticks={font:{size:11},callback:v=>v.toFixed(dec)};
   CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:opts,plugins:[ChartDataLabels]});
 }
 function renderBarChartW(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},{label:'Meta',data:labels.map(()=>meta),type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
