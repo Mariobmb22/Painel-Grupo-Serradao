@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-148</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-149</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2142,28 +2142,24 @@ function _renderKHH(tipo){
           display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
           anchor:ctx=>{
             if(ctx.dataset.type==='line') return 'end';
-            const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-            const max=Math.max(...allVals,1);
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'center':'end';
+            const max=ctx.chart.scales?.y?.max||1;
+            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'end';
           },
           align:ctx=>{
             if(ctx.dataset.type==='line') return 'right';
-            const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-            const max=Math.max(...allVals,1);
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'center':'top';
+            const max=ctx.chart.scales?.y?.max||1;
+            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'top';
           },
           font:{size:10,weight:'800'},
           color:ctx=>{
             if(ctx.dataset.type==='line') return '#374151';
-            const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-            const max=Math.max(...allVals,1);
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'#fff':'#0f2947';
+            const max=ctx.chart.scales?.y?.max||1;
+            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'#fff':'#0f2947';
           },
           backgroundColor:ctx=>{
             if(ctx.dataset.type==='line') return 'rgba(255,255,255,0.9)';
-            const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-            const max=Math.max(...allVals,1);
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'transparent':'rgba(255,255,255,0.9)';
+            const max=ctx.chart.scales?.y?.max||1;
+            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'transparent':'rgba(255,255,255,0.92)';
           },
           borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
           formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(2):v?v.toFixed(2):''}
@@ -2202,28 +2198,24 @@ function _renderRitmo(tipo){
           display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
           anchor:ctx=>{
             if(ctx.dataset.type==='line') return 'end';
-            const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-            const max=Math.max(...allVals,1);
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'center':'end';
+            const max=ctx.chart.scales?.y?.max||1;
+            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'end';
           },
           align:ctx=>{
             if(ctx.dataset.type==='line') return 'right';
-            const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-            const max=Math.max(...allVals,1);
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'center':'top';
+            const max=ctx.chart.scales?.y?.max||1;
+            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'top';
           },
           font:{size:10,weight:'800'},
           color:ctx=>{
             if(ctx.dataset.type==='line') return '#374151';
-            const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-            const max=Math.max(...allVals,1);
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'#fff':'#0f2947';
+            const max=ctx.chart.scales?.y?.max||1;
+            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'#fff':'#0f2947';
           },
           backgroundColor:ctx=>{
             if(ctx.dataset.type==='line') return 'rgba(255,255,255,0.9)';
-            const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-            const max=Math.max(...allVals,1);
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'transparent':'rgba(255,255,255,0.9)';
+            const max=ctx.chart.scales?.y?.max||1;
+            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'transparent':'rgba(255,255,255,0.92)';
           },
           borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
           formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(1):v?v.toFixed(1):''}
@@ -2655,36 +2647,28 @@ const CHART_OPTS_BASE={
       display:true,
       anchor:ctx=>{
         if(ctx.dataset.type==='line') return 'end';
-        const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-        const max=Math.max(...allVals,1);
-        return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'center':'end';
+        const max=ctx.chart.scales?.y?.max||1;
+        return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'end';
       },
       align:ctx=>{
-        if(ctx.dataset.type==='line') return 'right';
-        const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-        const max=Math.max(...allVals,1);
-        return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'center':'top';
+        if(ctx.dataset.type==='line') return 'top';
+        const max=ctx.chart.scales?.y?.max||1;
+        return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'top';
       },
       font:{size:10,weight:'800'},
       color:ctx=>{
         if(ctx.dataset.type==='line') return '#374151';
-        const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-        const max=Math.max(...allVals,1);
-        return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'#fff':'#0f2947';
+        const max=ctx.chart.scales?.y?.max||1;
+        return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'#fff':'#0f2947';
       },
       backgroundColor:ctx=>{
         if(ctx.dataset.type==='line') return 'rgba(255,255,255,0.9)';
-        const allVals=ctx.chart.data.datasets[0].data.filter(v=>v>0);
-        const max=Math.max(...allVals,1);
-        return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.15?'transparent':'rgba(255,255,255,0.9)';
+        const max=ctx.chart.scales?.y?.max||1;
+        return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'transparent':'rgba(255,255,255,0.92)';
       },
       borderRadius:3,
       padding:{top:2,bottom:2,left:3,right:3},
       formatter:(v,ctx)=>{
-        if(ctx.dataset.type==='line'){
-          const isLast=ctx.dataIndex===ctx.dataset.data.length-1;
-          return isLast?fmt(Math.round(v)):'';
-        }
         return v?fmt(Math.round(v)):'';
       }
     }
@@ -2714,28 +2698,24 @@ function renderBarChartLine(id,labels,data,meta,color,decimais){if(CI[id])CI[id]
         display:c=>c.dataset.type==='line'?c.dataIndex===c.dataset.data.length-1:true,
         anchor:c=>{
           if(c.dataset.type==='line') return 'end';
-          const allVals=c.chart.data.datasets[0].data.filter(v=>v>0);
-          const max=Math.max(...allVals,1);
-          return (c.dataset.data[c.dataIndex]||0)/max>0.15?'center':'end';
+          const max=c.chart.scales?.y?.max||1;
+          return (c.dataset.data[c.dataIndex]||0)/max>0.12?'center':'end';
         },
         align:c=>{
           if(c.dataset.type==='line') return 'right';
-          const allVals=c.chart.data.datasets[0].data.filter(v=>v>0);
-          const max=Math.max(...allVals,1);
-          return (c.dataset.data[c.dataIndex]||0)/max>0.15?'center':'top';
+          const max=c.chart.scales?.y?.max||1;
+          return (c.dataset.data[c.dataIndex]||0)/max>0.12?'center':'top';
         },
         font:{size:10,weight:'800'},
         color:c=>{
           if(c.dataset.type==='line') return '#374151';
-          const allVals=c.chart.data.datasets[0].data.filter(v=>v>0);
-          const max=Math.max(...allVals,1);
-          return (c.dataset.data[c.dataIndex]||0)/max>0.15?'#fff':'#0f2947';
+          const max=c.chart.scales?.y?.max||1;
+          return (c.dataset.data[c.dataIndex]||0)/max>0.12?'#fff':'#0f2947';
         },
         backgroundColor:c=>{
           if(c.dataset.type==='line') return 'rgba(255,255,255,0.9)';
-          const allVals=c.chart.data.datasets[0].data.filter(v=>v>0);
-          const max=Math.max(...allVals,1);
-          return (c.dataset.data[c.dataIndex]||0)/max>0.15?'transparent':'rgba(255,255,255,0.9)';
+          const max=c.chart.scales?.y?.max||1;
+          return (c.dataset.data[c.dataIndex]||0)/max>0.12?'transparent':'rgba(255,255,255,0.92)';
         },
         borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
         formatter:(v,c)=>c.dataset.type==='line'?fmt2(v):v?fmt2(v):''}
