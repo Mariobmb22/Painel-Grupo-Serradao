@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-139</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-140</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1865,9 +1865,10 @@ async function renderParadasReal(){
       borderRadius:3,
       datalabels:{
         anchor:'center',align:'center',
-        font:{size:8,weight:'700'},color:'#fff',
-        formatter:v=>v>0?v.toFixed(1):'',
-        display:v=>v>0.1
+        font:{size:10,weight:'800'},
+        color:'#fff',
+        formatter:v=>v>0?v.toFixed(1)+'h':'',
+        display:v=>v>=0.1
       }
     }));
     // Linha de total por mês
@@ -1915,21 +1916,17 @@ async function renderParadasReal(){
   const diasOrdenados=Object.keys(porDia).sort();
   const labDia=diasOrdenados.map(d=>fmtBR(d));
   const valsTotal=diasOrdenados.map(d=>parseFloat((porDia[d]/60).toFixed(2)));
-  const mediaHoras=valsTotal.length>0?parseFloat((valsTotal.reduce((a,b)=>a+b,0)/valsTotal.length).toFixed(2)):0;
-  const mediaArr=valsTotal.map(()=>mediaHoras);
   const ctxDia=document.getElementById('chart-par-tempo-dia');
   if(ctxDia){
     if(ctxDia._chart)ctxDia._chart.destroy();
     ctxDia._chart=new Chart(ctxDia,{
       type:'bar',
       data:{labels:labDia,datasets:[
-        {label:'Paradas (h)',data:valsTotal,backgroundColor:valsTotal.map(v=>v>mediaHoras*1.5?'rgba(220,38,38,0.8)':v>mediaHoras?'rgba(202,138,4,0.8)':'rgba(22,163,74,0.75)'),borderRadius:4,
-          datalabels:{anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v>0?v.toFixed(1):'',display:v=>v>0}},
-        {label:`Média: ${mediaHoras.toFixed(1)}h`,data:mediaArr,type:'line',borderColor:'#dc2626',borderDash:[5,3],borderWidth:2,pointRadius:0,fill:false,
-          datalabels:{display:'auto',anchor:'end',align:'right',font:{size:9,weight:'700'},color:'#dc2626',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:(v,ctx)=>ctx.dataIndex===valsTotal.length-1?`Média: ${v.toFixed(1)}h`:''}}
+        {label:'Tempo parado (h)',data:valsTotal,backgroundColor:'rgba(15,41,71,0.75)',borderRadius:4,
+          datalabels:{anchor:'end',align:'top',font:{size:10,weight:'800'},color:'#0f2947',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:v=>v>0?v.toFixed(1)+'h':'',display:v=>v>0}}
       ]},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
-        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},datalabels:{}},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
+        plugins:{legend:{display:false},datalabels:{}},
         scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v+'h'}},
           x:{grid:{display:false},ticks:{font:{size:9},maxRotation:35}}}},
       plugins:[ChartDataLabels]
