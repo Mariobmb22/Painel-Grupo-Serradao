@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-129</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-131</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -412,8 +412,8 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     <div class="sum-card"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
   </div>
   <div class="two-col" style="margin-top:12px">
-    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — bovino <span class="badge badge-bov">Bovino</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-prod-bov','Produtividade_Bovino')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Abates/homem/hora — suíno <span class="badge badge-sui">Suíno</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-prod-sui','Produtividade_Suino')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-sui"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Kg / homem / hora <span class="badge badge-bov" id="badge-prod-khh">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdKHH()" id="btn-toggle-khh" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-bov','KgHomemHora')">⬇ PNG</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Ritmo de abate <span class="badge badge-bov">Cab/hora</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-prod-ritmo','Ritmo_Abate')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-ritmo"></canvas></div></div></div>
   </div>
   <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Abts/H/h Bov</th><th class="r">Abate/h Bov</th><th class="r">Cab/Col Bov</th><th class="r">F</th><th class="r">Abts/H/h Suí</th><th class="r">Abate/h Suí</th><th class="r">Cab/Col Suí</th><th class="r">F</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
   <!-- PARADAS -->
@@ -992,6 +992,10 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 const DIAS=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+const META_RITMO_BOV=70;   // cab/hora
+const META_RITMO_SUI=170;  // cab/hora
+const META_KHH_BOV=230;    // kg/homem/hora
+const META_KHH_SUI=175;    // kg/homem/hora
 let params={capBov:370,capSui:580,colabBov:90,colabSui:80,precosMiudos:{"Aorta":22.5,"Bucho":12.5,"Carne Industrial":17.5,"Colmeia":15.0,"Coração":8.0,"Couro":5.0,"Diafragma":25.0,"Esôfago":4.5,"Fígado":12.0,"Língua":10.5,"Lombinho":25.0,"Mocotó":12.0,"Omaso":22.5,"Pulmão":3.5,"Rabo":25.0,"Recortes":17.5,"Rins":2.5,"Sangria":18.6,"Tendão":13.0,"Traqueia":3.5,"Vergalho":25.0},metas:{Segunda:{bov:370,sui:500},Terça:{bov:370,sui:500},Quarta:{bov:370,sui:500},Quinta:{bov:370,sui:500},Sexta:{bov:370,sui:500},Sábado:{bov:200,sui:300},Domingo:{bov:0,sui:0}}};
 let dadosDia=null,historico=[];
 const pdfFiles={},pdfTexts={},pdfDates={},importFiles={};
@@ -1718,6 +1722,9 @@ async function renderDashboard(){
   set('prod-bov-h',abHBov.toFixed(1));set('prod-sui-h',abHSui.toFixed(1));
   set('prod-colab-bov',(colabBovReal>0?mediaBov/colabBovReal:0).toFixed(1));set('prod-colab-sui',(colabSuiReal>0?mediaSui/colabSuiReal:0).toFixed(1));
   set('prod-ahh-bov',kgHHBov.toFixed(2));set('prod-ahh-sui',kgHHSui.toFixed(2));
+  // Barra de progresso vs meta
+  const barBov=document.getElementById('prod-ahh-bov-bar');if(barBov)barBov.style.width=Math.min(kgHHBov/META_KHH_BOV*100,100)+'%';
+  const barSui=document.getElementById('prod-ahh-sui-bar');if(barSui)barSui.style.width=Math.min(kgHHSui/META_KHH_SUI*100,100)+'%';
   renderCondenacaoReal(tB);renderCondenacaoAnimalCharts();await renderRendimentoReal(tB,tS);
   renderProdutividadeReal();renderParadasReal();calcularIndicadoresExtra(tB,tS,d.nd);
 }
@@ -1808,6 +1815,23 @@ async function renderParadasReal(){
   renderPizza('chart-par-bov-pizza',agrupar(bov,'tipo'));
   renderPizza('chart-par-sui-pizza',agrupar(sui,'tipo'));
 }
+function toggleProdKHH(){
+  const d=window._prodKHH;if(!d)return;
+  const atual=window._prodKHHAtual||'bovino';
+  const novo=atual==='bovino'?'suino':'bovino';
+  window._prodKHHAtual=novo;
+  const badge=document.getElementById('badge-prod-khh');
+  const btn=document.getElementById('btn-toggle-khh');
+  if(novo==='suino'){
+    renderBarChartLine('chart-prod-bov',d.labels,d.suiH,d.suiHMeta,'#b45309',2);
+    if(badge){badge.textContent='Suíno';badge.className='badge badge-sui';}
+    if(btn)btn.textContent='🔄 Bovino';
+  }else{
+    renderBarChartLine('chart-prod-bov',d.labels,d.bovH,d.bovHMeta,'#1a5ca8',2);
+    if(badge){badge.textContent='Bovino';badge.className='badge badge-bov';}
+    if(btn)btn.textContent='🔄 Suíno';
+  }
+}
 async function renderProdutividadeReal(){
   const diasFiltrados=getHistoricoFiltrado();
   if(!diasFiltrados.length)return;
@@ -1841,7 +1865,7 @@ async function renderProdutividadeReal(){
         horasBov:tb?tb.tempoMin/60:0,horasSui:ts?ts.tempoMin/60:0,colabBov:tb?tb.operadores:0,colabSui:ts?ts.operadores:0,diasReais:tb?1:0};
     });
   }
-  const labelsBov=[],bovH=[],bovHMeta=[],suiH=[],suiHMeta=[],linhasTabela=[];
+  const labelsBov=[],bovH=[],bovHMeta=[],suiH=[],suiHMeta=[],linhasTabela=[],ritmoB=[],ritmoS=[],ritmoMetaB=[],ritmoMetaS=[];
   grupos.forEach(g=>{
     const horasBov=g.horasBov>0?g.horasBov:(8*g.dias);
     const horasSui=g.horasSui>0?g.horasSui:(8*g.dias);
@@ -1855,11 +1879,36 @@ async function renderProdutividadeReal(){
     const metaAhhBov=horasBov>0&&colabBov>0?g.metaBov/(horasBov*colabBov):0;
     const metaAhhSui=horasSui>0&&colabSui>0?g.metaSui/(horasSui*colabSui):0;
     labelsBov.push(g.label);
-    bovH.push(parseFloat(ahhBov.toFixed(2)));bovHMeta.push(parseFloat(metaAhhBov.toFixed(2)));
-    suiH.push(parseFloat(ahhSui.toFixed(2)));suiHMeta.push(parseFloat(metaAhhSui.toFixed(2)));
-    linhasTabela.push([g.label,ahhBov.toFixed(2),abateHBov.toFixed(1),cabColBov.toFixed(1),farol(metaAhhBov>0?(ahhBov-metaAhhBov)/metaAhhBov*100:0),ahhSui.toFixed(2),abateHSui.toFixed(1),cabColSui.toFixed(1),farol(metaAhhSui>0?(ahhSui-metaAhhSui)/metaAhhSui*100:0)]);
+    bovH.push(parseFloat(ahhBov.toFixed(2)));bovHMeta.push(META_KHH_BOV);
+    suiH.push(parseFloat(ahhSui.toFixed(2)));suiHMeta.push(META_KHH_SUI);
+    ritmoB.push(parseFloat(abateHBov.toFixed(1)));ritmoS.push(parseFloat(abateHSui.toFixed(1)));
+    ritmoMetaB.push(META_RITMO_BOV);
+    ritmoMetaS.push(META_RITMO_SUI);
+    linhasTabela.push([g.label,ahhBov.toFixed(2),abateHBov.toFixed(1),cabColBov.toFixed(1),farol(META_KHH_BOV>0?(ahhBov-META_KHH_BOV)/META_KHH_BOV*100:0),ahhSui.toFixed(2),abateHSui.toFixed(1),cabColSui.toFixed(1),farol(META_KHH_SUI>0?(ahhSui-META_KHH_SUI)/META_KHH_SUI*100:0)]);
   });
-  if(labelsBov.length){renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8',2);renderBarChartLine('chart-prod-sui',labelsBov,suiH,suiHMeta,'#b45309',2);}
+  // Guarda dados suino para toggle
+  window._prodKHH={labels:labelsBov,bovH,bovHMeta,suiH,suiHMeta,ritmoB,ritmoS,ritmoMetaB,ritmoMetaS};
+  window._prodKHHAtual='bovino';
+  if(labelsBov.length){
+    renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8',2);
+    // Gráfico de ritmo — bovino+suino juntos como linhas
+    if(CI['chart-prod-ritmo'])CI['chart-prod-ritmo'].destroy();
+    const ctxR=document.getElementById('chart-prod-ritmo');
+    if(ctxR)CI['chart-prod-ritmo']=new Chart(ctxR,{
+      data:{labels:labelsBov,datasets:[
+        {type:'bar',label:'Bov Real',data:ritmoB,backgroundColor:ritmoB.map((v,i)=>corFarolBarra(v,ritmoMetaB[i])),yAxisID:'y',datalabels:{anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}},
+        {type:'line',label:'Bov Meta',data:ritmoMetaB,borderColor:'#1a5ca8',borderDash:[4,4],borderWidth:1.5,pointRadius:2,fill:false,yAxisID:'y',datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:'#1a5ca8',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v||''}},
+        {type:'line',label:'Suí Real',data:ritmoS,borderColor:'#c2410c',borderWidth:2,pointRadius:3,fill:false,yAxisID:'y2',datalabels:{display:false}},
+        {type:'line',label:'Suí Meta',data:ritmoMetaS,borderColor:'#c2410c',borderDash:[4,4],borderWidth:1.5,pointRadius:2,fill:false,yAxisID:'y2',datalabels:{display:false}}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
+        plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,usePointStyle:true}},datalabels:{}},
+        scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10}},title:{display:true,text:'Bov (cab/h)'}},
+          y2:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:10}},title:{display:true,text:'Suí (cab/h)'}},
+          x:{grid:{display:false},ticks:{font:{size:10}}}}},
+      plugins:[ChartDataLabels]
+    });
+  }
   const tb=document.getElementById('tbody-prod-semanal');
   if(tb){tb.innerHTML=linhasTabela.map(r=>`<tr><td>${r[0]}</td><td class="r"><b>${r[1]}</b></td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r" style="color:var(--muted)">${r[3]}</td><td class="r">${r[4]}</td><td class="r"><b>${r[5]}</b></td><td class="r" style="color:var(--muted)">${r[6]}</td><td class="r" style="color:var(--muted)">${r[7]}</td><td class="r">${r[8]}</td></tr>`).join('');}
 }
