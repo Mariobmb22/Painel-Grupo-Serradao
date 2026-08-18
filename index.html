@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-141</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-142</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -392,34 +392,34 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <!-- Indicador principal: kg/homem/hora -->
   <div class="two-col" style="margin-bottom:0">
     <div class="card" style="border:2px solid var(--bov)">
-      <div class="card-hdr"><div class="card-title" style="color:var(--bov)">Kg / homem / hora — Bovino</div><span class="badge badge-bov">Principal</span></div>
+      <div class="card-hdr"><div class="card-title" style="color:var(--bov)">Produtividade (Kg / Homem / Hora) — Bovino</div><span class="badge badge-bov">Principal</span></div>
       <div class="card-body" style="text-align:center;padding:20px 12px">
         <div style="font-size:36px;font-weight:800;color:var(--bov)" id="prod-ahh-bov">—</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">kg/homem/hora · média do período</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Produtividade (Kg / Homem / Hora)</div>
         <div class="efic-bar" style="margin-top:12px"><div class="efic-bar-fill" id="prod-ahh-bov-bar" style="background:var(--bov);width:0%"></div></div>
       </div>
     </div>
     <div class="card" style="border:2px solid var(--sui)">
-      <div class="card-hdr"><div class="card-title" style="color:var(--sui)">Kg / homem / hora — Suíno</div><span class="badge badge-sui">Principal</span></div>
+      <div class="card-hdr"><div class="card-title" style="color:var(--sui)">Produtividade (Kg / Homem / Hora) — Suíno</div><span class="badge badge-sui">Principal</span></div>
       <div class="card-body" style="text-align:center;padding:20px 12px">
         <div style="font-size:36px;font-weight:800;color:var(--sui)" id="prod-ahh-sui">—</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">kg/homem/hora · média do período</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Produtividade (Kg / Homem / Hora)</div>
         <div class="efic-bar" style="margin-top:12px"><div class="efic-bar-fill" id="prod-ahh-sui-bar" style="background:var(--sui);width:0%"></div></div>
       </div>
     </div>
   </div>
   <!-- Auxiliares -->
   <div class="sum-cards" style="margin-top:12px">
-    <div class="sum-card"><div class="sum-card-label">Ritmo bovino</div><div class="sum-card-val" id="prod-bov-h">—</div><div class="sum-card-sub">cab/hora · ritmo de abate</div></div>
-    <div class="sum-card"><div class="sum-card-label">Ritmo suíno</div><div class="sum-card-val" id="prod-sui-h">—</div><div class="sum-card-sub">cab/hora · ritmo de abate</div></div>
+    <div class="sum-card"><div class="sum-card-label">Ritmo de Abate (Cab / Hora) — Bov</div><div class="sum-card-val" id="prod-bov-h">—</div><div class="sum-card-sub">cab/hora · ritmo de abate</div></div>
+    <div class="sum-card"><div class="sum-card-label">Ritmo de Abate (Cab / Hora) — Suí</div><div class="sum-card-val" id="prod-sui-h">—</div><div class="sum-card-sub">cab/hora · ritmo de abate</div></div>
     <div class="sum-card"><div class="sum-card-label">Cab/colaborador bovino</div><div class="sum-card-val" id="prod-colab-bov">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
     <div class="sum-card"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
   </div>
   <div class="two-col" style="margin-top:12px">
-    <div class="card"><div class="card-hdr"><div class="card-title">Kg / homem / hora <span class="badge badge-bov" id="badge-prod-khh">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdKHH()" id="btn-toggle-khh" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-bov','KgHomemHora')">⬇ PNG</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Ritmo de abate <span class="badge badge-bov" id="badge-prod-ritmo">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdRitmo()" id="btn-toggle-ritmo" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-ritmo','Ritmo_Abate')">⬇ PNG</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-ritmo"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Produtividade (Kg / Homem / Hora) <span class="badge badge-bov" id="badge-prod-khh">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdKHH()" id="btn-toggle-khh" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-bov','KgHomemHora')">⬇ PNG</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Ritmo de Abate (Cabeças / Hora) <span class="badge badge-bov" id="badge-prod-ritmo">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdRitmo()" id="btn-toggle-ritmo" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-ritmo','Ritmo_Abate')">⬇ PNG</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-ritmo"></canvas></div></div></div>
   </div>
-  <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Abts/H/h Bov</th><th class="r">Abate/h Bov</th><th class="r">Cab/Col Bov</th><th class="r">F</th><th class="r">Abts/H/h Suí</th><th class="r">Abate/h Suí</th><th class="r">Cab/Col Suí</th><th class="r">F</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
+  <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Produtividade Bov</th><th class="r">Ritmo Bov</th><th class="r">Cab/Col Bov</th><th class="r">F</th><th class="r">Produtividade Suí</th><th class="r">Ritmo Suí</th><th class="r">Cab/Col Suí</th><th class="r">F</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
 
 
 </div>
@@ -1888,9 +1888,9 @@ async function renderParadasReal(){
             align:ctx=>ctx.dataset.type==='line'?'top':'center',
             font:ctx=>ctx.dataset.type==='line'?{size:11,weight:'800'}:{size:10,weight:'800'},
             color:ctx=>ctx.dataset.type==='line'?'#0f2947':'#fff',
-            backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.92)':'transparent',
+            backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.92)':'rgba(0,0,0,0.35)',
             borderRadius:4,
-            padding:ctx=>ctx.dataset.type==='line'?{top:3,bottom:3,left:5,right:5}:{top:1,bottom:1,left:2,right:2},
+            padding:ctx=>ctx.dataset.type==='line'?{top:3,bottom:3,left:5,right:5}:{top:2,bottom:2,left:3,right:3},
             formatter:(v,ctx)=>v>0?v.toFixed(1)+'h':''
           }
         },
@@ -1950,7 +1950,7 @@ async function renderParadasReal(){
     ctx._chart=new Chart(ctx,{
       data:{labels,datasets:[
         {type:'bar',label:'Horas',data:vals,backgroundColor:'rgba(15,41,71,0.8)',yAxisID:'y',
-          datalabels:{anchor:'center',align:'center',font:{size:10,weight:'800'},color:'#fff',formatter:v=>v>0?v.toFixed(1)+'h':''}},
+          datalabels:{anchor:'end',align:'top',font:{size:10,weight:'800'},color:'#0f2947',backgroundColor:'rgba(255,255,255,0.92)',borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},formatter:v=>v>0?v.toFixed(1)+'h':''}},
         {type:'line',label:'Acumulado %',data:pcts,borderColor:'#dc2626',borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#dc2626',yAxisID:'y2',fill:false,
           datalabels:{anchor:'end',align:'top',font:{size:9,weight:'800'},color:'#dc2626',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:v=>v+'%'}}
       ]},
