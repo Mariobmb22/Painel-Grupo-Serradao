@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-137</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-138</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -487,21 +487,21 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   </div>
   <div class="two-col" style="margin-bottom:14px">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">📊 Pareto por local — Bovino</div></div>
+      <div class="card-hdr"><div class="card-title">📊 Pareto por local — Bovino</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-bov-pareto','Pareto_Local_Bovino')">⬇ PNG</button></div>
       <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-bov-pareto"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">📊 Pareto por local — Suíno</div></div>
+      <div class="card-hdr"><div class="card-title">📊 Pareto por local — Suíno</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-sui-pareto','Pareto_Local_Suino')">⬇ PNG</button></div>
       <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-sui-pareto"></canvas></div>
     </div>
   </div>
   <div class="two-col">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Bovino</div></div>
+      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Bovino</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-bov-pizza','Tipos_Bovino')">⬇ PNG</button></div>
       <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-bov-pizza"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Suíno</div></div>
+      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Suíno</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-sui-pizza','Tipos_Suino')">⬇ PNG</button></div>
       <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-sui-pizza"></canvas></div>
     </div>
   </div>
@@ -1862,16 +1862,48 @@ async function renderParadasReal(){
       label:tipo,
       data:mesesChart.map(m=>parseFloat(((porMesTipo[m]?.[tipo]||0)/60).toFixed(1))),
       backgroundColor:TIPO_CORES[tipo]||`hsl(${i*60},60%,50%)`,
-      borderRadius:4,
-      datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:TIPO_CORES[tipo]||'#374151',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v>0?v.toFixed(1)+'h':''}
+      borderRadius:3,
+      datalabels:{
+        anchor:'center',align:'center',
+        font:{size:8,weight:'700'},color:'#fff',
+        formatter:v=>v>0?v.toFixed(1):'',
+        display:v=>v>0.1
+      }
     }));
+    // Linha de total por mês
+    const totaisMes=mesesChart.map(m=>parseFloat((Object.values(porMesTipo[m]||{}).reduce((a,b)=>a+b,0)/60).toFixed(1)));
+    dsTM.push({
+      label:'Total',
+      data:totaisMes,
+      type:'line',
+      borderColor:'#0f2947',
+      borderWidth:2.5,
+      pointRadius:4,
+      pointBackgroundColor:'#0f2947',
+      fill:false,
+      datalabels:{
+        anchor:'end',align:'top',
+        font:{size:10,weight:'800'},
+        color:'#0f2947',
+        backgroundColor:'rgba(255,255,255,0.9)',
+        borderRadius:3,
+        padding:{top:2,bottom:2,left:4,right:4},
+        formatter:v=>v>0?v.toFixed(1)+'h':''
+      }
+    });
     ctxTM._chart=new Chart(ctxTM,{
       type:'bar',
       data:{labels:labMeses,datasets:dsTM},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
-        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},datalabels:{}},
-        scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v+'h'}},
-          x:{grid:{display:false},ticks:{font:{size:10}}}}},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36}},
+        plugins:{
+          legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,usePointStyle:true}},
+          datalabels:{}
+        },
+        scales:{
+          y:{beginAtZero:true,stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v+'h'}},
+          x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}}
+        }
+      },
       plugins:[ChartDataLabels]
     });
   }
@@ -1891,10 +1923,10 @@ async function renderParadasReal(){
     ctxDia._chart=new Chart(ctxDia,{
       type:'bar',
       data:{labels:labDia,datasets:[
-        {label:'Paradas (h)',data:valsTotal,backgroundColor:valsTotal.map(v=>v>mediaHoras*1.5?'rgba(220,38,38,0.75)':v>mediaHoras?'rgba(202,138,4,0.75)':'rgba(22,163,74,0.65)'),borderRadius:4,
-          datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:'#374151',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v>0?v.toFixed(1)+'h':''}},
-        {label:`Média (${mediaHoras.toFixed(1)}h)`,data:mediaArr,type:'line',borderColor:'#dc2626',borderDash:[5,3],borderWidth:2,pointRadius:0,fill:false,
-          datalabels:{display:false}}
+        {label:'Paradas (h)',data:valsTotal,backgroundColor:valsTotal.map(v=>v>mediaHoras*1.5?'rgba(220,38,38,0.8)':v>mediaHoras?'rgba(202,138,4,0.8)':'rgba(22,163,74,0.75)'),borderRadius:4,
+          datalabels:{anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v>0?v.toFixed(1):'',display:v=>v>0}},
+        {label:`Média: ${mediaHoras.toFixed(1)}h`,data:mediaArr,type:'line',borderColor:'#dc2626',borderDash:[5,3],borderWidth:2,pointRadius:0,fill:false,
+          datalabels:{display:'auto',anchor:'end',align:'right',font:{size:9,weight:'700'},color:'#dc2626',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:(v,ctx)=>ctx.dataIndex===valsTotal.length-1?`Média: ${v.toFixed(1)}h`:''}}
       ]},
       options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
         plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},datalabels:{}},
@@ -1915,10 +1947,10 @@ async function renderParadasReal(){
     const pcts=top.map(([,v])=>{acum+=v.min/60;return parseFloat((acum/totalH*100).toFixed(1));});
     ctx._chart=new Chart(ctx,{
       data:{labels,datasets:[
-        {type:'bar',label:'Horas',data:vals,backgroundColor:'rgba(15,41,71,0.75)',yAxisID:'y',
-          datalabels:{anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v>0?v.toFixed(1):''}},
-        {type:'line',label:'Acum%',data:pcts,borderColor:'#dc2626',borderWidth:2,pointRadius:3,yAxisID:'y2',fill:false,
-          datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:'#dc2626',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v+'%'}}
+        {type:'bar',label:'Horas',data:vals,backgroundColor:'rgba(15,41,71,0.8)',yAxisID:'y',
+          datalabels:{anchor:'center',align:'center',font:{size:10,weight:'800'},color:'#fff',formatter:v=>v>0?v.toFixed(1)+'h':''}},
+        {type:'line',label:'Acumulado %',data:pcts,borderColor:'#dc2626',borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#dc2626',yAxisID:'y2',fill:false,
+          datalabels:{anchor:'end',align:'top',font:{size:9,weight:'800'},color:'#dc2626',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:v=>v+'%'}}
       ]},
       options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
         plugins:{legend:{display:false},datalabels:{}},
@@ -2358,7 +2390,7 @@ async function carregarCarcacaDoSheets(){
   }catch(e){return[];}
 }
 async function carregarMiudosCompletoDoSheets(){
-  const pf=v=>parseFloat(String(v||0).replace(/\./g,'').replace(',','.'))||0;
+  const pf=v=>{const s=String(v||0);return parseFloat(s.includes(',')&&s.includes('.')?s.replace(/\./g,'').replace(',','.'):s.replace(',','.'))||0;};
   try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10&&!String(r[0]).startsWith('undefined')).map(r=>({data:String(r[0]).slice(0,10),miudo:r[1],nrPecas:pf(r[2]),pesoKg:pf(r[3]),kgTotalAbate:pf(r[4]),pctReal:pf(r[5]),pctMeta:pf(r[6])}));}catch(e){return[];}
 }
 async function renderRendimentoReal(tB,tS){
@@ -2509,12 +2541,12 @@ const CHART_OPTS_BASE={
     legend:{
       display:true,position:'bottom',align:'center',
       labels:{
-        boxWidth:10,boxHeight:10,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
+        boxWidth:12,boxHeight:12,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
         generateLabels:()=>[
-          {text:'Dentro da meta',fillStyle:'#16a34a',strokeStyle:'#16a34a',pointStyle:'rectRounded'},
+          {text:'Dentro da meta (≥100%)',fillStyle:'#16a34a',strokeStyle:'#16a34a',pointStyle:'rectRounded'},
           {text:'Desvio ≤5%',fillStyle:'#ca8a04',strokeStyle:'#ca8a04',pointStyle:'rectRounded'},
-          {text:'Fora da meta',fillStyle:'#dc2626',strokeStyle:'#dc2626',pointStyle:'rectRounded'},
-          {text:'Meta',fillStyle:'#374151',strokeStyle:'#374151',pointStyle:'line'}
+          {text:'Fora da meta (<95%)',fillStyle:'#dc2626',strokeStyle:'#dc2626',pointStyle:'rectRounded'},
+          {text:'Meta',fillStyle:'transparent',strokeStyle:'#374151',lineWidth:2,pointStyle:'line'}
         ]
       }
     },
