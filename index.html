@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-145</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-146</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -453,7 +453,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <div class="card-title">📊 Tempo por tipo — comparativo mensal (horas)</div>
       <button class="btn-chart-dl" onclick="downloadChart('chart-par-tipo-mes','Paradas_Tipo_Mes')">⬇ PNG</button>
     </div>
-    <div class="card-body" style="height:240px;position:relative"><canvas id="chart-par-tipo-mes"></canvas></div>
+    <div class="card-body" style="height:280px;position:relative"><canvas id="chart-par-tipo-mes"></canvas></div>
   </div>
 
   <!-- Gráfico tempo por dia -->
@@ -1899,7 +1899,7 @@ async function renderParadasReal(){
               const mx=Math.max(...ctx.dataset.data,0.01);
               return v/mx>0.3?'center':'top';
             },
-            font:{size:9,weight:'800'},
+            font:{size:10,weight:'800'},
             color:(ctx)=>{
               if(ctx.dataset.type==='line') return '#0f2947';
               const v=ctx.dataset.data[ctx.dataIndex];
@@ -1913,7 +1913,7 @@ async function renderParadasReal(){
               return v/mx>0.3?'transparent':'rgba(255,255,255,0.88)';
             },
             borderRadius:3,
-            padding:(ctx)=>ctx.dataset.type==='line'?{top:2,bottom:2,left:4,right:4}:{top:1,bottom:1,left:2,right:2},
+            padding:(ctx)=>ctx.dataset.type==='line'?{top:2,bottom:2,left:4,right:4}:{top:2,bottom:2,left:3,right:3},
             formatter:(v,ctx)=>{
               if(ctx.dataset.type==='line') return v>0?v.toFixed(1)+'h':'';
               return v>0?v.toFixed(1)+'h':'';
@@ -1992,8 +1992,7 @@ async function renderParadasReal(){
             backgroundColor:(ctx)=>ctx.datasetIndex===0?(vals[ctx.dataIndex]/maxVal>0.2?'transparent':'rgba(255,255,255,0.92)'):'rgba(255,255,255,0.92)',
             borderRadius:3,
             padding:{top:2,bottom:2,left:3,right:3},
-            // Linha: só no último ponto
-            display:(ctx)=>ctx.datasetIndex===1?ctx.dataIndex===vals.length-1:true,
+            display:true,
             formatter:(v,ctx)=>ctx.datasetIndex===0?(v>0?v.toFixed(1)+'h':''):v+'%'
           }
         },
