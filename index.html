@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-132</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-133</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1851,19 +1851,22 @@ async function renderProdutividadeReal(){
     const porMes={};const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     diasFiltrados.forEach(h=>{
       const m=h.data.slice(5,7);
-      if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,horasBov:0,horasSui:0,colabBov:0,colabSui:0,diasReais:0};
+      if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,horasBov:0,horasSui:0,colabBov:0,colabSui:0,diasReais:0,kgBov:0,kgSui:0};
       porMes[m].bov+=bovDoDia(h);porMes[m].sui+=suiDoDia(h);
       porMes[m].metaBov+=metaBovDoDia(h);porMes[m].metaSui+=metaSuiDoDia(h);porMes[m].dias+=1;
       const tb=getDadosReais(h.data,'bovino');const ts=getDadosReais(h.data,'suíno')||getDadosReais(h.data,'suino');
-      if(tb){porMes[m].horasBov+=tb.tempoMin/60;porMes[m].colabBov+=tb.operadores;porMes[m].diasReais++;}
-      if(ts){porMes[m].horasSui+=ts.tempoMin/60;porMes[m].colabSui+=ts.operadores;}
+      if(tb){porMes[m].horasBov+=tb.tempoMin/60;porMes[m].colabBov+=tb.operadores;porMes[m].kgBov+=tb.totalKg||0;porMes[m].diasReais++;}
+      if(ts){porMes[m].horasSui+=ts.tempoMin/60;porMes[m].colabSui+=ts.operadores;porMes[m].kgSui+=ts.totalKg||0;}
     });
     grupos=Object.keys(porMes).sort().map(m=>({label:nomesMeses[parseInt(m)],...porMes[m]}));
   }else{
     grupos=diasFiltrados.map(h=>{
       const tb=getDadosReais(h.data,'bovino');const ts=getDadosReais(h.data,'suíno')||getDadosReais(h.data,'suino');
       return{label:fmtBR(h.data),bov:bovDoDia(h),sui:suiDoDia(h),metaBov:metaBovDoDia(h),metaSui:metaSuiDoDia(h),dias:1,
-        horasBov:tb?tb.tempoMin/60:0,horasSui:ts?ts.tempoMin/60:0,colabBov:tb?tb.operadores:0,colabSui:ts?ts.operadores:0,diasReais:tb?1:0};
+        horasBov:tb?tb.tempoMin/60:0,horasSui:ts?ts.tempoMin/60:0,
+        colabBov:tb?tb.operadores:0,colabSui:ts?ts.operadores:0,
+        kgBov:tb?tb.totalKg||0:0,kgSui:ts?ts.totalKg||0:0,
+        diasReais:tb?1:0};
     });
   }
   const labelsBov=[],bovH=[],bovHMeta=[],suiH=[],suiHMeta=[],linhasTabela=[],ritmoB=[],ritmoS=[],ritmoMetaB=[],ritmoMetaS=[];
@@ -1875,17 +1878,16 @@ async function renderProdutividadeReal(){
     const mediaDiaBovG=g.dias>0?g.bov/g.dias:0;const mediaDiaSuiG=g.dias>0?g.sui/g.dias:0;
     const abateHBov=horasBov>0?g.bov/horasBov:0;const abateHSui=horasSui>0?g.sui/horasSui:0;
     const cabColBov=colabBov>0?mediaDiaBovG/colabBov:0;const cabColSui=colabSui>0?mediaDiaSuiG/colabSui:0;
-    const ahhBov=horasBov>0&&colabBov>0?g.bov/(horasBov*colabBov):0;
-    const ahhSui=horasSui>0&&colabSui>0?g.sui/(horasSui*colabSui):0;
-    const metaAhhBov=horasBov>0&&colabBov>0?g.metaBov/(horasBov*colabBov):0;
-    const metaAhhSui=horasSui>0&&colabSui>0?g.metaSui/(horasSui*colabSui):0;
+    // Kg/homem/hora — usa Total_Kg do TempoAbate se disponível
+    const kgHHBov=g.kgBov>0&&horasBov>0&&colabBov>0?g.kgBov/(horasBov*colabBov):0;
+    const kgHHSui=g.kgSui>0&&horasSui>0&&colabSui>0?g.kgSui/(horasSui*colabSui):0;
     labelsBov.push(g.label);
-    bovH.push(parseFloat(ahhBov.toFixed(2)));bovHMeta.push(META_KHH_BOV);
-    suiH.push(parseFloat(ahhSui.toFixed(2)));suiHMeta.push(META_KHH_SUI);
+    bovH.push(parseFloat(kgHHBov.toFixed(2)));bovHMeta.push(META_KHH_BOV);
+    suiH.push(parseFloat(kgHHSui.toFixed(2)));suiHMeta.push(META_KHH_SUI);
     ritmoB.push(parseFloat(abateHBov.toFixed(1)));ritmoS.push(parseFloat(abateHSui.toFixed(1)));
     ritmoMetaB.push(META_RITMO_BOV);
     ritmoMetaS.push(META_RITMO_SUI);
-    linhasTabela.push([g.label,ahhBov.toFixed(2),abateHBov.toFixed(1),cabColBov.toFixed(1),farol(META_KHH_BOV>0?(ahhBov-META_KHH_BOV)/META_KHH_BOV*100:0),ahhSui.toFixed(2),abateHSui.toFixed(1),cabColSui.toFixed(1),farol(META_KHH_SUI>0?(ahhSui-META_KHH_SUI)/META_KHH_SUI*100:0)]);
+    linhasTabela.push([g.label,kgHHBov.toFixed(2),abateHBov.toFixed(1),cabColBov.toFixed(1),farol(META_KHH_BOV>0?(kgHHBov-META_KHH_BOV)/META_KHH_BOV*100:0),kgHHSui.toFixed(2),abateHSui.toFixed(1),cabColSui.toFixed(1),farol(META_KHH_SUI>0?(kgHHSui-META_KHH_SUI)/META_KHH_SUI*100:0)]);
   });
   // Guarda dados para toggle
   window._prodKHH={labels:labelsBov,bovH,bovHMeta,suiH,suiHMeta,ritmoB,ritmoS,ritmoMetaB,ritmoMetaS};
@@ -1904,20 +1906,18 @@ function _renderKHH(tipo){
   const isBov=tipo==='bovino';
   const vals=isBov?d.bovH:d.suiH;
   const meta=isBov?META_KHH_BOV:META_KHH_SUI;
-  const cor=isBov?'#1a5ca8':'#b45309';
   const metaArr=vals.map(()=>meta);
   if(CI['chart-prod-bov'])CI['chart-prod-bov'].destroy();
   const ctx=document.getElementById('chart-prod-bov');if(!ctx)return;
   const opts=JSON.parse(JSON.stringify(CHART_OPTS_BASE));
   opts.layout={padding:{top:32}};
-  opts.scales.y.ticks={font:{size:10},callback:v=>v.toFixed(2)};
   opts.plugins.datalabels={
     display:true,
-    anchor:ctx=>ctx.dataset.type==='line'?'end':'center',
-    align:ctx=>ctx.dataset.type==='line'?'top':'center',
+    anchor:c=>c.dataset.type==='line'?'end':'center',
+    align:c=>c.dataset.type==='line'?'top':'center',
     font:{size:9,weight:'800'},
-    color:ctx=>ctx.dataset.type==='line'?'#374151':'#ffffff',
-    backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
+    color:c=>c.dataset.type==='line'?'#374151':'#ffffff',
+    backgroundColor:c=>c.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
     borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
     formatter:v=>v?v.toFixed(2):''
   };
