@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-120</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-128</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1046,6 +1046,25 @@ async function salvarDiaNoSheets(d){
       else {/*console.log('Pesos do dia já existem, pulando:',d.data)*/;}
     }
 
+    // Carcaça: salva BOI e VACA por empresa
+    // Usa machos/fêmeas do PDF se disponível, senão usa 100% como BOI
+    const carcRows=[];
+    (d.pesosBov||[]).forEach(p=>{
+      const total=p.cabecas||0;
+      const machos=p.machos||total; // fallback: todos como BOI se não extraiu separado
+      const femeas=p.femeas||0;
+      const pesoTotal=p.peso_total_kg||0;
+      const pesoMachos=total>0?Math.round(pesoTotal*(machos/total)):pesoTotal;
+      const pesoFemeas=total>0?Math.round(pesoTotal*(femeas/total)):0;
+      if(machos>0) carcRows.push([d.data,`BOI ${p.empresa.toUpperCase()}`,machos,pesoMachos]);
+      if(femeas>0) carcRows.push([d.data,`VACA ${p.empresa.toUpperCase()}`,femeas,pesoFemeas]);
+    });
+    if(carcRows.length){
+      const carcExist=await sheetsRead('Carcaca');
+      const jaTemCarc=carcExist.slice(1).some(r=>String(r[0]).slice(0,10)===d.data);
+      if(!jaTemCarc) await sheetsAppend('Carcaca',carcRows);
+    }
+
     const tBov=d.bovino.reduce((a,r)=>a+(r.abatidos||0),0);
     const tSui=d.suino.reduce((a,r)=>a+(r.abatidos||0),0);
     const eBov=d.capBov>0?Math.round(tBov/d.capBov*100):0;
@@ -1478,34 +1497,44 @@ function extrairEscalasSuino(text){
 }
 
 function extrairTotalizacaoSisAtak(text){
+  // Procura "** Totalização Geral **" — último bloco é o total correto
   const idx=text.lastIndexOf('** Totalização Geral **');
-  if(idx>=0){
-    const before=text.slice(0,idx);
-    const after=text.slice(idx);
-    const pairs=[...before.matchAll(/(\d+)\s+([\d.]+,\d{2})/g)];
-    for(let i=pairs.length-1;i>=0;i--){
-      const cab=parseInt(pairs[i][1]);
-      const peso=parseFloat(pairs[i][2].replace(/\./g,'').replace(',','.'));
-      if(cab>0&&peso>1000){
-        const mMedia=after.match(/Animais\s+Abatidos\s*:\s*([\d]+,\d{2})/);
-        const media=mMedia?parseFloat(mMedia[1].replace(',','.')):0;
-        return{cabecas:cab,peso_total_kg:peso,media_kg:media};
-      }
-    }
+  const bloco=idx>=0?text.slice(idx):text;
+
+  // Extrai machos e fêmeas abatidos
+  const mMachos=bloco.match(/Machos\s+Abatidos\s*:\s*([\d.,]+)/i);
+  const mFemeas=bloco.match(/F[eê]meas\s+Abatidas\s*:\s*([\d.,]+)/i);
+  const mTotal=bloco.match(/Animais\s+Abatidos\s*:\s*([\d.,]+)/i);
+  const pf=v=>v?parseFloat(v.replace(/\./g,'').replace(',','.')):0;
+  const pi=v=>v?parseInt(v.replace(/\./g,'').replace(',','.')):0;
+
+  const machosCab=mMachos?pi(mMachos[1]):0;
+  const femeasCab=mFemeas?pi(mFemeas[1]):0;
+  const totalCab=mTotal?pi(mTotal[1]):(machosCab+femeasCab);
+
+  // Peso total vem das linhas de dados antes da totalização
+  // Pega o par (cabeças, peso) mais próximo do total correto
+  const before=idx>=0?text.slice(0,idx):text;
+  const pairs=[...before.matchAll(/(\d+)\s+([\d.]+,\d{2})/g)];
+  let pesoTotal=0,media=0;
+  for(let i=pairs.length-1;i>=0;i--){
+    const cab=parseInt(pairs[i][1]);
+    const peso=pf(pairs[i][2]);
+    if(cab===totalCab&&peso>100){pesoTotal=peso;break;}
+    if(cab>0&&peso>1000){pesoTotal=peso;break;}
   }
-  const m2=text.match(/([\d.]+,\d{2})\s+([\d]+,\d{2})\s+[\d.,]+\s+[\d.,]+\s+(\d+)\s+[\d.,]+\s+MACHO/i);
-  if(m2) return{
-    cabecas:parseInt(m2[3]),
-    peso_total_kg:parseFloat(m2[1].replace(/\./g,'').replace(',','.')),
-    media_kg:parseFloat(m2[2].replace(',','.'))
-  };
-  const m3=text.match(/Total\s*:\s*cabeça\(s\)\s+kg\s+([\d.]+,\d{2})\s+([\d.]+,\d{2})\s+(\d+)/i);
-  if(m3) return{
-    cabecas:parseInt(m3[3]),
-    peso_total_kg:parseFloat(m3[1].replace(/\./g,'').replace(',','.')),
-    media_kg:parseFloat(m3[2].replace(',','.'))
-  };
-  return null;
+  // Média de peso
+  const mMedia=bloco.match(/[\d]+,\d{2}\s+[\d]+,\d{2}\s+([\d]+,\d{2})/);
+  if(mMedia)media=pf(mMedia[1]);
+  else if(totalCab>0&&pesoTotal>0)media=pesoTotal/totalCab;
+
+  // Estima peso de machos e fêmeas proporcionalmente
+  const pesoMachos=totalCab>0?Math.round(pesoTotal*(machosCab/totalCab)):pesoTotal;
+  const pesoFemeas=totalCab>0?Math.round(pesoTotal*(femeasCab/totalCab)):0;
+
+  if(totalCab===0&&pesoTotal===0)return null;
+  return{cabecas:totalCab,peso_total_kg:pesoTotal,media_kg:media,
+    machos:machosCab,femeas:femeasCab,pesoMachos,pesoFemeas};
 }
 
 function normEmp(text){
@@ -1546,7 +1575,7 @@ async function processarPDFs(){
     const dow=new Date(ref+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long'});
     const diaKey=DIAS.find(d=>dow.toLowerCase().startsWith(d.toLowerCase().slice(0,3)))||'Segunda';
     const metaDia=params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>({bov:a.bov+(v[diaKey]?.bov||0),sui:a.sui+(v[diaKey]?.sui||0)}),{bov:0,sui:0}):{bov:params.metas[diaKey]?.bov||370,sui:params.metas[diaKey]?.sui||500};
-    dadosDia={data:ref,diaKey,metaBov:metaDia.bov,metaSui:metaDia.sui,capBov:params.capBov,capSui:params.capSui,bovino:escalas.bovino,suino:escalas.suino,pesosBov:Object.values(pesoResults).filter(p=>p.tipo==='bovino'),pesosSui:Object.values(pesoResults).filter(p=>p.tipo==='suino')};
+    dadosDia={data:ref,diaKey,metaBov:metaDia.bov,metaSui:metaDia.sui,capBov:params.capBov,capSui:params.capSui,bovino:escalas.bovino,suino:escalas.suino,pesosBov:Object.values(pesoResults).filter(p=>p.tipo==='bovino'),pesosSui:Object.values(pesoResults).filter(p=>p.tipo==='suino'),carcacaRows:[]};
     historico.push({...dadosDia});popularFiltrosPeriodo();
     document.getElementById('filtro-ano').value=ref.slice(0,4);popularMesesDoAno();
     document.getElementById('filtro-mes').value=ref.slice(5,7);popularDiasDoMes();
@@ -2074,8 +2103,22 @@ async function renderCondenacaoReal(tBov){
 let miudosCache=null;
 let carcacaCache=null;
 async function carregarCarcacaDoSheets(){
-  const pf=v=>parseFloat(String(v||0).replace(',','.'));
-  try{const rows=await sheetsRead('Carcaca');return rows.slice(1).filter(r=>r[0]).map(r=>({data:String(r[0]).slice(0,10),categoria:r[1],cabecas:pf(r[2]),kgCarcaca:pf(r[3])}));}catch(e){return[];}
+  const pf=v=>parseFloat(String(v||0).replace(',','.'))||0;
+  function parseData(v){
+    if(!v)return'';
+    if(typeof v==='number')return new Date(Math.round((v-25569)*86400*1000)).toISOString().slice(0,10);
+    if(v instanceof Date)return v.toISOString().slice(0,10);
+    return String(v).slice(0,10);
+  }
+  try{
+    const rows=await sheetsRead('Carcaca');
+    return rows.slice(1).filter(r=>r[0]).map(r=>({
+      data:parseData(r[0]),
+      categoria:String(r[1]||'').trim(),
+      cabecas:pf(r[2]),
+      kgCarcaca:pf(r[3])
+    })).filter(r=>r.data&&/^\d{4}-\d{2}-\d{2}$/.test(r.data));
+  }catch(e){return[];}
 }
 async function carregarMiudosCompletoDoSheets(){
   const pf=v=>parseFloat(String(v||0).replace(',','.'));
@@ -2117,10 +2160,21 @@ async function renderRendimentoReal(tB,tS){
 
   // KgTotal_Abate por dia — maior valor entre todos os miúdos do dia
   // representa o peso total de carcaça — base para calcular meta em kg
-  // Base do Vergalho: só peso de machos bovinos (Boi, não Vaca)
-  const kgCarcacaBoiPeriodo=carcacaCache
-    .filter(c=>datasSet.has(c.data)&&/^Boi\s/i.test(c.categoria.trim()))
-    .reduce((a,c)=>a+c.kgCarcaca,0);
+  // Base do Vergalho: peso de machos (Boi *) da aba Carcaca
+  // Fallback: peso total bovino da aba Pesos quando não tem Carcaca
+  const kgCarcacaBoiPeriodo=(()=>{
+    const doCarcaca=carcacaCache
+      .filter(c=>datasSet.has(c.data)&&/^BOI\b/i.test(String(c.categoria||'').trim()))
+      .reduce((a,c)=>a+c.kgCarcaca,0);
+    if(doCarcaca>0)return doCarcaca;
+    // Fallback: peso total bovino da aba Pesos quando Carcaca não tem dados
+    if(pesosCache){
+      return pesosCache
+        .filter(p=>datasSet.has(p.data))
+        .reduce((a,p)=>a+(p.pesoBovFV||0)+(p.pesoBovSerr||0),0);
+    }
+    return 0;
+  })();
 
   const kgTotalPorDia={};
   registros.forEach(r=>{
@@ -2277,7 +2331,7 @@ function loadDemoData(){
 }
 
 // ── CARCAÇA ──
-const CATEGORIAS=['Boi Frigobet','Vaca Frigobet','Boi Serradão','Vaca Serradão','Boi Frigovitta','Vaca Frigovitta'];
+const CATEGORIAS=['BOI FRIGOBET','VACA FRIGOBET','BOI SERRADÃO','VACA SERRADÃO','BOI FRIGOVITTA','VACA FRIGOVITTA'];
 function buildCarcacaForm(){
   const tb=document.getElementById('tbody-carcaca-form');if(!tb)return;tb.innerHTML='';
   CATEGORIAS.forEach(cat=>{
@@ -2826,8 +2880,8 @@ function extAplicar(){
       if(elCab)elCab.value=cab||'';
       if(elKg)elKg.value=kg||'';
     };
-    setCarcaca(`Boi ${emp}`,d.bov.machos,d.bov.pesoMachos);
-    setCarcaca(`Vaca ${emp}`,d.bov.femeas,d.bov.pesoFemeas);
+    setCarcaca(`BOI ${emp.toUpperCase()}`,d.bov.machos,d.bov.pesoMachos);
+    setCarcaca(`VACA ${emp.toUpperCase()}`,d.bov.femeas,d.bov.pesoFemeas);
   }
   calcMiudosTotais();
   // Preenche miúdos
