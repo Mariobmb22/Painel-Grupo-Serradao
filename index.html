@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-138</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-139</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1900,8 +1900,8 @@ async function renderParadasReal(){
           datalabels:{}
         },
         scales:{
-          y:{beginAtZero:true,stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v+'h'}},
-          x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}}
+          y:{beginAtZero:true,stacked:false,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v+'h'}},
+          x:{stacked:false,grid:{display:false},ticks:{font:{size:10}}}
         }
       },
       plugins:[ChartDataLabels]
@@ -2080,25 +2080,34 @@ function _renderKHH(tipo){
   const metaArr=vals.map(()=>meta);
   if(CI['chart-prod-bov'])CI['chart-prod-bov'].destroy();
   const ctx=document.getElementById('chart-prod-bov');if(!ctx)return;
-  const opts=JSON.parse(JSON.stringify(CHART_OPTS_BASE));
-  opts.layout={padding:{top:32}};
-  opts.plugins.datalabels={
-    display:true,
-    anchor:c=>c.dataset.type==='line'?'end':'center',
-    align:c=>c.dataset.type==='line'?'top':'center',
-    font:{size:9,weight:'800'},
-    color:c=>c.dataset.type==='line'?'#374151':'#ffffff',
-    backgroundColor:c=>c.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
-    borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
-    formatter:v=>v?v.toFixed(2):''
-  };
   CI['chart-prod-bov']=new Chart(ctx,{
     type:'bar',
     data:{labels:d.labels,datasets:[
       {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},
       {label:`Meta (${meta})`,data:metaArr,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}
     ]},
-    options:opts,plugins:[ChartDataLabels]
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
+      plugins:{
+        legend:{display:true,position:'bottom',align:'center',labels:{boxWidth:12,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
+          generateLabels:()=>[
+            {text:'Dentro da meta (≥100%)',fillStyle:'#16a34a',strokeStyle:'#16a34a',pointStyle:'rectRounded'},
+            {text:'Desvio ≤5%',fillStyle:'#ca8a04',strokeStyle:'#ca8a04',pointStyle:'rectRounded'},
+            {text:'Fora da meta (<95%)',fillStyle:'#dc2626',strokeStyle:'#dc2626',pointStyle:'rectRounded'},
+            {text:`Meta (${meta})`,fillStyle:'transparent',strokeStyle:'#374151',lineWidth:2,pointStyle:'line'}
+          ]
+        }},
+        datalabels:{display:true,
+          anchor:c=>c.dataset.type==='line'?'end':'center',
+          align:c=>c.dataset.type==='line'?'top':'center',
+          font:{size:10,weight:'800'},
+          color:c=>c.dataset.type==='line'?'#374151':'#fff',
+          backgroundColor:c=>c.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
+          borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
+          formatter:v=>v?v.toFixed(2):''}
+      },
+      scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
+    },
+    plugins:[ChartDataLabels]
   });
 }
 
@@ -2107,29 +2116,37 @@ function _renderRitmo(tipo){
   const isBov=tipo==='bovino';
   const vals=isBov?d.ritmoB:d.ritmoS;
   const meta=isBov?META_RITMO_BOV:META_RITMO_SUI;
-  const cor=isBov?'#1a5ca8':'#b45309';
   const metaArr=vals.map(()=>meta);
   if(CI['chart-prod-ritmo'])CI['chart-prod-ritmo'].destroy();
   const ctx=document.getElementById('chart-prod-ritmo');if(!ctx)return;
-  const opts=JSON.parse(JSON.stringify(CHART_OPTS_BASE));
-  opts.layout={padding:{top:32}};
-  opts.plugins.datalabels={
-    display:true,
-    anchor:ctx=>ctx.dataset.type==='line'?'end':'center',
-    align:ctx=>ctx.dataset.type==='line'?'top':'center',
-    font:{size:9,weight:'800'},
-    color:ctx=>ctx.dataset.type==='line'?'#374151':'#ffffff',
-    backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
-    borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
-    formatter:v=>v?v.toFixed(1):''
-  };
   CI['chart-prod-ritmo']=new Chart(ctx,{
     type:'bar',
     data:{labels:d.labels,datasets:[
       {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},
       {label:`Meta (${meta})`,data:metaArr,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}
     ]},
-    options:opts,plugins:[ChartDataLabels]
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
+      plugins:{
+        legend:{display:true,position:'bottom',align:'center',labels:{boxWidth:12,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
+          generateLabels:()=>[
+            {text:'Dentro da meta (≥100%)',fillStyle:'#16a34a',strokeStyle:'#16a34a',pointStyle:'rectRounded'},
+            {text:'Desvio ≤5%',fillStyle:'#ca8a04',strokeStyle:'#ca8a04',pointStyle:'rectRounded'},
+            {text:'Fora da meta (<95%)',fillStyle:'#dc2626',strokeStyle:'#dc2626',pointStyle:'rectRounded'},
+            {text:`Meta (${meta})`,fillStyle:'transparent',strokeStyle:'#374151',lineWidth:2,pointStyle:'line'}
+          ]
+        }},
+        datalabels:{display:true,
+          anchor:c=>c.dataset.type==='line'?'end':'center',
+          align:c=>c.dataset.type==='line'?'top':'center',
+          font:{size:10,weight:'800'},
+          color:c=>c.dataset.type==='line'?'#374151':'#fff',
+          backgroundColor:c=>c.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
+          borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
+          formatter:v=>v?v.toFixed(1):''}
+      },
+      scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
+    },
+    plugins:[ChartDataLabels]
   });
 }
 
@@ -2567,23 +2584,33 @@ const CHART_OPTS_BASE={
 };
 function renderBarChart(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
 function renderBarChartLine(id,labels,data,meta,color,decimais){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;
-  const maxVal=Math.max(...data,...meta);
-  const dec=decimais!=null?decimais:(maxVal<10?2:0);
-  const fmt2=v=>v!=null?v.toFixed(dec):'';
-  const opts=JSON.parse(JSON.stringify(CHART_OPTS_BASE));
-  opts.plugins.datalabels={
-    display:true,
-    anchor:ctx=>ctx.dataset.type==='line'?'end':'center',
-    align:ctx=>ctx.dataset.type==='line'?'top':'center',
-    font:{size:9,weight:'800'},
-    color:ctx=>ctx.dataset.type==='line'?'#374151':'#ffffff',
-    backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
-    borderRadius:3,
-    padding:{top:2,bottom:2,left:3,right:3},
-    formatter:v=>v?fmt2(v):''
-  };
-  if(dec>0) opts.scales.y.ticks={font:{size:11},callback:v=>v.toFixed(dec)};
-  CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,meta[i])),borderRadius:4,borderSkipped:false},{label:'Meta',data:meta,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}]},options:opts,plugins:[ChartDataLabels]});
+  const dec=decimais!=null?decimais:0;
+  const fmt2=v=>v!=null?(dec>0?v.toFixed(dec):fmt(Math.round(v))):'';
+  const metaVal=Array.isArray(meta)?meta[0]:meta;
+  CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[
+    {label:'Real',data,backgroundColor:data.map((v,i)=>corFarolBarra(v,Array.isArray(meta)?meta[i]:meta)),borderRadius:4,borderSkipped:false},
+    {label:`Meta${metaVal?` (${dec>0?metaVal.toFixed(dec):Math.round(metaVal)})`:''}`,data:Array.isArray(meta)?meta:labels.map(()=>meta),type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
+    plugins:{
+      legend:{display:true,position:'bottom',align:'center',labels:{boxWidth:12,font:{size:10},usePointStyle:true,
+        generateLabels:()=>[
+          {text:'Dentro da meta (≥100%)',fillStyle:'#16a34a',strokeStyle:'#16a34a',pointStyle:'rectRounded'},
+          {text:'Desvio ≤5%',fillStyle:'#ca8a04',strokeStyle:'#ca8a04',pointStyle:'rectRounded'},
+          {text:'Fora da meta (<95%)',fillStyle:'#dc2626',strokeStyle:'#dc2626',pointStyle:'rectRounded'},
+          {text:`Meta${metaVal?` (${dec>0?metaVal.toFixed(dec):Math.round(metaVal)})`:''}`,fillStyle:'transparent',strokeStyle:'#374151',lineWidth:2,pointStyle:'line'}
+        ]
+      }},
+      datalabels:{display:true,
+        anchor:c=>c.dataset.type==='line'?'end':'center',
+        align:c=>c.dataset.type==='line'?'top':'center',
+        font:{size:10,weight:'800'},
+        color:c=>c.dataset.type==='line'?'#374151':'#fff',
+        backgroundColor:c=>c.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
+        borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
+        formatter:v=>v?fmt2(v):''}
+    },
+    scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},...(dec>0?{callback:v=>v.toFixed(dec)}:{})},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
+  },plugins:[ChartDataLabels]});
 }
 function renderBarChartW(id,labels,data,meta,color){if(CI[id])CI[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;CI[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Real',data,backgroundColor:data.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},{label:'Meta',data:labels.map(()=>meta),type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:CHART_OPTS_BASE,plugins:[ChartDataLabels]});}
 
