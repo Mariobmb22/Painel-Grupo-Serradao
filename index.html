@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-131</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-132</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -413,7 +413,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   </div>
   <div class="two-col" style="margin-top:12px">
     <div class="card"><div class="card-hdr"><div class="card-title">Kg / homem / hora <span class="badge badge-bov" id="badge-prod-khh">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdKHH()" id="btn-toggle-khh" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-bov','KgHomemHora')">⬇ PNG</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Ritmo de abate <span class="badge badge-bov">Cab/hora</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-prod-ritmo','Ritmo_Abate')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-ritmo"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Ritmo de abate <span class="badge badge-bov" id="badge-prod-ritmo">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdRitmo()" id="btn-toggle-ritmo" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-ritmo','Ritmo_Abate')">⬇ PNG</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-ritmo"></canvas></div></div></div>
   </div>
   <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Abts/H/h Bov</th><th class="r">Abate/h Bov</th><th class="r">Cab/Col Bov</th><th class="r">F</th><th class="r">Abts/H/h Suí</th><th class="r">Abate/h Suí</th><th class="r">Cab/Col Suí</th><th class="r">F</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
   <!-- PARADAS -->
@@ -1816,21 +1816,22 @@ async function renderParadasReal(){
   renderPizza('chart-par-sui-pizza',agrupar(sui,'tipo'));
 }
 function toggleProdKHH(){
-  const d=window._prodKHH;if(!d)return;
-  const atual=window._prodKHHAtual||'bovino';
-  const novo=atual==='bovino'?'suino':'bovino';
+  const novo=window._prodKHHAtual==='bovino'?'suino':'bovino';
   window._prodKHHAtual=novo;
   const badge=document.getElementById('badge-prod-khh');
   const btn=document.getElementById('btn-toggle-khh');
-  if(novo==='suino'){
-    renderBarChartLine('chart-prod-bov',d.labels,d.suiH,d.suiHMeta,'#b45309',2);
-    if(badge){badge.textContent='Suíno';badge.className='badge badge-sui';}
-    if(btn)btn.textContent='🔄 Bovino';
-  }else{
-    renderBarChartLine('chart-prod-bov',d.labels,d.bovH,d.bovHMeta,'#1a5ca8',2);
-    if(badge){badge.textContent='Bovino';badge.className='badge badge-bov';}
-    if(btn)btn.textContent='🔄 Suíno';
-  }
+  if(novo==='suino'){if(badge){badge.textContent='Suíno';badge.className='badge badge-sui';}if(btn)btn.textContent='🔄 Bovino';}
+  else{if(badge){badge.textContent='Bovino';badge.className='badge badge-bov';}if(btn)btn.textContent='🔄 Suíno';}
+  _renderKHH(novo);
+}
+function toggleProdRitmo(){
+  const novo=window._prodRitmoAtual==='bovino'?'suino':'bovino';
+  window._prodRitmoAtual=novo;
+  const badge=document.getElementById('badge-prod-ritmo');
+  const btn=document.getElementById('btn-toggle-ritmo');
+  if(novo==='suino'){if(badge){badge.textContent='Suíno';badge.className='badge badge-sui';}if(btn)btn.textContent='🔄 Bovino';}
+  else{if(badge){badge.textContent='Bovino';badge.className='badge badge-bov';}if(btn)btn.textContent='🔄 Suíno';}
+  _renderRitmo(novo);
 }
 async function renderProdutividadeReal(){
   const diasFiltrados=getHistoricoFiltrado();
@@ -1886,31 +1887,79 @@ async function renderProdutividadeReal(){
     ritmoMetaS.push(META_RITMO_SUI);
     linhasTabela.push([g.label,ahhBov.toFixed(2),abateHBov.toFixed(1),cabColBov.toFixed(1),farol(META_KHH_BOV>0?(ahhBov-META_KHH_BOV)/META_KHH_BOV*100:0),ahhSui.toFixed(2),abateHSui.toFixed(1),cabColSui.toFixed(1),farol(META_KHH_SUI>0?(ahhSui-META_KHH_SUI)/META_KHH_SUI*100:0)]);
   });
-  // Guarda dados suino para toggle
+  // Guarda dados para toggle
   window._prodKHH={labels:labelsBov,bovH,bovHMeta,suiH,suiHMeta,ritmoB,ritmoS,ritmoMetaB,ritmoMetaS};
   window._prodKHHAtual='bovino';
+  window._prodRitmoAtual='bovino';
   if(labelsBov.length){
-    renderBarChartLine('chart-prod-bov',labelsBov,bovH,bovHMeta,'#1a5ca8',2);
-    // Gráfico de ritmo — bovino+suino juntos como linhas
-    if(CI['chart-prod-ritmo'])CI['chart-prod-ritmo'].destroy();
-    const ctxR=document.getElementById('chart-prod-ritmo');
-    if(ctxR)CI['chart-prod-ritmo']=new Chart(ctxR,{
-      data:{labels:labelsBov,datasets:[
-        {type:'bar',label:'Bov Real',data:ritmoB,backgroundColor:ritmoB.map((v,i)=>corFarolBarra(v,ritmoMetaB[i])),yAxisID:'y',datalabels:{anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}},
-        {type:'line',label:'Bov Meta',data:ritmoMetaB,borderColor:'#1a5ca8',borderDash:[4,4],borderWidth:1.5,pointRadius:2,fill:false,yAxisID:'y',datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:'#1a5ca8',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v||''}},
-        {type:'line',label:'Suí Real',data:ritmoS,borderColor:'#c2410c',borderWidth:2,pointRadius:3,fill:false,yAxisID:'y2',datalabels:{display:false}},
-        {type:'line',label:'Suí Meta',data:ritmoMetaS,borderColor:'#c2410c',borderDash:[4,4],borderWidth:1.5,pointRadius:2,fill:false,yAxisID:'y2',datalabels:{display:false}}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
-        plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,usePointStyle:true}},datalabels:{}},
-        scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10}},title:{display:true,text:'Bov (cab/h)'}},
-          y2:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:10}},title:{display:true,text:'Suí (cab/h)'}},
-          x:{grid:{display:false},ticks:{font:{size:10}}}}},
-      plugins:[ChartDataLabels]
-    });
+    _renderKHH('bovino');
+    _renderRitmo('bovino');
   }
   const tb=document.getElementById('tbody-prod-semanal');
   if(tb){tb.innerHTML=linhasTabela.map(r=>`<tr><td>${r[0]}</td><td class="r"><b>${r[1]}</b></td><td class="r" style="color:var(--muted)">${r[2]}</td><td class="r" style="color:var(--muted)">${r[3]}</td><td class="r">${r[4]}</td><td class="r"><b>${r[5]}</b></td><td class="r" style="color:var(--muted)">${r[6]}</td><td class="r" style="color:var(--muted)">${r[7]}</td><td class="r">${r[8]}</td></tr>`).join('');}
+}
+
+function _renderKHH(tipo){
+  const d=window._prodKHH;if(!d||!d.labels.length)return;
+  const isBov=tipo==='bovino';
+  const vals=isBov?d.bovH:d.suiH;
+  const meta=isBov?META_KHH_BOV:META_KHH_SUI;
+  const cor=isBov?'#1a5ca8':'#b45309';
+  const metaArr=vals.map(()=>meta);
+  if(CI['chart-prod-bov'])CI['chart-prod-bov'].destroy();
+  const ctx=document.getElementById('chart-prod-bov');if(!ctx)return;
+  const opts=JSON.parse(JSON.stringify(CHART_OPTS_BASE));
+  opts.layout={padding:{top:32}};
+  opts.scales.y.ticks={font:{size:10},callback:v=>v.toFixed(2)};
+  opts.plugins.datalabels={
+    display:true,
+    anchor:ctx=>ctx.dataset.type==='line'?'end':'center',
+    align:ctx=>ctx.dataset.type==='line'?'top':'center',
+    font:{size:9,weight:'800'},
+    color:ctx=>ctx.dataset.type==='line'?'#374151':'#ffffff',
+    backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
+    borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
+    formatter:v=>v?v.toFixed(2):''
+  };
+  CI['chart-prod-bov']=new Chart(ctx,{
+    type:'bar',
+    data:{labels:d.labels,datasets:[
+      {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},
+      {label:`Meta (${meta})`,data:metaArr,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}
+    ]},
+    options:opts,plugins:[ChartDataLabels]
+  });
+}
+
+function _renderRitmo(tipo){
+  const d=window._prodKHH;if(!d||!d.labels.length)return;
+  const isBov=tipo==='bovino';
+  const vals=isBov?d.ritmoB:d.ritmoS;
+  const meta=isBov?META_RITMO_BOV:META_RITMO_SUI;
+  const cor=isBov?'#1a5ca8':'#b45309';
+  const metaArr=vals.map(()=>meta);
+  if(CI['chart-prod-ritmo'])CI['chart-prod-ritmo'].destroy();
+  const ctx=document.getElementById('chart-prod-ritmo');if(!ctx)return;
+  const opts=JSON.parse(JSON.stringify(CHART_OPTS_BASE));
+  opts.layout={padding:{top:32}};
+  opts.plugins.datalabels={
+    display:true,
+    anchor:ctx=>ctx.dataset.type==='line'?'end':'center',
+    align:ctx=>ctx.dataset.type==='line'?'top':'center',
+    font:{size:9,weight:'800'},
+    color:ctx=>ctx.dataset.type==='line'?'#374151':'#ffffff',
+    backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
+    borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
+    formatter:v=>v?v.toFixed(1):''
+  };
+  CI['chart-prod-ritmo']=new Chart(ctx,{
+    type:'bar',
+    data:{labels:d.labels,datasets:[
+      {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},
+      {label:`Meta (${meta})`,data:metaArr,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}
+    ]},
+    options:opts,plugins:[ChartDataLabels]
+  });
 }
 
 const EMPRESAS_PROPRIAS=['Serradão','Frigovitta'];
