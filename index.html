@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-128</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-129</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1134,7 +1134,7 @@ async function carregarHistoricoCompleto(){
   }catch(e){return[];}
 }
 async function carregarMiudosDoSheets(data){
-  try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]===data).map(r=>({miudo:r[1],nrPecas:+r[2]||0,pesoKg:+r[3]||0,kgTotalAbate:+r[4]||0,pctReal:+r[5]||0,pctMeta:+r[6]||0}));}catch(e){return[];}
+  try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]===data).map(r=>{const pf=v=>parseFloat(String(v||0).replace(/\./g,'').replace(',','.'))||0;return{miudo:r[1],nrPecas:pf(r[2]),pesoKg:pf(r[3]),kgTotalAbate:pf(r[4]),pctReal:pf(r[5]),pctMeta:pf(r[6])};});}catch(e){return[];}
 }
 async function carregarParametrosDoSheets(){
   try{
@@ -2121,7 +2121,7 @@ async function carregarCarcacaDoSheets(){
   }catch(e){return[];}
 }
 async function carregarMiudosCompletoDoSheets(){
-  const pf=v=>parseFloat(String(v||0).replace(',','.'));
+  const pf=v=>parseFloat(String(v||0).replace(/\./g,'').replace(',','.'))||0;
   try{const rows=await sheetsRead('Miudos');return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10&&!String(r[0]).startsWith('undefined')).map(r=>({data:String(r[0]).slice(0,10),miudo:r[1],nrPecas:pf(r[2]),pesoKg:pf(r[3]),kgTotalAbate:pf(r[4]),pctReal:pf(r[5]),pctMeta:pf(r[6])}));}catch(e){return[];}
 }
 async function renderRendimentoReal(tB,tS){
