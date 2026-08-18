@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-149</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-150</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1890,27 +1890,27 @@ async function renderParadasReal(){
             anchor:(ctx)=>{
               if(ctx.dataset.type==='line') return 'end';
               const v=ctx.dataset.data[ctx.dataIndex];
-              const mx=Math.max(...ctx.dataset.data,0.01);
-              return v/mx>0.3?'center':'end';
+              const mx=ctx.chart.scales?.y?.max||0.01;
+              return v/mx>0.18?'center':'end';
             },
             align:(ctx)=>{
               if(ctx.dataset.type==='line') return 'top';
               const v=ctx.dataset.data[ctx.dataIndex];
-              const mx=Math.max(...ctx.dataset.data,0.01);
-              return v/mx>0.3?'center':'top';
+              const mx=ctx.chart.scales?.y?.max||0.01;
+              return v/mx>0.18?'center':'top';
             },
             font:{size:10,weight:'800'},
             color:(ctx)=>{
               if(ctx.dataset.type==='line') return '#0f2947';
               const v=ctx.dataset.data[ctx.dataIndex];
-              const mx=Math.max(...ctx.dataset.data,0.01);
-              return v/mx>0.3?'#fff':'#374151';
+              const mx=ctx.chart.scales?.y?.max||0.01;
+              return v/mx>0.18?'#fff':'#374151';
             },
             backgroundColor:(ctx)=>{
               if(ctx.dataset.type==='line') return 'rgba(255,255,255,0.92)';
               const v=ctx.dataset.data[ctx.dataIndex];
-              const mx=Math.max(...ctx.dataset.data,0.01);
-              return v/mx>0.3?'transparent':'rgba(255,255,255,0.88)';
+              const mx=ctx.chart.scales?.y?.max||0.01;
+              return v/mx>0.18?'transparent':'rgba(255,255,255,0.9)';
             },
             borderRadius:3,
             padding:(ctx)=>ctx.dataset.type==='line'?{top:2,bottom:2,left:4,right:4}:{top:2,bottom:2,left:3,right:3},
@@ -2128,7 +2128,7 @@ function _renderKHH(tipo){
       {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},
       {label:`Meta (${meta})`,data:metaArr,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}
     ]},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36,right:50}},
       plugins:{
         legend:{display:true,position:'bottom',align:'center',labels:{boxWidth:12,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
           generateLabels:()=>[
@@ -2139,29 +2139,30 @@ function _renderKHH(tipo){
           ]
         }},
         datalabels:{
-          display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
+          display:true,
           anchor:ctx=>{
             if(ctx.dataset.type==='line') return 'end';
-            const max=ctx.chart.scales?.y?.max||1;
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'end';
+            const v=ctx.dataset.data[ctx.dataIndex]||0;
+            return v<meta*0.15?'end':'center';
           },
           align:ctx=>{
-            if(ctx.dataset.type==='line') return 'right';
-            const max=ctx.chart.scales?.y?.max||1;
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'top';
+            if(ctx.dataset.type==='line') return 'top';
+            const v=ctx.dataset.data[ctx.dataIndex]||0;
+            return v<meta*0.15?'top':'center';
           },
           font:{size:10,weight:'800'},
           color:ctx=>{
             if(ctx.dataset.type==='line') return '#374151';
-            const max=ctx.chart.scales?.y?.max||1;
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'#fff':'#0f2947';
+            const v=ctx.dataset.data[ctx.dataIndex]||0;
+            return v<meta*0.15?'#0f2947':'#fff';
           },
           backgroundColor:ctx=>{
-            if(ctx.dataset.type==='line') return 'rgba(255,255,255,0.9)';
-            const max=ctx.chart.scales?.y?.max||1;
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'transparent':'rgba(255,255,255,0.92)';
+            if(ctx.dataset.type==='line') return 'rgba(255,255,255,0.92)';
+            const v=ctx.dataset.data[ctx.dataIndex]||0;
+            return v<meta*0.15?'rgba(255,255,255,0.92)':'transparent';
           },
-          borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
+          borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},
+          display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
           formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(2):v?v.toFixed(2):''}
       },
       scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
@@ -2184,7 +2185,7 @@ function _renderRitmo(tipo){
       {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},
       {label:`Meta (${meta})`,data:metaArr,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}
     ]},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:40}},
       plugins:{
         legend:{display:true,position:'bottom',align:'center',labels:{boxWidth:12,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
           generateLabels:()=>[
@@ -2195,29 +2196,30 @@ function _renderRitmo(tipo){
           ]
         }},
         datalabels:{
-          display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
+          display:true,
           anchor:ctx=>{
             if(ctx.dataset.type==='line') return 'end';
-            const max=ctx.chart.scales?.y?.max||1;
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'end';
+            const v=ctx.dataset.data[ctx.dataIndex]||0;
+            return v<meta*0.15?'end':'center';
           },
           align:ctx=>{
-            if(ctx.dataset.type==='line') return 'right';
-            const max=ctx.chart.scales?.y?.max||1;
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'center':'top';
+            if(ctx.dataset.type==='line') return 'top';
+            const v=ctx.dataset.data[ctx.dataIndex]||0;
+            return v<meta*0.15?'top':'center';
           },
           font:{size:10,weight:'800'},
           color:ctx=>{
             if(ctx.dataset.type==='line') return '#374151';
-            const max=ctx.chart.scales?.y?.max||1;
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'#fff':'#0f2947';
+            const v=ctx.dataset.data[ctx.dataIndex]||0;
+            return v<meta*0.15?'#0f2947':'#fff';
           },
           backgroundColor:ctx=>{
-            if(ctx.dataset.type==='line') return 'rgba(255,255,255,0.9)';
-            const max=ctx.chart.scales?.y?.max||1;
-            return (ctx.dataset.data[ctx.dataIndex]||0)/max>0.12?'transparent':'rgba(255,255,255,0.92)';
+            if(ctx.dataset.type==='line') return 'rgba(255,255,255,0.92)';
+            const v=ctx.dataset.data[ctx.dataIndex]||0;
+            return v<meta*0.15?'rgba(255,255,255,0.92)':'transparent';
           },
-          borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
+          borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},
+          display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
           formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(1):v?v.toFixed(1):''}
       },
       scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
