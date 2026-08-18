@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-136</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-137</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -445,6 +445,15 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       </select>
     </div>
     <span id="par-resumo-filtro" style="font-size:11px;color:var(--muted);margin-left:4px"></span>
+  </div>
+
+  <!-- Gráfico colunas agrupadas por tipo/mês -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-hdr">
+      <div class="card-title">📊 Tempo por tipo — comparativo mensal (horas)</div>
+      <button class="btn-chart-dl" onclick="downloadChart('chart-par-tipo-mes','Paradas_Tipo_Mes')">⬇ PNG</button>
+    </div>
+    <div class="card-body" style="height:240px;position:relative"><canvas id="chart-par-tipo-mes"></canvas></div>
   </div>
 
   <!-- Gráfico tempo por dia -->
@@ -1827,30 +1836,69 @@ async function renderParadasReal(){
   const els=document.getElementById('par-bov-periodo');if(els)els.textContent=per;
   const els2=document.getElementById('par-sui-periodo');if(els2)els2.textContent=`${sui.length} paradas · ${(totalSuiMin/60).toFixed(1)}h`;
 
-  // Gráfico tempo por dia
+  // Gráfico comparativo mensal por tipo
+  const TIPO_CORES={'Operacional':'#1a5ca8','Manutenção':'#c2410c','TI':'#16a34a','Ação Fiscal':'#7c3aed','Outros':'#64748b'};
+  const tiposUnicos=[...new Set(regs.map(p=>p.tipo||'Outros'))].sort();
+  const mesesAll=[...new Set(paradasCache.map(p=>p.data.slice(0,7)))].sort();
+  const nomesMesesCurto={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+  const ctxTM=document.getElementById('chart-par-tipo-mes');
+  if(ctxTM){
+    if(ctxTM._chart)ctxTM._chart.destroy();
+    // Agrupa todo o cache por mês e tipo (não só o filtrado, para comparar)
+    const porMesTipo={};
+    paradasCache.forEach(p=>{
+      let linha=p.linha.toLowerCase();
+      if(filtroLinha&&!linha.includes(filtroLinha==='suino'?'su':filtroLinha))return;
+      if(filtroTipo&&p.tipo!==filtroTipo)return;
+      const mes=p.data.slice(0,7);
+      const tipo=p.tipo||'Outros';
+      if(!porMesTipo[mes])porMesTipo[mes]={};
+      if(!porMesTipo[mes][tipo])porMesTipo[mes][tipo]=0;
+      porMesTipo[mes][tipo]+=p.duracaoMin||0;
+    });
+    const mesesChart=Object.keys(porMesTipo).sort().slice(-6);
+    const labMeses=mesesChart.map(m=>nomesMesesCurto[m.slice(5,7)]+'/'+m.slice(2,4));
+    const dsTM=tiposUnicos.map((tipo,i)=>({
+      label:tipo,
+      data:mesesChart.map(m=>parseFloat(((porMesTipo[m]?.[tipo]||0)/60).toFixed(1))),
+      backgroundColor:TIPO_CORES[tipo]||`hsl(${i*60},60%,50%)`,
+      borderRadius:4,
+      datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:TIPO_CORES[tipo]||'#374151',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v>0?v.toFixed(1)+'h':''}
+    }));
+    ctxTM._chart=new Chart(ctxTM,{
+      type:'bar',
+      data:{labels:labMeses,datasets:dsTM},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
+        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},datalabels:{}},
+        scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v+'h'}},
+          x:{grid:{display:false},ticks:{font:{size:10}}}}},
+      plugins:[ChartDataLabels]
+    });
+  }
+
+  // Gráfico tempo por dia com linha de média
   const porDia={};
-  diasFiltrados.forEach(d=>{porDia[d.data]={bov:0,sui:0};});
-  regs.forEach(p=>{
-    if(!porDia[p.data])return;
-    if(p.linha.toLowerCase().includes('bovino')) porDia[p.data].bov+=p.duracaoMin;
-    else porDia[p.data].sui+=p.duracaoMin;
-  });
+  diasFiltrados.forEach(d=>{porDia[d.data]=0;});
+  regs.forEach(p=>{if(porDia[p.data]!==undefined) porDia[p.data]+=p.duracaoMin;});
   const diasOrdenados=Object.keys(porDia).sort();
   const labDia=diasOrdenados.map(d=>fmtBR(d));
-  const valsBov=diasOrdenados.map(d=>parseFloat((porDia[d].bov/60).toFixed(2)));
-  const valsSui=diasOrdenados.map(d=>parseFloat((porDia[d].sui/60).toFixed(2)));
+  const valsTotal=diasOrdenados.map(d=>parseFloat((porDia[d]/60).toFixed(2)));
+  const mediaHoras=valsTotal.length>0?parseFloat((valsTotal.reduce((a,b)=>a+b,0)/valsTotal.length).toFixed(2)):0;
+  const mediaArr=valsTotal.map(()=>mediaHoras);
   const ctxDia=document.getElementById('chart-par-tempo-dia');
   if(ctxDia){
     if(ctxDia._chart)ctxDia._chart.destroy();
-    const ds=[];
-    if(!filtroLinha||filtroLinha==='bovino') ds.push({label:'Bovino',data:valsBov,backgroundColor:'rgba(26,92,168,0.75)',borderRadius:4,datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:'#1a5ca8',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v>0?v.toFixed(1)+'h':''}});
-    if(!filtroLinha||filtroLinha.includes('su')) ds.push({label:'Suíno',data:valsSui,backgroundColor:'rgba(194,65,12,0.75)',borderRadius:4,datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:'#c2410c',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v>0?v.toFixed(1)+'h':''}});
     ctxDia._chart=new Chart(ctxDia,{
       type:'bar',
-      data:{labels:labDia,datasets:ds},
+      data:{labels:labDia,datasets:[
+        {label:'Paradas (h)',data:valsTotal,backgroundColor:valsTotal.map(v=>v>mediaHoras*1.5?'rgba(220,38,38,0.75)':v>mediaHoras?'rgba(202,138,4,0.75)':'rgba(22,163,74,0.65)'),borderRadius:4,
+          datalabels:{anchor:'end',align:'top',font:{size:8,weight:'700'},color:'#374151',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:1,bottom:1,left:2,right:2},formatter:v=>v>0?v.toFixed(1)+'h':''}},
+        {label:`Média (${mediaHoras.toFixed(1)}h)`,data:mediaArr,type:'line',borderColor:'#dc2626',borderDash:[5,3],borderWidth:2,pointRadius:0,fill:false,
+          datalabels:{display:false}}
+      ]},
       options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
         plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},datalabels:{}},
-        scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v+'h'},stacked:false},
+        scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v+'h'}},
           x:{grid:{display:false},ticks:{font:{size:9},maxRotation:35}}}},
       plugins:[ChartDataLabels]
     });
