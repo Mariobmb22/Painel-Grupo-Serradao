@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-146</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-147</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1884,7 +1884,7 @@ async function renderParadasReal(){
           legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,usePointStyle:true}},
           datalabels:{
             display:(ctx)=>{
-              if(ctx.dataset.type==='line') return ctx.dataIndex===ctx.dataset.data.length-1;
+              if(ctx.dataset.type==='line') return ctx.dataset.data[ctx.dataIndex]>0;
               return ctx.dataset.data[ctx.dataIndex]>0;
             },
             anchor:(ctx)=>{
@@ -1894,7 +1894,7 @@ async function renderParadasReal(){
               return v/mx>0.3?'center':'end';
             },
             align:(ctx)=>{
-              if(ctx.dataset.type==='line') return 'right';
+              if(ctx.dataset.type==='line') return 'top';
               const v=ctx.dataset.data[ctx.dataIndex];
               const mx=Math.max(...ctx.dataset.data,0.01);
               return v/mx>0.3?'center':'top';
