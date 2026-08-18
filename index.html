@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-143</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-145</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1879,19 +1879,45 @@ async function renderParadasReal(){
     ctxTM._chart=new Chart(ctxTM,{
       type:'bar',
       data:{labels:labMeses,datasets:dsTM},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:40}},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:40,right:16}},
         plugins:{
           legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,usePointStyle:true}},
           datalabels:{
-            display:ctx=>ctx.dataset.type==='line'?true:(ctx.dataset.data[ctx.dataIndex]>=0.1),
-            anchor:ctx=>ctx.dataset.type==='line'?'end':'center',
-            align:ctx=>ctx.dataset.type==='line'?'top':'center',
-            font:ctx=>ctx.dataset.type==='line'?{size:11,weight:'800'}:{size:10,weight:'800'},
-            color:ctx=>ctx.dataset.type==='line'?'#0f2947':'#fff',
-            backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.92)':'rgba(0,0,0,0.35)',
-            borderRadius:4,
-            padding:ctx=>ctx.dataset.type==='line'?{top:3,bottom:3,left:5,right:5}:{top:2,bottom:2,left:3,right:3},
-            formatter:(v,ctx)=>v>0?v.toFixed(1)+'h':''
+            display:(ctx)=>{
+              if(ctx.dataset.type==='line') return ctx.dataIndex===ctx.dataset.data.length-1;
+              return ctx.dataset.data[ctx.dataIndex]>0;
+            },
+            anchor:(ctx)=>{
+              if(ctx.dataset.type==='line') return 'end';
+              const v=ctx.dataset.data[ctx.dataIndex];
+              const mx=Math.max(...ctx.dataset.data,0.01);
+              return v/mx>0.3?'center':'end';
+            },
+            align:(ctx)=>{
+              if(ctx.dataset.type==='line') return 'right';
+              const v=ctx.dataset.data[ctx.dataIndex];
+              const mx=Math.max(...ctx.dataset.data,0.01);
+              return v/mx>0.3?'center':'top';
+            },
+            font:{size:9,weight:'800'},
+            color:(ctx)=>{
+              if(ctx.dataset.type==='line') return '#0f2947';
+              const v=ctx.dataset.data[ctx.dataIndex];
+              const mx=Math.max(...ctx.dataset.data,0.01);
+              return v/mx>0.3?'#fff':'#374151';
+            },
+            backgroundColor:(ctx)=>{
+              if(ctx.dataset.type==='line') return 'rgba(255,255,255,0.92)';
+              const v=ctx.dataset.data[ctx.dataIndex];
+              const mx=Math.max(...ctx.dataset.data,0.01);
+              return v/mx>0.3?'transparent':'rgba(255,255,255,0.88)';
+            },
+            borderRadius:3,
+            padding:(ctx)=>ctx.dataset.type==='line'?{top:2,bottom:2,left:4,right:4}:{top:1,bottom:1,left:2,right:2},
+            formatter:(v,ctx)=>{
+              if(ctx.dataset.type==='line') return v>0?v.toFixed(1)+'h':'';
+              return v>0?v.toFixed(1)+'h':'';
+            }
           }
         },
         scales:{
@@ -1945,17 +1971,32 @@ async function renderParadasReal(){
     const top=grupos.slice(0,8);
     const labels=top.map(([k])=>k.length>18?k.slice(0,16)+'…':k);
     const vals=top.map(([,v])=>parseFloat((v.min/60).toFixed(1)));
+    const maxVal=Math.max(...vals,0.1);
     let acum=0;const totalH=totalMin/60||1;
     const pcts=top.map(([,v])=>{acum+=v.min/60;return parseFloat((acum/totalH*100).toFixed(1));});
     ctx._chart=new Chart(ctx,{
       data:{labels,datasets:[
-        {type:'bar',label:'Horas',data:vals,backgroundColor:'rgba(15,41,71,0.8)',yAxisID:'y',
-          datalabels:{anchor:'end',align:'top',font:{size:10,weight:'800'},color:'#0f2947',backgroundColor:'rgba(255,255,255,0.92)',borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},formatter:v=>v>0?v.toFixed(1)+'h':''}},
-        {type:'line',label:'Acumulado %',data:pcts,borderColor:'#dc2626',borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#dc2626',yAxisID:'y2',fill:false,
-          datalabels:{anchor:'end',align:'top',font:{size:9,weight:'800'},color:'#dc2626',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:v=>v+'%'}}
+        {type:'bar',label:'Horas',data:vals,backgroundColor:'rgba(15,41,71,0.8)',yAxisID:'y'},
+        {type:'line',label:'Acumulado %',data:pcts,borderColor:'#dc2626',borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#dc2626',yAxisID:'y2',fill:false}
       ]},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
-        plugins:{legend:{display:false},datalabels:{}},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36,right:8}},
+        plugins:{
+          legend:{display:false},
+          datalabels:{
+            display:true,
+            // Barra: dentro se grande o suficiente (>15% do max), senão acima
+            anchor:(ctx)=>ctx.datasetIndex===0?(vals[ctx.dataIndex]/maxVal>0.2?'center':'end'):'end',
+            align:(ctx)=>ctx.datasetIndex===0?(vals[ctx.dataIndex]/maxVal>0.2?'center':'top'):'top',
+            font:{size:9,weight:'800'},
+            color:(ctx)=>ctx.datasetIndex===0?(vals[ctx.dataIndex]/maxVal>0.2?'#fff':'#0f2947'):'#dc2626',
+            backgroundColor:(ctx)=>ctx.datasetIndex===0?(vals[ctx.dataIndex]/maxVal>0.2?'transparent':'rgba(255,255,255,0.92)'):'rgba(255,255,255,0.92)',
+            borderRadius:3,
+            padding:{top:2,bottom:2,left:3,right:3},
+            // Linha: só no último ponto
+            display:(ctx)=>ctx.datasetIndex===1?ctx.dataIndex===vals.length-1:true,
+            formatter:(v,ctx)=>ctx.datasetIndex===0?(v>0?v.toFixed(1)+'h':''):v+'%'
+          }
+        },
         scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10}}},
           y2:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},ticks:{font:{size:10},callback:v=>v+'%'}},
           x:{grid:{display:false},ticks:{font:{size:9},maxRotation:35}}}},
@@ -1964,7 +2005,7 @@ async function renderParadasReal(){
   }
 
   // Pizza de tipos
-  const PIZZA_CORES=['#0f2947','#1a5ca8','#2563eb','#93c5fd','#c2410c','#f97316','#fbbf24','#86efac'];
+  const PIZZA_CORES=['#1a5ca8','#c2410c','#16a34a','#7c3aed','#ca8a04','#0891b2','#db2777','#374151'];
   function renderPizza(ctxId,grupos){
     const ctx=document.getElementById(ctxId);if(!ctx)return;
     if(ctx._chart)ctx._chart.destroy();
@@ -2106,7 +2147,7 @@ function _renderKHH(tipo){
           color:ctx=>ctx.dataset.type==='line'?'#374151':'#fff',
           backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
           borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},
-          formatter:(v,ctx)=>ctx.dataset.type==='line'?`Meta: ${v.toFixed(2)}`:v?v.toFixed(2):''}
+          formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(2):v?v.toFixed(2):''}
       },
       scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
     },
@@ -2146,7 +2187,7 @@ function _renderRitmo(tipo){
           color:ctx=>ctx.dataset.type==='line'?'#374151':'#fff',
           backgroundColor:ctx=>ctx.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
           borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},
-          formatter:(v,ctx)=>ctx.dataset.type==='line'?`Meta: ${v.toFixed(1)}`:v?v.toFixed(1):''}
+          formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(1):v?v.toFixed(1):''}
       },
       scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
     },
@@ -2612,7 +2653,7 @@ function renderBarChartLine(id,labels,data,meta,color,decimais){if(CI[id])CI[id]
         color:c=>c.dataset.type==='line'?'#374151':'#fff',
         backgroundColor:c=>c.dataset.type==='line'?'rgba(255,255,255,0.9)':'transparent',
         borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},
-        formatter:(v,c)=>c.dataset.type==='line'?`Meta: ${fmt2(v)}`:v?fmt2(v):''}
+        formatter:(v,c)=>c.dataset.type==='line'?fmt2(v):v?fmt2(v):''}
     },
     scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},...(dec>0?{callback:v=>v.toFixed(dec)}:{})},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
   },plugins:[ChartDataLabels]});
