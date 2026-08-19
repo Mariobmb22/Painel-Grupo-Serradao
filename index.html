@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-157</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-158</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1491,7 +1491,7 @@ function loadParams(){
 async function getPDFText(file){const ab=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:ab}).promise;let text='';for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const c=await page.getTextContent();text+=c.items.map(it=>it.str).join(' ')+'\n';}return text;}
 function extractDate(text){const dates=[];const p1=/(\d{2})\/(\d{2})\/(\d{4})/g;const p2=/(\d{2})\/(\d{2})\/(\d{2})\b/g;let m;while((m=p1.exec(text))!==null)dates.push(`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`);while((m=p2.exec(text))!==null)dates.push(`20${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`);if(!dates.length)return null;const freq={};dates.forEach(d=>{freq[d]=(freq[d]||0)+1;});return Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];}
 async function handleUpload(e,slot){const f=e.target.files[0];if(!f)return;pdfFiles[slot]=f;pdfTexts[slot]=null;pdfDates[slot]=null;document.getElementById('uname-'+slot).textContent=f.name;document.getElementById('udate-'+slot).textContent='Lendo...';document.getElementById('slot-'+slot).className='uslot';try{const text=await getPDFText(f);pdfTexts[slot]=text;const date=extractDate(text);pdfDates[slot]=date;const ref=document.getElementById('upload-date').value;const ok=date===ref;document.getElementById('slot-'+slot).className='uslot '+(ok?'ok':'err');document.getElementById('udate-'+slot).textContent=date?fmtBR(date):'Data não encontrada';document.getElementById('udate-'+slot).style.color=ok?'var(--green)':'var(--red)';}catch(err){document.getElementById('udate-'+slot).textContent='Erro ao ler';document.getElementById('slot-'+slot).className='uslot err';}checkUploadReady();}
-function checkUploadReady(){const ok=['bov-escala','peso-bov-serradao','peso-bov-frigovitta','peso-sui-serradao'].every(s=>pdfTexts[s]);document.getElementById('btn-processar').disabled=!ok;}
+function checkUploadReady(){const ok=['bov-escala','sui-escala','peso-bov-serradao','peso-bov-frigovitta','peso-sui-serradao'].every(s=>pdfTexts[s]);document.getElementById('btn-processar').disabled=!ok;}
 
 function extrairEscalasBovino(text){
   const acum={};
@@ -1607,8 +1607,7 @@ async function processarPDFs(){
   showAlert('upload-alert','info','Processando PDFs...');
   try{
     const bovino=extrairEscalasBovino(pdfTexts['bov-escala']||'');
-    // Suíno: usa escala se existir, senão usa os PDFs de peso diretamente
-    let suino=extrairEscalasSuino(pdfTexts['sui-escala']||'');
+    const suino=extrairEscalasSuino(pdfTexts['sui-escala']||'');
     const escalas={bovino,suino};
     //console.log('Escalas bov:',bovino.map(e=>e.empresa+':'+e.abatidos).join(','));
     //console.log('Escalas sui:',suino.map(e=>e.empresa+':'+e.abatidos).join(','));
@@ -1625,14 +1624,6 @@ async function processarPDFs(){
       //console.log('Peso',slot,'→',emp,r);
       if(r&&r.cabecas>0) pesoResults[slot]={...r,empresa:emp,tipo};
     });
-
-    // Se não tem escala suína, monta suino a partir dos PDFs de peso
-    if(!suino.length){
-      suino=Object.values(pesoResults)
-        .filter(p=>p.tipo==='suino'&&p.cabecas>0)
-        .map(p=>({empresa:p.empresa,abatidos:p.cabecas,previsto:0}));
-      escalas.suino=suino;
-    }
 
     const dow=new Date(ref+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long'});
     const diaKey=DIAS.find(d=>dow.toLowerCase().startsWith(d.toLowerCase().slice(0,3)))||'Segunda';
