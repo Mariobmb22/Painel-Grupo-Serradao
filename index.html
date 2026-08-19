@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-161</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-164</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1763,14 +1763,12 @@ async function renderDashboard(){
 
   const kgBovTotal=temposBov.reduce((a,t)=>a+t.totalKg,0);
   const kgSuiTotal=temposSui.reduce((a,t)=>a+t.totalKg,0);
-  const diasComBovReal=temposBov.length||d.nd;
-  const diasComSuiReal=temposSui.length||d.nd;
-  const horasBovReal=temposBov.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadBov*diasComBovReal);
-  const horasSuiReal=temposSui.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadSui*diasComSuiReal);
+  const horasBovReal=temposBov.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadBov*d.nd);
+  const horasSuiReal=temposSui.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadSui*d.nd);
   const colabBovReal=temposBov.length?temposBov.reduce((a,t)=>a+t.operadores,0)/temposBov.length:colabPadBov;
   const colabSuiReal=temposSui.length?temposSui.reduce((a,t)=>a+t.operadores,0)/temposSui.length:colabPadSui;
 
-  // Ritmo = total de cabeças / total de horas (mesma lógica do gráfico)
+  // Ritmo = total de cabeças / total de horas
   const ritmoBov=horasBovReal>0?tB/horasBovReal:0;
   const ritmoSui=horasSuiReal>0?tS/horasSuiReal:0;
   // KgHH = kg total / (horas total * operadores médios)
@@ -2097,10 +2095,8 @@ async function renderProdutividadeReal(){
   }
   const labelsBov=[],bovH=[],bovHMeta=[],suiH=[],suiHMeta=[],linhasTabela=[],ritmoB=[],ritmoS=[],ritmoMetaB=[],ritmoMetaS=[];
   grupos.forEach(g=>{
-    const diasComAbateBov=g.diasReais>0?g.diasReais:g.dias;
-    const diasComAbateSui=(g.diasReaisS||0)>0?g.diasReaisS:g.dias;
-    const horasBov=g.horasBov>0?g.horasBov:(8*diasComAbateBov);
-    const horasSui=g.horasSui>0?g.horasSui:(8*diasComAbateSui);
+    const horasBov=g.horasBov>0?g.horasBov:(8*g.dias);
+    const horasSui=g.horasSui>0?g.horasSui:(8*g.dias);
     const colabBov=g.colabBov>0?(g.diasReais>0?Math.round(g.colabBov/g.diasReais):g.colabBov):(params.colabBov||90);
     const colabSui=g.colabSui>0?((g.diasReaisS||0)>0?Math.round(g.colabSui/g.diasReaisS):g.colabSui):(params.colabSui||80);
     const mediaDiaBovG=g.dias>0?g.bov/g.dias:0;const mediaDiaSuiG=g.dias>0?g.sui/g.dias:0;
@@ -2279,16 +2275,44 @@ let paradasCache=null;
 async function carregarTempoAbateDoSheets(){
   try{
     const rows=await sheetsRead('TempoAbate');
-    return rows.slice(1).filter(r=>r[0]&&String(r[0]).length>=10).map(r=>({
-      data:String(r[0]).slice(0,10),
-      animal:String(r[1]||'').trim(),
-      inicioBox:String(r[2]||''),
-      fimBox:String(r[3]||''),
-      qtd:+r[4]||0,
-      totalKg:+r[5]||0,
-      operadores:+r[6]||0,
-      tempoMin:+r[7]||0
-    }));
+    const pf=v=>{const s=String(v||'').replace(',','.');return parseFloat(s)||0;};
+    // Mapeia todas as linhas com Qtd>0 — descarta linhas de parada/horário sem abate
+    const todas=rows.slice(1)
+      .filter(r=>r[0]&&String(r[0]).length>=10)
+      .map(r=>({
+        data:String(r[0]).slice(0,10),
+        animal:String(r[1]||'').trim(),
+        inicioBox:String(r[2]||''),
+        fimBox:String(r[3]||''),
+        qtd:pf(r[4]),
+        totalKg:pf(r[5]),
+        operadores:pf(r[6]),
+        tempoMin:pf(r[7])
+      }))
+      .filter(r=>r.qtd>0);
+    // Desduplicar por data+animal: fica com a linha de maior tempoMin
+    const idx={};
+    todas.forEach(r=>{
+      const k=r.data+'|'+r.animal.toLowerCase();
+      if(!idx[k]||r.tempoMin>idx[k].tempoMin) idx[k]=r;
+    });
+    const dedup=Object.values(idx);
+    // Calcular média de tempoMin e operadores dos dias que têm dados reais (tempoMin>0)
+    const comTempoBov=dedup.filter(r=>r.animal.toLowerCase().includes('bovino')&&r.tempoMin>0);
+    const comTempoSui=dedup.filter(r=>(r.animal.toLowerCase().includes('su'))&&r.tempoMin>0);
+    const mediaTempoBov=comTempoBov.length?comTempoBov.reduce((a,r)=>a+r.tempoMin,0)/comTempoBov.length:480;
+    const mediaTempoSui=comTempoSui.length?comTempoSui.reduce((a,r)=>a+r.tempoMin,0)/comTempoSui.length:480;
+    const mediaColabBov=comTempoBov.length?comTempoBov.reduce((a,r)=>a+r.operadores,0)/comTempoBov.length:90;
+    const mediaColabSui=comTempoSui.length?comTempoSui.reduce((a,r)=>a+r.operadores,0)/comTempoSui.length:80;
+    // Para dias sem tempoMin, preenche com a média
+    return dedup.map(r=>{
+      const isBov=r.animal.toLowerCase().includes('bovino');
+      return{
+        ...r,
+        tempoMin:r.tempoMin>0?r.tempoMin:(isBov?mediaTempoBov:mediaTempoSui),
+        operadores:r.operadores>0?r.operadores:(isBov?mediaColabBov:mediaColabSui)
+      };
+    });
   }catch(e){return[];}
 }
 
