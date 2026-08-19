@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-158</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-159</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1153,13 +1153,17 @@ async function carregarHistoricoCompleto(){
       const diaKey=String(r[7]||'Segunda').trim();
       if(!porData[data]) porData[data]={data,bovino:[],suino:[],diaKey,bovEmps:{},suiEmps:{}};
       const d=porData[data];
-      // Linha bovino ou mista (tem bovAbat/bovMeta): registra bovino
+      // Linha bovino: registra bovino E suíno se tiver dados suínos na mesma linha
       if((tipo==='bovino'||tipo==='')&&(bovAbat>0||bovMeta>0)&&!d.bovEmps[empresa]){
         d.bovino.push({empresa,abatidos:bovAbat,previsto:bovMeta});
         d.bovEmps[empresa]=true;
       }
-      // Linha suino ou mista (tem suiAbat/suiMeta): registra suino
-      if((tipo==='suino'||tipo==='')&&(suiAbat>0||suiMeta>0)&&!d.suiEmps[empresa]){
+      if((tipo==='bovino'||tipo==='')&&(suiAbat>0||suiMeta>0)&&!d.suiEmps[empresa]){
+        d.suino.push({empresa,abatidos:suiAbat,previsto:suiMeta});
+        d.suiEmps[empresa]=true;
+      }
+      // Linha exclusiva suíno
+      if(tipo==='suino'&&(suiAbat>0||suiMeta>0)&&!d.suiEmps[empresa]){
         d.suino.push({empresa,abatidos:suiAbat,previsto:suiMeta});
         d.suiEmps[empresa]=true;
       }
