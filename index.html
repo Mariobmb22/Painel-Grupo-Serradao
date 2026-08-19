@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-151</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-152</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1159,7 +1159,7 @@ async function carregarHistoricoCompleto(){
         d.bovEmps[empresa]=true;
       }
       // Linha suino ou mista (tem suiAbat/suiMeta): registra suino
-      if((tipo==='suino'||tipo==='bovino'||tipo==='')&&(suiAbat>0||suiMeta>0)&&!d.suiEmps[empresa]){
+      if((tipo==='suino'||tipo==='')&&(suiAbat>0||suiMeta>0)&&!d.suiEmps[empresa]){
         d.suino.push({empresa,abatidos:suiAbat,previsto:suiMeta});
         d.suiEmps[empresa]=true;
       }
@@ -2164,7 +2164,7 @@ function _renderKHH(tipo){
           rotation:ctx=>ctx.dataset.type==='line'?0:-90,
           borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},
           display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
-          formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(2):v?v.toFixed(2):''}
+          formatter:(v,ctx)=>ctx.dataset.type==='line'?Math.round(v)+'':v?Math.round(v)+'':''}
       },
       scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
     },
@@ -2183,7 +2183,7 @@ function _renderRitmo(tipo){
   CI['chart-prod-ritmo']=new Chart(ctx,{
     type:'bar',
     data:{labels:d.labels,datasets:[
-      {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},
+      {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolProd(v,meta)),borderRadius:4,borderSkipped:false},
       {label:`Meta (${meta})`,data:metaArr,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}
     ]},
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:40}},
@@ -2222,7 +2222,7 @@ function _renderRitmo(tipo){
           rotation:ctx=>ctx.dataset.type==='line'?0:-90,
           borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},
           display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
-          formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(1):v?v.toFixed(1):''}
+          formatter:(v,ctx)=>ctx.dataset.type==='line'?Math.round(v)+'':v?Math.round(v)+'':''}
       },
       scales:{y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11}},beginAtZero:true},x:{grid:{display:false},ticks:{font:{size:10}}}}
     },
