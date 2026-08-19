@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-150</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-151</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2125,10 +2125,10 @@ function _renderKHH(tipo){
   CI['chart-prod-bov']=new Chart(ctx,{
     type:'bar',
     data:{labels:d.labels,datasets:[
-      {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolBarra(v,meta)),borderRadius:4,borderSkipped:false},
+      {label:'Real',data:vals,backgroundColor:vals.map(v=>corFarolProd(v,meta)),borderRadius:4,borderSkipped:false},
       {label:`Meta (${meta})`,data:metaArr,type:'line',borderColor:'#374151',borderDash:[4,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#374151',fill:false}
     ]},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36,right:50}},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:40}},
       plugins:{
         legend:{display:true,position:'bottom',align:'center',labels:{boxWidth:12,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',
           generateLabels:()=>[
@@ -2161,6 +2161,7 @@ function _renderKHH(tipo){
             const v=ctx.dataset.data[ctx.dataIndex]||0;
             return v<meta*0.15?'rgba(255,255,255,0.92)':'transparent';
           },
+          rotation:ctx=>ctx.dataset.type==='line'?0:-90,
           borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},
           display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
           formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(2):v?v.toFixed(2):''}
@@ -2218,6 +2219,7 @@ function _renderRitmo(tipo){
             const v=ctx.dataset.data[ctx.dataIndex]||0;
             return v<meta*0.15?'rgba(255,255,255,0.92)':'transparent';
           },
+          rotation:ctx=>ctx.dataset.type==='line'?0:-90,
           borderRadius:3,padding:{top:2,bottom:2,left:4,right:4},
           display:ctx=>ctx.dataset.type==='line'?ctx.dataIndex===ctx.dataset.data.length-1:true,
           formatter:(v,ctx)=>ctx.dataset.type==='line'?v.toFixed(1):v?v.toFixed(1):''}
@@ -2630,6 +2632,7 @@ function renderMiudosTable(id,rows,totalAbtPadrao){
 // ── CHARTS ──
 const CI={};
 function corFarolBarra(v,m){if(!m||m<=0)return'#9ca3af';const pct=(v-m)/m*100;if(pct>=-5)return'#16a34a';if(pct>=-10)return'#ca8a04';return'#dc2626';}
+function corFarolProd(v,m){if(!m||m<=0)return'#9ca3af';if(v>=m)return'#16a34a';if(v>=m*0.95)return'#ca8a04';return'#dc2626';}
 const CHART_OPTS_BASE={
   responsive:true,maintainAspectRatio:false,
   plugins:{
