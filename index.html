@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-164</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-166</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1761,19 +1761,24 @@ async function renderDashboard(){
   const temposBov=(tempoAbateCache||[]).filter(t=>datasSet2.has(t.data)&&t.animal.toLowerCase().includes('bovino'));
   const temposSui=(tempoAbateCache||[]).filter(t=>datasSet2.has(t.data)&&(t.animal.toLowerCase().includes('su')||t.animal.toLowerCase().includes('suí')));
 
-  const kgBovTotal=temposBov.reduce((a,t)=>a+t.totalKg,0);
-  const kgSuiTotal=temposSui.reduce((a,t)=>a+t.totalKg,0);
+  // Horas: soma dos dias com TempoAbate real (já com média aplicada nos dias sem preenchimento)
   const horasBovReal=temposBov.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadBov*d.nd);
   const horasSuiReal=temposSui.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadSui*d.nd);
   const colabBovReal=temposBov.length?temposBov.reduce((a,t)=>a+t.operadores,0)/temposBov.length:colabPadBov;
   const colabSuiReal=temposSui.length?temposSui.reduce((a,t)=>a+t.operadores,0)/temposSui.length:colabPadSui;
-
+  // Kg: soma totalKg do TempoAbate; para dias sem totalKg usa média kg/cab dos dias que têm
+  const taComKgBov=temposBov.filter(t=>t.totalKg>0&&t.qtd>0);
+  const taComKgSui=temposSui.filter(t=>t.totalKg>0&&t.qtd>0);
+  const mediaKgCabBov=taComKgBov.length?taComKgBov.reduce((a,t)=>a+t.totalKg/t.qtd,0)/taComKgBov.length:0;
+  const mediaKgCabSui=taComKgSui.length?taComKgSui.reduce((a,t)=>a+t.totalKg/t.qtd,0)/taComKgSui.length:0;
+  const kgBovTotal=temposBov.reduce((a,t)=>a+(t.totalKg>0?t.totalKg:(mediaKgCabBov*t.qtd)),0);
+  const kgSuiTotal=temposSui.reduce((a,t)=>a+(t.totalKg>0?t.totalKg:(mediaKgCabSui*t.qtd)),0);
   // Ritmo = total de cabeças / total de horas
   const ritmoBov=horasBovReal>0?tB/horasBovReal:0;
   const ritmoSui=horasSuiReal>0?tS/horasSuiReal:0;
   // KgHH = kg total / (horas total * operadores médios)
-  const kgHHBov=horasBovReal>0&&colabBovReal>0?kgBovTotal/(horasBovReal*colabBovReal):0;
-  const kgHHSui=horasSuiReal>0&&colabSuiReal>0?kgSuiTotal/(horasSuiReal*colabSuiReal):0;
+  const kgHHBov=kgBovTotal>0&&horasBovReal>0&&colabBovReal>0?kgBovTotal/(horasBovReal*colabBovReal):0;
+  const kgHHSui=kgSuiTotal>0&&horasSuiReal>0&&colabSuiReal>0?kgSuiTotal/(horasSuiReal*colabSuiReal):0;
 
   set('prod-bov-h',ritmoBov.toFixed(1));set('prod-sui-h',ritmoSui.toFixed(1));
   set('prod-colab-bov',(colabBovReal>0?tB/d.nd/colabBovReal:0).toFixed(1));
@@ -2086,10 +2091,18 @@ async function renderProdutividadeReal(){
   }else{
     grupos=diasFiltrados.map(h=>{
       const tb=getDadosReais(h.data,'bovino');const ts=getDadosReais(h.data,'suíno')||getDadosReais(h.data,'suino');
-      return{label:fmtBR(h.data),bov:bovDoDia(h),sui:suiDoDia(h),metaBov:metaBovDoDia(h),metaSui:metaSuiDoDia(h),dias:1,
+      const bovDia=bovDoDia(h);const suiDia=suiDoDia(h);
+      // Kg por dia: usa totalKg real; se zero, estima via média kg/cab dos registros com dados
+      const taComKgBovD=(tempoAbateCache||[]).filter(t=>t.animal.toLowerCase().includes('bovino')&&t.totalKg>0&&t.qtd>0);
+      const taComKgSuiD=(tempoAbateCache||[]).filter(t=>t.animal.toLowerCase().includes('su')&&t.totalKg>0&&t.qtd>0);
+      const mKgCabBov=taComKgBovD.length?taComKgBovD.reduce((a,t)=>a+t.totalKg/t.qtd,0)/taComKgBovD.length:0;
+      const mKgCabSui=taComKgSuiD.length?taComKgSuiD.reduce((a,t)=>a+t.totalKg/t.qtd,0)/taComKgSuiD.length:0;
+      const kgBovDia=tb&&tb.totalKg>0?tb.totalKg:(mKgCabBov>0?mKgCabBov*bovDia:0);
+      const kgSuiDia=ts&&ts.totalKg>0?ts.totalKg:(mKgCabSui>0?mKgCabSui*suiDia:0);
+      return{label:fmtBR(h.data),bov:bovDia,sui:suiDia,metaBov:metaBovDoDia(h),metaSui:metaSuiDoDia(h),dias:1,
         horasBov:tb?tb.tempoMin/60:0,horasSui:ts?ts.tempoMin/60:0,
         colabBov:tb?tb.operadores:0,colabSui:ts?ts.operadores:0,
-        kgBov:tb?tb.totalKg||0:0,kgSui:ts?ts.totalKg||0:0,
+        kgBov:kgBovDia,kgSui:kgSuiDia,
         diasReais:tb?1:0,diasReaisS:ts?1:0};
     });
   }
