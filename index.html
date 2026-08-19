@@ -1763,8 +1763,10 @@ async function renderDashboard(){
 
   const kgBovTotal=temposBov.reduce((a,t)=>a+t.totalKg,0);
   const kgSuiTotal=temposSui.reduce((a,t)=>a+t.totalKg,0);
-  const horasBovReal=temposBov.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadBov*d.nd);
-  const horasSuiReal=temposSui.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadSui*d.nd);
+  const diasComBovReal=temposBov.length||d.nd;
+  const diasComSuiReal=temposSui.length||d.nd;
+  const horasBovReal=temposBov.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadBov*diasComBovReal);
+  const horasSuiReal=temposSui.reduce((a,t)=>a+t.tempoMin/60,0)||(horasPadSui*diasComSuiReal);
   const colabBovReal=temposBov.length?temposBov.reduce((a,t)=>a+t.operadores,0)/temposBov.length:colabPadBov;
   const colabSuiReal=temposSui.length?temposSui.reduce((a,t)=>a+t.operadores,0)/temposSui.length:colabPadSui;
 
@@ -2075,12 +2077,12 @@ async function renderProdutividadeReal(){
     const porMes={};const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     diasFiltrados.forEach(h=>{
       const m=h.data.slice(5,7);
-      if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,horasBov:0,horasSui:0,colabBov:0,colabSui:0,diasReais:0,kgBov:0,kgSui:0};
+      if(!porMes[m])porMes[m]={bov:0,sui:0,metaBov:0,metaSui:0,dias:0,horasBov:0,horasSui:0,colabBov:0,colabSui:0,diasReais:0,diasReaisS:0,kgBov:0,kgSui:0};
       porMes[m].bov+=bovDoDia(h);porMes[m].sui+=suiDoDia(h);
       porMes[m].metaBov+=metaBovDoDia(h);porMes[m].metaSui+=metaSuiDoDia(h);porMes[m].dias+=1;
       const tb=getDadosReais(h.data,'bovino');const ts=getDadosReais(h.data,'suíno')||getDadosReais(h.data,'suino');
       if(tb){porMes[m].horasBov+=tb.tempoMin/60;porMes[m].colabBov+=tb.operadores;porMes[m].kgBov+=tb.totalKg||0;porMes[m].diasReais++;}
-      if(ts){porMes[m].horasSui+=ts.tempoMin/60;porMes[m].colabSui+=ts.operadores;porMes[m].kgSui+=ts.totalKg||0;}
+      if(ts){porMes[m].horasSui+=ts.tempoMin/60;porMes[m].colabSui+=ts.operadores;porMes[m].kgSui+=ts.totalKg||0;porMes[m].diasReaisS++;}
     });
     grupos=Object.keys(porMes).sort().map(m=>({label:nomesMeses[parseInt(m)],...porMes[m]}));
   }else{
@@ -2090,15 +2092,17 @@ async function renderProdutividadeReal(){
         horasBov:tb?tb.tempoMin/60:0,horasSui:ts?ts.tempoMin/60:0,
         colabBov:tb?tb.operadores:0,colabSui:ts?ts.operadores:0,
         kgBov:tb?tb.totalKg||0:0,kgSui:ts?ts.totalKg||0:0,
-        diasReais:tb?1:0};
+        diasReais:tb?1:0,diasReaisS:ts?1:0};
     });
   }
   const labelsBov=[],bovH=[],bovHMeta=[],suiH=[],suiHMeta=[],linhasTabela=[],ritmoB=[],ritmoS=[],ritmoMetaB=[],ritmoMetaS=[];
   grupos.forEach(g=>{
-    const horasBov=g.horasBov>0?g.horasBov:(8*g.dias);
-    const horasSui=g.horasSui>0?g.horasSui:(8*g.dias);
+    const diasComAbateBov=g.diasReais>0?g.diasReais:g.dias;
+    const diasComAbateSui=(g.diasReaisS||0)>0?g.diasReaisS:g.dias;
+    const horasBov=g.horasBov>0?g.horasBov:(8*diasComAbateBov);
+    const horasSui=g.horasSui>0?g.horasSui:(8*diasComAbateSui);
     const colabBov=g.colabBov>0?(g.diasReais>0?Math.round(g.colabBov/g.diasReais):g.colabBov):(params.colabBov||90);
-    const colabSui=g.colabSui>0?(g.diasReais>0?Math.round(g.colabSui/g.diasReais):g.colabSui):(params.colabSui||80);
+    const colabSui=g.colabSui>0?((g.diasReaisS||0)>0?Math.round(g.colabSui/g.diasReaisS):g.colabSui):(params.colabSui||80);
     const mediaDiaBovG=g.dias>0?g.bov/g.dias:0;const mediaDiaSuiG=g.dias>0?g.sui/g.dias:0;
     const abateHBov=horasBov>0?g.bov/horasBov:0;const abateHSui=horasSui>0?g.sui/horasSui:0;
     const cabColBov=colabBov>0?mediaDiaBovG/colabBov:0;const cabColSui=colabSui>0?mediaDiaSuiG/colabSui:0;
