@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-169</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-171</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1070,7 +1070,8 @@ async function salvarDiaNoSheets(d){
       return tipo==='bov'?(m[d.diaKey].bov||0):(m[d.diaKey].sui||0);
     };
     // Salva todas as empresas com meta configurada, mesmo as que não abateram
-    const todasEmps=params.metasEmp?Object.keys(params.metasEmp):[];
+    const EMPS_GRUPO=new Set(['Próprio','Terceiros']);
+    const todasEmps=params.metasEmp?Object.keys(params.metasEmp).filter(e=>!EMPS_GRUPO.has(e)):[];
     const empsBov=new Set(d.bovino.map(e=>e.empresa));
     const empsSui=new Set(d.suino.map(e=>e.empresa));
     // Adiciona empresas com meta mas sem abate
@@ -1653,7 +1654,8 @@ async function processarPDFs(){
 
     const dow=new Date(ref+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long'});
     const diaKey=DIAS.find(d=>dow.toLowerCase().startsWith(d.toLowerCase().slice(0,3)))||'Segunda';
-    const metaDia=params.metasEmp?Object.values(params.metasEmp).reduce((a,v)=>({bov:a.bov+(v[diaKey]?.bov||0),sui:a.sui+(v[diaKey]?.sui||0)}),{bov:0,sui:0}):{bov:params.metas[diaKey]?.bov||370,sui:params.metas[diaKey]?.sui||500};
+    const EMPS_GRUPO=new Set(['Próprio','Terceiros']);
+    const metaDia=params.metasEmp?Object.entries(params.metasEmp).filter(([e])=>!EMPS_GRUPO.has(e)).reduce((a,[,v])=>({bov:a.bov+(v[diaKey]?.bov||0),sui:a.sui+(v[diaKey]?.sui||0)}),{bov:0,sui:0}):{bov:params.metas[diaKey]?.bov||370,sui:params.metas[diaKey]?.sui||500};
     dadosDia={data:ref,diaKey,metaBov:metaDia.bov,metaSui:metaDia.sui,capBov:params.capBov,capSui:params.capSui,bovino:escalas.bovino,suino:escalas.suino,pesosBov:Object.values(pesoResults).filter(p=>p.tipo==='bovino'),pesosSui:Object.values(pesoResults).filter(p=>p.tipo==='suino'),carcacaRows:[]};
     historico.push({...dadosDia});popularFiltrosPeriodo();
     document.getElementById('filtro-ano').value=ref.slice(0,4);popularMesesDoAno();
@@ -1723,7 +1725,8 @@ async function renderDashboard(){
   const fiBov=document.getElementById('fi-bov');const fiSui=document.getElementById('fi-sui');
   if(fiBov)fiBov.className='f '+(tB>=d.metaBov*0.95?'f-g':tB>=d.metaBov*0.90?'f-y':'f-r');
   if(fiSui)fiSui.className='f '+(tS>=d.metaSui*0.95?'f-g':tS>=d.metaSui*0.90?'f-y':'f-r');
-  set('sum-bov-total',tB);set('sum-sui-total',tS);set('sum-bov-meta',d.metaBov);set('sum-sui-meta',d.metaSui);
+  set('sum-bov-total',tB);set('sum-sui-total',tS);
+  set('sum-bov-meta',Math.round(d.metaBov/d.nd));set('sum-sui-meta',Math.round(d.metaSui/d.nd));
   set('sum-cap-bov',d.capBov);set('sum-cap-sui',d.capSui);set('sum-efic-bov',eB+'%');set('sum-efic-sui',eS+'%');
   setPct('sum-bov-pct',d.metaBov>0?(tB-d.metaBov)/d.metaBov*100:0);
   setPct('sum-sui-pct',d.metaSui>0?(tS-d.metaSui)/d.metaSui*100:0);
