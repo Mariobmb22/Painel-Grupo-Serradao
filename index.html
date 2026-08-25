@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-167</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-168</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1552,29 +1552,41 @@ function extrairEscalasSuino(text){
 function extrairTotalizacaoSisAtak(text){
   const pf=v=>parseFloat(String(v||0).replace(/\./g,'').replace(',','.'))||0;
 
-  // Localiza o último bloco de Totalização Geral
+  // ── Formato RABT502 (Romaneio por Lote — Seali) ──
+  if(text.includes('cabeça(s)')&&!text.includes('** Totalização Geral **')){
+    const mTotal=text.match(/Total\s*:\s*(\d+)\s*cabeça\(s\)\s*([\d.]+,\d+)\s*kg\s*([\d,]+)/i);
+    if(mTotal){
+      const totalCab=parseInt(mTotal[1]);
+      const pesoTotal=pf(mTotal[2]);
+      const media=pf(mTotal[3]);
+      const mMacho=text.match(/MACHO\s+(\d+)\s*cabeça\(s\)\s*([\d.]+,\d+)\s*kg/i);
+      const mFemea=text.match(/F[EÊ]MEA\s+(\d+)\s*cabeça\(s\)\s*([\d.]+,\d+)\s*kg/i);
+      const machosCab=mMacho?parseInt(mMacho[1]):totalCab;
+      const femeasCab=mFemea?parseInt(mFemea[1]):0;
+      const pesoMachos=mMacho?pf(mMacho[2]):pesoTotal;
+      const pesoFemeas=mFemea?pf(mFemea[2]):0;
+      if(totalCab>0) return{cabecas:totalCab,peso_total_kg:pesoTotal,media_kg:media,
+        machos:machosCab,femeas:femeasCab,pesoMachos,pesoFemeas};
+    }
+  }
+
+  // ── Formato RABT505 (Resumo do Abate — Serradão/Frigovitta) ──
   const idx=text.lastIndexOf('** Totalização Geral **');
   if(idx<0) return null;
   const antes=text.slice(0,idx);
   const depois=text.slice(idx);
 
-  // Os últimos 3 pares (inteiro + valor,decimais) antes de "** Totalização Geral **":
-  //   156  42.055,00  ← machos
-  //     6     934,50  ← fêmeas
-  //   162  42.989,50  ← total
   const allPairs=[...antes.matchAll(/(\d+)\s+([\d.]+,\d{2})/g)]
     .map(m=>({cab:parseInt(m[1]),peso:pf(m[2])}))
     .filter(p=>p.cab>0&&p.peso>0);
   const pares=allPairs.slice(-3);
 
-  // pares ordenados: [machos, femeas, total] ou [total] dependendo do PDF
   let machosCab=0,femeasCab=0,totalCab=0,pesoMachos=0,pesoFemeas=0,pesoTotal=0;
   if(pares.length>=3){
     machosCab=pares[0].cab; pesoMachos=pares[0].peso;
     femeasCab=pares[1].cab; pesoFemeas=pares[1].peso;
     totalCab=pares[2].cab;  pesoTotal=pares[2].peso;
   } else if(pares.length===2){
-    // só fêmeas=0: linha de fêmeas não aparece
     machosCab=pares[0].cab; pesoMachos=pares[0].peso;
     totalCab=pares[1].cab;  pesoTotal=pares[1].peso;
   } else if(pares.length===1){
@@ -1582,7 +1594,6 @@ function extrairTotalizacaoSisAtak(text){
     machosCab=totalCab;
   }
 
-  // Média no bloco de totalização geral
   const mMedia=depois.match(/([\d.]+,\d{2})/);
   const media=mMedia?pf(mMedia[1]):(totalCab>0&&pesoTotal>0?pesoTotal/totalCab:0);
 
