@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-168</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-169</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -1069,6 +1069,17 @@ async function salvarDiaNoSheets(d){
       if(!m||!m[d.diaKey])return 0;
       return tipo==='bov'?(m[d.diaKey].bov||0):(m[d.diaKey].sui||0);
     };
+    // Salva todas as empresas com meta configurada, mesmo as que não abateram
+    const todasEmps=params.metasEmp?Object.keys(params.metasEmp):[];
+    const empsBov=new Set(d.bovino.map(e=>e.empresa));
+    const empsSui=new Set(d.suino.map(e=>e.empresa));
+    // Adiciona empresas com meta mas sem abate
+    todasEmps.forEach(emp=>{
+      const metaBovEmp=getMetaEmp(emp,'bov');
+      const metaSuiEmp=getMetaEmp(emp,'sui');
+      if(!empsBov.has(emp)&&metaBovEmp>0) d.bovino.push({empresa:emp,abatidos:0,previsto:metaBovEmp});
+      if(!empsSui.has(emp)&&metaSuiEmp>0) d.suino.push({empresa:emp,abatidos:0,previsto:metaSuiEmp});
+    });
     d.bovino.forEach(emp=>abateRows.push([d.data,emp.empresa,'bovino',emp.abatidos||0,getMetaEmp(emp.empresa,'bov'),0,0,d.diaKey]));
     d.suino.forEach(emp=>{const ex=abateRows.find(r=>r[1]===emp.empresa);if(ex){ex[5]=emp.abatidos||0;ex[6]=getMetaEmp(emp.empresa,'sui');}else abateRows.push([d.data,emp.empresa,'suino',0,0,emp.abatidos||0,getMetaEmp(emp.empresa,'sui'),d.diaKey]);});
     if(abateRows.length){
