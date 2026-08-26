@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-172</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-173</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2026,8 +2026,8 @@ async function renderParadasReal(){
           datalabels:{
             display:true,
             // Barra: dentro se grande o suficiente (>15% do max), senão acima
-            anchor:(ctx)=>ctx.datasetIndex===0?(ctx.dataIndex<2?'start':'end'):'end',
-            align:(ctx)=>ctx.datasetIndex===0?(ctx.dataIndex<2?'top':(vals[ctx.dataIndex]/maxVal>0.2?'center':'top')):'top',
+            anchor:(ctx)=>ctx.datasetIndex===0?(ctx.dataIndex<2?'start':(vals[ctx.dataIndex]/maxVal>0.2?'center':'end')):'end',
+            align:(ctx)=>ctx.datasetIndex===0?(ctx.dataIndex<2?'bottom':(vals[ctx.dataIndex]/maxVal>0.2?'center':'top')):'top',
             font:{size:9,weight:'800'},
             color:(ctx)=>ctx.datasetIndex===0?'#fff':'#dc2626',
             backgroundColor:(ctx)=>ctx.datasetIndex===0?(ctx.dataIndex<2?'transparent':(vals[ctx.dataIndex]/maxVal>0.2?'transparent':'rgba(255,255,255,0.92)')):'rgba(255,255,255,0.92)',
