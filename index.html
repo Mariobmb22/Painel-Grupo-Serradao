@@ -226,7 +226,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-177</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-179</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2027,17 +2027,12 @@ async function renderParadasReal(){
             display:true,
             // Barra: dentro se grande o suficiente (>15% do max), senão acima
             display:true,
-            clamp:true,
-            clip:false,
-            anchor:ctx=>ctx.datasetIndex===0?'end':'end',
-            align:ctx=>ctx.datasetIndex===0?'bottom':'top',
-            offset:ctx=>ctx.datasetIndex===0?8:2,
-            font:{size:9,weight:'800'},
+            anchor:ctx=>ctx.datasetIndex===0?'start':'end',
+            align:ctx=>ctx.datasetIndex===0?'top':'top',
+            font:{size:10,weight:'800'},
             color:ctx=>ctx.datasetIndex===0?'#fff':'#dc2626',
-            backgroundColor:ctx=>ctx.datasetIndex===0?'rgba(30,30,30,0.5)':'rgba(255,255,255,0.92)',
-            borderRadius:3,
-            padding:{top:2,bottom:2,left:3,right:3},
-            display:true,
+            backgroundColor:ctx=>ctx.datasetIndex===0?'transparent':'rgba(255,255,255,0.92)',
+            borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
             formatter:(v,ctx)=>ctx.datasetIndex===0?(v>0?v.toFixed(1)+'h':''):v+'%'
           }
         },
@@ -2433,13 +2428,12 @@ async function renderCondenacaoAnimalCharts(){
       options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
         plugins:{legend:{display:false},
           datalabels:{
-            display:true,clamp:true,clip:false,
-            anchor:ctx=>ctx.datasetIndex===0?'end':'end',
-            align:ctx=>ctx.datasetIndex===0?'bottom':'top',
-            offset:ctx=>ctx.datasetIndex===0?8:2,
-            font:{size:9,weight:'800'},
+            display:true,
+            anchor:ctx=>ctx.datasetIndex===0?'start':'end',
+            align:ctx=>ctx.datasetIndex===0?'top':'top',
+            font:{size:10,weight:'800'},
             color:ctx=>ctx.datasetIndex===0?'#fff':'#dc2626',
-            backgroundColor:ctx=>ctx.datasetIndex===0?'rgba(30,30,30,0.5)':'rgba(255,255,255,0.92)',
+            backgroundColor:ctx=>ctx.datasetIndex===0?'transparent':'rgba(255,255,255,0.92)',
             borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
             formatter:(v,ctx)=>ctx.datasetIndex===0?(v>0?String(Math.round(v)):''):v+'%'
           }},
