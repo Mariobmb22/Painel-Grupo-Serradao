@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-180</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-181</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2417,6 +2417,8 @@ async function renderCondenacaoAnimalCharts(){
   if(!diasFiltrados.length||!condenacaoCache.length) return;
   const datasSet=new Set(diasFiltrados.map(d=>d.data));
   const regs=condenacaoCache.filter(r=>datasSet.has(r.data));
+  // Total abatidos no período — calculado antes do pareto
+  const totalAbatidos=diasFiltrados.reduce((a,h)=>a+(h.bovino||[]).reduce((b,e)=>b+(e.abatidos||0),0),0);
 
   // --- PARETO POR MOTIVO ---
   const porMotivo={};
@@ -2466,7 +2468,7 @@ async function renderCondenacaoAnimalCharts(){
       plugins:[ChartDataLabels]
     });
   }
-  set('cond-pareto-periodo',`${regs.length} animais`);
+  set('cond-pareto-periodo',fmt(totalAbatidos)+' abatidos');
 
   // --- COLUNAS POR PERÍODO + LINHA ABATES ---
   const nomesMeses=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -2527,7 +2529,7 @@ async function renderCondenacaoReal(tBov){
   const precoMap={'Rabo':precos['Rabo']||0,'Língua':precos['Língua']||0,
     'Coração':precos['Coração']||0,'Pulmão':precos['Pulmão']||0,
     'Fígado':precos['Fígado']||0,'Rins':precos['Rins']||0,'Bucho':precos['Bucho']||0};
-  const totalAbatidos=tBov||diasFiltrados.reduce((a,h)=>a+(h.bovino||[]).reduce((b,e)=>b+(e.abatidos||0),0),0);
+  // totalAbatidos já calculado acima
 
   // Peças condenadas — registros antigos ainda podem existir com tipo='Peça'
   const pecas={};CONDENADOS.forEach(p=>{pecas[p]={qtd:0};});
