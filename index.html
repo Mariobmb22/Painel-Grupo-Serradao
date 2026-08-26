@@ -47,6 +47,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 /* BOTÕES — mais destacados */
 .btn-top{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--text-soft);transition:all .15s;box-shadow:var(--shadow-sm)}
+.btn-chart-dl{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-soft);opacity:.55;transition:all .15s;letter-spacing:.02em}
+.btn-chart-dl:hover{opacity:1;background:var(--surface);color:var(--text)}
 .btn-top:hover{background:var(--primary);color:#fff;border-color:var(--primary);transform:translateY(-1px);box-shadow:var(--shadow-md)}
 .btn-top svg{width:14px;height:14px}
 .btn-top.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
@@ -226,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-179</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-180</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -353,8 +355,8 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     </div>
   </div>
   <div class="two-col">
-    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — bovino (cabeças) <span class="badge badge-bov">Bovino</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-bov','Abate_Bovino')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — suíno (cabeças) <span class="badge badge-sui">Suíno</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-sui','Abate_Suino')">⬇ PNG</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-sui"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — bovino (cabeças) <span class="badge badge-bov">Bovino</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-bov','Abate_Bovino')">↓ png</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Abate diário — suíno (cabeças) <span class="badge badge-sui">Suíno</span></div><button class="btn-chart-dl" onclick="downloadChart('chart-sui','Abate_Suino')">↓ png</button></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-sui"></canvas></div></div></div>
   </div>
   <div class="two-col">
     <div class="card">
@@ -416,8 +418,8 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     <div class="sum-card"><div class="sum-card-label">Cab/colaborador suíno</div><div class="sum-card-val" id="prod-colab-sui">—</div><div class="sum-card-sub">cab/pessoa · média/dia</div></div>
   </div>
   <div class="two-col" style="margin-top:12px">
-    <div class="card"><div class="card-hdr"><div class="card-title">Produtividade (Kg / Homem / Hora) <span class="badge badge-bov" id="badge-prod-khh">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdKHH()" id="btn-toggle-khh" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-bov','KgHomemHora')">⬇ PNG</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Ritmo de Abate (Cabeças / Hora) <span class="badge badge-bov" id="badge-prod-ritmo">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdRitmo()" id="btn-toggle-ritmo" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-ritmo','Ritmo_Abate')">⬇ PNG</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-ritmo"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Produtividade (Kg / Homem / Hora) <span class="badge badge-bov" id="badge-prod-khh">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdKHH()" id="btn-toggle-khh" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-bov','KgHomemHora')">↓ png</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-bov"></canvas></div></div></div>
+    <div class="card"><div class="card-hdr"><div class="card-title">Ritmo de Abate (Cabeças / Hora) <span class="badge badge-bov" id="badge-prod-ritmo">Bovino</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-chart-dl" onclick="toggleProdRitmo()" id="btn-toggle-ritmo" style="font-size:10px;padding:3px 8px">🔄 Suíno</button><button class="btn-chart-dl" onclick="downloadChart('chart-prod-ritmo','Ritmo_Abate')">↓ png</button></div></div><div class="card-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-prod-ritmo"></canvas></div></div></div>
   </div>
   <div class="card"><div class="card-hdr"><div class="card-title">Tabela de produtividade por período</div></div><div class="card-body card-body-0"><table class="tbl" id="tbl-prod-semanal"><thead><tr><th>Período</th><th class="r">Produtividade Bov</th><th class="r">Ritmo Bov</th><th class="r">Cab/Col Bov</th><th class="r">F</th><th class="r">Produtividade Suí</th><th class="r">Ritmo Suí</th><th class="r">Cab/Col Suí</th><th class="r">F</th></tr></thead><tbody id="tbody-prod-semanal"></tbody></table></div></div>
 
@@ -451,7 +453,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="card" style="margin-bottom:14px">
     <div class="card-hdr">
       <div class="card-title">📊 Tempo por tipo — comparativo mensal (horas)</div>
-      <button class="btn-chart-dl" onclick="downloadChart('chart-par-tipo-mes','Paradas_Tipo_Mes')">⬇ PNG</button>
+      <button class="btn-chart-dl" onclick="downloadChart('chart-par-tipo-mes','Paradas_Tipo_Mes')">↓ png</button>
     </div>
     <div class="card-body" style="height:280px;position:relative"><canvas id="chart-par-tipo-mes"></canvas></div>
   </div>
@@ -460,7 +462,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="card" style="margin-bottom:14px">
     <div class="card-hdr">
       <div class="card-title">⏱ Tempo de parada por dia (horas)</div>
-      <button class="btn-chart-dl" onclick="downloadChart('chart-par-tempo-dia','Paradas_por_dia')">⬇ PNG</button>
+      <button class="btn-chart-dl" onclick="downloadChart('chart-par-tempo-dia','Paradas_por_dia')">↓ png</button>
     </div>
     <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-tempo-dia"></canvas></div>
   </div>
@@ -487,21 +489,21 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   </div>
   <div class="two-col" style="margin-bottom:14px">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">📊 Pareto por local — Bovino</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-bov-pareto','Pareto_Local_Bovino')">⬇ PNG</button></div>
+      <div class="card-hdr"><div class="card-title">📊 Pareto por local — Bovino</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-bov-pareto','Pareto_Local_Bovino')">↓ png</button></div>
       <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-bov-pareto"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">📊 Pareto por local — Suíno</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-sui-pareto','Pareto_Local_Suino')">⬇ PNG</button></div>
+      <div class="card-hdr"><div class="card-title">📊 Pareto por local — Suíno</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-sui-pareto','Pareto_Local_Suino')">↓ png</button></div>
       <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-sui-pareto"></canvas></div>
     </div>
   </div>
   <div class="two-col">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Bovino</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-bov-pizza','Tipos_Bovino')">⬇ PNG</button></div>
+      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Bovino</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-bov-pizza','Tipos_Bovino')">↓ png</button></div>
       <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-bov-pizza"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Suíno</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-sui-pizza','Tipos_Suino')">⬇ PNG</button></div>
+      <div class="card-hdr"><div class="card-title">🥧 Tipos de parada — Suíno</div><button class="btn-chart-dl" onclick="downloadChart('chart-par-sui-pizza','Tipos_Suino')">↓ png</button></div>
       <div class="card-body" style="height:220px;position:relative"><canvas id="chart-par-sui-pizza"></canvas></div>
     </div>
   </div>
@@ -546,11 +548,11 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   <div class="sec-hdr" style="margin-top:8px">Condenação de animais inteiros</div>
   <div class="two-col" style="margin-bottom:14px">
     <div class="card">
-      <div class="card-hdr"><div class="card-title">📊 Pareto por motivo</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-pareto','Pareto_Condenacao')">⬇ PNG</button><span class="card-date" id="cond-pareto-periodo">—</span></div>
+      <div class="card-hdr"><div class="card-title">📊 Pareto por motivo</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-pareto','Pareto_Condenacao')">↓ png</button><span class="card-date" id="cond-pareto-periodo">—</span></div>
       <div class="card-body" style="height:240px;position:relative"><canvas id="chart-cond-pareto"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">📈 Condenações vs Abates</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-vol','Condenacoes_Abates')">⬇ PNG</button><span class="card-date" id="cond-vol-periodo">—</span></div>
+      <div class="card-hdr"><div class="card-title">📈 Condenações vs Abates</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-vol','Condenacoes_Abates')">↓ png</button><span class="card-date" id="cond-vol-periodo">—</span></div>
       <div class="card-body" style="height:240px;position:relative"><canvas id="chart-cond-vol"></canvas></div>
     </div>
   </div>
@@ -2029,9 +2031,19 @@ async function renderParadasReal(){
             display:true,
             anchor:ctx=>ctx.datasetIndex===0?'start':'end',
             align:ctx=>ctx.datasetIndex===0?'top':'top',
-            font:{size:10,weight:'800'},
-            color:ctx=>ctx.datasetIndex===0?'#fff':'#dc2626',
-            backgroundColor:ctx=>ctx.datasetIndex===0?'transparent':'rgba(255,255,255,0.92)',
+            font:{size:11,weight:'900'},
+            color:ctx=>{
+              if(ctx.datasetIndex===1) return '#dc2626';
+              const max=ctx.chart.scales?.y?.max||1;
+              const v=ctx.dataset.data[ctx.dataIndex]||0;
+              return v/max>0.15?'#fff':'#0f2947';
+            },
+            backgroundColor:ctx=>{
+              if(ctx.datasetIndex===1) return 'rgba(255,255,255,0.92)';
+              const max=ctx.chart.scales?.y?.max||1;
+              const v=ctx.dataset.data[ctx.dataIndex]||0;
+              return v/max>0.15?'transparent':'rgba(255,255,255,0.9)';
+            },
             borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
             formatter:(v,ctx)=>ctx.datasetIndex===0?(v>0?v.toFixed(1)+'h':''):v+'%'
           }
@@ -2431,9 +2443,19 @@ async function renderCondenacaoAnimalCharts(){
             display:true,
             anchor:ctx=>ctx.datasetIndex===0?'start':'end',
             align:ctx=>ctx.datasetIndex===0?'top':'top',
-            font:{size:10,weight:'800'},
-            color:ctx=>ctx.datasetIndex===0?'#fff':'#dc2626',
-            backgroundColor:ctx=>ctx.datasetIndex===0?'transparent':'rgba(255,255,255,0.92)',
+            font:{size:11,weight:'900'},
+            color:ctx=>{
+              if(ctx.datasetIndex===1) return '#dc2626';
+              const max=ctx.chart.scales?.y?.max||1;
+              const v=ctx.dataset.data[ctx.dataIndex]||0;
+              return v/max>0.15?'#fff':'#0f2947';
+            },
+            backgroundColor:ctx=>{
+              if(ctx.datasetIndex===1) return 'rgba(255,255,255,0.92)';
+              const max=ctx.chart.scales?.y?.max||1;
+              const v=ctx.dataset.data[ctx.dataIndex]||0;
+              return v/max>0.15?'transparent':'rgba(255,255,255,0.9)';
+            },
             borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},
             formatter:(v,ctx)=>ctx.datasetIndex===0?(v>0?String(Math.round(v)):''):v+'%'
           }},
