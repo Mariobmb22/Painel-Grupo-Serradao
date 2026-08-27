@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-192</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-193</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2756,6 +2756,10 @@ async function renderRendimentoReal(tB,tS){
   });
   const kgTotalAbatePeriodo=Object.values(kgTotalPorDia).reduce((a,b)=>a+b,0);
 
+  // Calcula aproveitamento total aqui — mesma fonte do gráfico
+  const pesoMiudoTotal=registros.reduce((a,r)=>a+(r.pesoKg||0),0);
+  if(kgTotalAbatePeriodo>0) set('ind-aprov-animal',(pesoMiudoTotal/kgTotalAbatePeriodo*100).toFixed(2)+'%');
+
   const linhas=Object.values(porMiudo).map(m=>{
     const pesoTotal=m.pesos.reduce((a,b)=>a+b,0);
     // % real = peso total do miúdo / kg total abatido nos dias em que foi lançado
@@ -3590,7 +3594,7 @@ function getHistoricoBase(){
 function calcRendPorMiudo(datasSet, filtroNome){
   if(!miudosCache)return{};
   const registros=miudosCache.filter(m=>datasSet.has(m.data)&&(!filtroNome||m.miudo?.trim().toUpperCase()===filtroNome.toUpperCase()));
-  // Agrupa por data primeiro: soma pesos e total abate por dia, depois calcula % por dia, depois média
+  // Agrupa por data+miudo: soma pesos e pega maior kgTotalAbate do dia
   const porDia={};
   registros.forEach(r=>{
     const key=r.data+'|'+(r.miudo||'').trim();
@@ -3598,16 +3602,19 @@ function calcRendPorMiudo(datasSet, filtroNome){
     porDia[key].pesoKg+=r.pesoKg||0;
     if(r.kgTotalAbate>porDia[key].kgTotalAbate)porDia[key].kgTotalAbate=r.kgTotalAbate;
   });
+  // Acumula peso total e kgTotal por miúdo — rendimento = pesoTotal/kgTotal (não média de %)
   const porMiudo={};
   Object.values(porDia).forEach(d=>{
     const match=MIUDOS.find(m=>m.nome.toUpperCase()===d.miudo.toUpperCase());
     if(!match)return;
-    if(!porMiudo[match.nome])porMiudo[match.nome]=[];
-    const pct=d.kgTotalAbate>0?(d.pesoKg/d.kgTotalAbate*100):0;
-    if(pct>0)porMiudo[match.nome].push(pct);
+    if(!porMiudo[match.nome])porMiudo[match.nome]={pesoKg:0,kgTotal:0};
+    porMiudo[match.nome].pesoKg+=d.pesoKg;
+    porMiudo[match.nome].kgTotal+=d.kgTotalAbate;
   });
   const result={};
-  Object.entries(porMiudo).forEach(([nome,vals])=>{result[nome]=vals.reduce((a,b)=>a+b,0)/vals.length;});
+  Object.entries(porMiudo).forEach(([nome,v])=>{
+    result[nome]=v.kgTotal>0?(v.pesoKg/v.kgTotal*100):0;
+  });
   return result;
 }
 // Calcula rendimento total mensal: soma pesos todos miúdos / soma kgTotalAbate, por mês
