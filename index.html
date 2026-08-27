@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-187</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-189</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -535,22 +535,30 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
         <div style="font-size:11px;color:var(--muted)">Animais reprovados no período</div>
       </div>
       <div class="card-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-          <div class="efic-mini">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px">
+          <div>
             <div class="efic-mini-label">Animais condenados</div>
             <div style="display:flex;align-items:baseline;gap:6px">
               <div class="efic-mini-val" id="cond-animais-total" style="color:var(--red)">—</div>
-              <div style="font-size:11px;color:#94a3b8;font-weight:600" id="cond-animais-trat-total">— trat.</div>
+              <div style="font-size:11px;color:#94a3b8;font-weight:500" id="cond-animais-total-geral">— total</div>
+            </div>
+            <div style="margin-top:5px;font-size:11px;color:#64748b;display:flex;align-items:center;gap:4px">
+              <span style="font-weight:700;color:#ca8a04" id="cond-animais-trat-total">—</span>
+              <span style="color:#94a3b8">em tratamento pelo frio</span>
             </div>
           </div>
-          <div class="efic-mini">
-            <div class="efic-mini-label">% condenados</div>
-            <div class="efic-mini-val" id="cond-animais-pct" style="color:var(--red)">—</div>
-            <div style="font-size:10px;color:#ca8a04;margin-top:2px;font-weight:600" id="cond-animais-pct-trat">— trat.</div>
+          <div>
+            <div class="efic-mini-label">% sobre abatidos</div>
+            <div style="display:flex;align-items:baseline;gap:6px">
+              <div class="efic-mini-val" id="cond-animais-pct" style="color:var(--red)">—</div>
+              <div style="font-size:11px;color:#94a3b8;font-weight:500" id="cond-animais-pct-geral">— total</div>
+            </div>
+            <div style="margin-top:5px;font-size:11px;color:#64748b;display:flex;align-items:center;gap:4px">
+              <span style="font-weight:700;color:#ca8a04" id="cond-animais-pct-trat">—</span>
+              <span style="color:#94a3b8">em tratamento</span>
+            </div>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase">Evolução no período</div>
-        <div id="cond-animais-lista" style="font-size:12px;color:var(--muted)">Sem dados no período selecionado</div>
       </div>
     </div>
   </div>
@@ -2631,10 +2639,13 @@ async function renderCondenacaoReal(tBov){
   const totalAnimais=animaisInteiros.length;
   const pctCondenados=totalAbatidos>0?(totalCondenados/totalAbatidos*100):0;
   const pctTratamento=totalAbatidos>0?(totalTratamento/totalAbatidos*100):0;
+  const pctTotal=totalAbatidos>0?(totalAnimais/totalAbatidos*100):0;
   set('cond-animais-total',fmt(totalCondenados)||'0');
-  set('cond-animais-trat-total',`+${totalTratamento} trat.`);
+  set('cond-animais-total-geral',`/ ${totalAnimais} total`);
+  set('cond-animais-trat-total',totalTratamento);
   set('cond-animais-pct',pctCondenados.toFixed(3)+'%');
-  set('cond-animais-pct-trat',`+${pctTratamento.toFixed(3)}% trat.`);
+  set('cond-animais-pct-geral',`/ ${pctTotal.toFixed(3)}% total`);
+  set('cond-animais-pct-trat',pctTratamento.toFixed(3)+'%');
   set('cond-animais-abatidos',`${fmt(totalAbatidos)} abatidos`);
   const listaEl=document.getElementById('cond-animais-lista');
   if(listaEl){
