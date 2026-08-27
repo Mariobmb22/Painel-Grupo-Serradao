@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-194</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-195</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -3692,9 +3692,8 @@ async function renderAnaliseComparativa(){
     const preco=precos[m.nome]||0;
     if(base===null&&atual===null)return;
 
-    // Perda vs meta = (meta% - real%) / 100 × peso mensal ATUAL × preço/kg
-    // IMPORTANTE: usa o peso do período ATUAL em ambos para isolar o efeito do rendimento
-    const perdaBaseM=base!==null&&preco>0?((meta-(base||0))/100)*pesoAtualMensal*preco:null;
+    // Perda vs meta = (meta% - real%) / 100 × peso do próprio período × preço/kg
+    const perdaBaseM=base!==null&&preco>0?((meta-(base||0))/100)*pesoBaseMensal*preco:null;
     const perdaAtualM=atual!==null&&preco>0?((meta-(atual||0))/100)*pesoAtualMensal*preco:null;
     // Ganho mensal = quanto a menos se perde agora vs antes
     const ganhoMensal=perdaBaseM!==null&&perdaAtualM!==null?(perdaBaseM-perdaAtualM):null;
