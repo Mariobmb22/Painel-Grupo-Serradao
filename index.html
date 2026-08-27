@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-182</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-183</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -557,23 +557,14 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
     </select>
   </div>
 
-  <!-- Gráfico por dia (colunas empilhadas) -->
-  <div class="card" style="margin-bottom:14px">
-    <div class="card-hdr">
-      <div class="card-title">📅 Condenações por dia</div>
-      <button class="btn-chart-dl" onclick="downloadChart('chart-cond-dia','Condenacoes_Dia')">↓ png</button>
-    </div>
-    <div class="card-body" style="height:220px;position:relative"><canvas id="chart-cond-dia"></canvas></div>
-  </div>
-
   <div class="two-col" style="margin-bottom:14px">
     <div class="card">
       <div class="card-hdr"><div class="card-title">📊 Pareto por motivo</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-pareto','Pareto_Condenacao')">↓ png</button><span class="card-date" id="cond-pareto-periodo">—</span></div>
-      <div class="card-body" style="height:240px;position:relative"><canvas id="chart-cond-pareto"></canvas></div>
+      <div class="card-body" style="height:260px;position:relative"><canvas id="chart-cond-pareto"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><div class="card-title">📈 Condenações vs Abates</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-vol','Condenacoes_Abates')">↓ png</button><span class="card-date" id="cond-vol-periodo">—</span></div>
-      <div class="card-body" style="height:240px;position:relative"><canvas id="chart-cond-vol"></canvas></div>
+      <div class="card-hdr"><div class="card-title">📅 Condenações + Tratamento vs Abates</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-vol','Condenacoes_Abates')">↓ png</button><span class="card-date" id="cond-vol-periodo">—</span></div>
+      <div class="card-body" style="height:260px;position:relative"><canvas id="chart-cond-vol"></canvas></div>
     </div>
   </div>
 
@@ -2455,21 +2446,7 @@ async function renderCondenacaoAnimalCharts(){
   const labDia=diasOrd.map(d=>fmtBR(d));
   const valsCond=diasOrd.map(d=>porDia[d].cond);
   const valsTrat=diasOrd.map(d=>porDia[d].trat);
-  const ctxDia=document.getElementById('chart-cond-dia');
-  if(ctxDia){
-    if(ctxDia._chart)ctxDia._chart.destroy();
-    const dsDia=[];
-    if(!filtroTipo||filtroTipo==='Condenação') dsDia.push({label:'Condenação',data:valsCond,backgroundColor:'rgba(220,38,38,0.8)',stack:'s',
-      datalabels:{display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}});
-    if(!filtroTipo||filtroTipo==='Tratamento pelo frio') dsDia.push({label:'Tratamento pelo frio',data:valsTrat,backgroundColor:'rgba(202,138,4,0.8)',stack:'s',
-      datalabels:{display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}});
-    ctxDia._chart=new Chart(ctxDia,{type:'bar',data:{labels:labDia,datasets:dsDia},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},
-        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,usePointStyle:true}},datalabels:{}},
-        scales:{y:{stacked:true,beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},stepSize:1}},
-          x:{stacked:true,grid:{display:false},ticks:{font:{size:9},maxRotation:35}}}},
-      plugins:[ChartDataLabels]});
-  }
+
 
   // ── Pareto por motivo ──
   set('cond-pareto-periodo',fmt(totalAbatidos)+' abatidos');
@@ -2550,22 +2527,35 @@ async function renderCondenacaoAnimalCharts(){
     abateVals=dias.map(d=>porDia[d].bov);
   }
 
+  // chart-cond-vol: empilhado por dia (Condenação + Tratamento) + linha de abates
+  const abatesPorDia=diasOrd.map(d=>{
+    const h=diasFiltrados.find(x=>x.data===d);
+    return h?(h.bovino||[]).reduce((a,e)=>a+(e.abatidos||0),0):0;
+  });
   const ctxV=document.getElementById('chart-cond-vol');
   if(ctxV){
     if(ctxV._chart)ctxV._chart.destroy();
+    const dsVol=[];
+    if(!filtroTipo||filtroTipo==='Condenação') dsVol.push({
+      type:'bar',label:'Condenação',data:valsCond,backgroundColor:'rgba(220,38,38,0.8)',stack:'s',yAxisID:'y',
+      datalabels:{display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}
+    });
+    if(!filtroTipo||filtroTipo==='Tratamento pelo frio') dsVol.push({
+      type:'bar',label:'Tratamento pelo frio',data:valsTrat,backgroundColor:'rgba(202,138,4,0.8)',stack:'s',yAxisID:'y',
+      datalabels:{display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}
+    });
+    dsVol.push({
+      type:'line',label:'Abates',data:abatesPorDia,borderColor:'#1a5ca8',borderWidth:2,pointRadius:3,pointBackgroundColor:'#1a5ca8',fill:false,yAxisID:'y2',
+      datalabels:{display:ctx=>ctx.dataIndex===abatesPorDia.length-1,anchor:'end',align:'right',font:{size:9,weight:'700'},color:'#1a5ca8',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:v=>v?fmt(v):''}
+    });
     ctxV._chart=new Chart(ctxV,{
-      data:{labels,datasets:[
-        {type:'bar',label:'Condenados',data:condVals,backgroundColor:'rgba(220,38,38,0.75)',yAxisID:'y',
-          datalabels:{anchor:'center',align:'center',font:{size:10,weight:'800'},color:'#ffffff',formatter:v=>v||''}},
-        {type:'line',label:'Bovinos abatidos',data:abateVals,borderColor:'#0f2947',borderWidth:2,pointRadius:4,yAxisID:'y2',fill:false,
-          datalabels:{anchor:'end',align:'top',font:{size:9,weight:'700'},color:'#0f2947',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:v=>v?fmt(v):''}}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:32}},
-        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},datalabels:{}},
+      data:{labels:labDia,datasets:dsVol},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
+        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,usePointStyle:true}},datalabels:{}},
         scales:{
-          y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:11}},title:{display:false}},
-          y2:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:11}},title:{display:false}},
-          x:{grid:{display:false},ticks:{font:{size:10},maxRotation:35}}}},
+          y:{stacked:true,beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},stepSize:1},title:{display:false}},
+          y2:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:10}},title:{display:false}},
+          x:{stacked:true,grid:{display:false},ticks:{font:{size:9},maxRotation:35}}}},
       plugins:[ChartDataLabels]
     });
   }
