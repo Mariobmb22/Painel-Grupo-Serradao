@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-193</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-194</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -3669,6 +3669,19 @@ async function renderAnaliseComparativa(){
 
   // ── CÁLCULO POR MIÚDO: perda vs meta em cada período ──
   let perdaBaseMensal=0, perdaAtualMensal=0, rendTotalBase=0, rendTotalAtual=0;
+
+  // Calcula rendimento total diretamente: pesoTotal/kgTotal — igual ao ind-aprov-animal
+  const calcRendTotal=(datasSet)=>{
+    if(!miudosCache)return 0;
+    const regs=miudosCache.filter(m=>datasSet.has(m.data));
+    const pesoTotal=regs.reduce((a,r)=>a+(r.pesoKg||0),0);
+    const kgPorDia={};
+    regs.forEach(r=>{if(!kgPorDia[r.data]||r.kgTotalAbate>kgPorDia[r.data])kgPorDia[r.data]=r.kgTotalAbate||0;});
+    const kgTotal=Object.values(kgPorDia).reduce((a,b)=>a+b,0);
+    return kgTotal>0?(pesoTotal/kgTotal*100):0;
+  };
+  rendTotalBase=calcRendTotal(datasBase);
+  rendTotalAtual=calcRendTotal(datasAtual);
   const linhas=[];
   const miudosFiltro=filtroMiudo?MIUDOS.filter(m=>m.nome===filtroMiudo):MIUDOS;
   miudosFiltro.forEach(m=>{
@@ -3678,7 +3691,6 @@ async function renderAnaliseComparativa(){
     const bench=BENCHMARK_SETOR[m.nome]??null;
     const preco=precos[m.nome]||0;
     if(base===null&&atual===null)return;
-    rendTotalBase+=(base||0);rendTotalAtual+=(atual||0);
 
     // Perda vs meta = (meta% - real%) / 100 × peso mensal ATUAL × preço/kg
     // IMPORTANTE: usa o peso do período ATUAL em ambos para isolar o efeito do rendimento
