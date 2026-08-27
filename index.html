@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-183</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-184</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -2546,7 +2546,7 @@ async function renderCondenacaoAnimalCharts(){
     });
     dsVol.push({
       type:'line',label:'Abates',data:abatesPorDia,borderColor:'#1a5ca8',borderWidth:2,pointRadius:3,pointBackgroundColor:'#1a5ca8',fill:false,yAxisID:'y2',
-      datalabels:{display:ctx=>ctx.dataIndex===abatesPorDia.length-1,anchor:'end',align:'right',font:{size:9,weight:'700'},color:'#1a5ca8',backgroundColor:'rgba(255,255,255,0.9)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:v=>v?fmt(v):''}
+      datalabels:{display:true,anchor:'end',align:'top',font:{size:10,weight:'800'},color:'#0f2947',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:v=>v?fmt(v):''}
     });
     ctxV._chart=new Chart(ctxV,{
       data:{labels:labDia,datasets:dsVol},
