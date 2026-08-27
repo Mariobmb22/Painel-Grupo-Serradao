@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-196</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-198</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -3692,10 +3692,10 @@ async function renderAnaliseComparativa(){
     const preco=precos[m.nome]||0;
     if(base===null&&atual===null)return;
 
-    // Perda vs meta: usa sempre o volume do período BASE para isolar efeito do rendimento
-    // Assim a diferença entre base e atual reflete só a mudança de rendimento, não de volume
-    const perdaBaseM=base!==null&&preco>0?((meta-(base||0))/100)*pesoBaseMensal*preco:null;
-    const perdaAtualM=atual!==null&&preco>0?((meta-(atual||0))/100)*pesoBaseMensal*preco:null;
+    // Perda vs meta: negativo = abaixo da meta (perdendo), positivo = acima (ganhando)
+    // (meta - real) > 0 significa que está abaixo da meta = perdendo
+    const perdaBaseM=base!==null&&preco>0?Math.max(0,(meta-(base||0))/100)*pesoBaseMensal*preco:null;
+    const perdaAtualM=atual!==null&&preco>0?Math.max(0,(meta-(atual||0))/100)*pesoBaseMensal*preco:null;
     // Ganho mensal = quanto a menos se perde agora vs antes
     const ganhoMensal=perdaBaseM!==null&&perdaAtualM!==null?(perdaBaseM-perdaAtualM):null;
     // Potencial restante vs meta = quanto ainda perde por mês
@@ -3712,6 +3712,8 @@ async function renderAnaliseComparativa(){
 
   const ganhoMensalTotal=perdaBaseMensal-perdaAtualMensal;
   const ganhoAnual=ganhoMensalTotal*12;
+  // Debug
+  console.log('[Comp] perdaBase:',perdaBaseMensal,'perdaAtual:',perdaAtualMensal,'ganho:',ganhoMensalTotal);
   const potMetaTotal=perdaAtualMensal;
   const potBenchTotal=linhas.reduce((a,r)=>a+(r.potBenchMensal||0),0);
 
