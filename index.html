@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-181</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-182</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -546,6 +546,26 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
   </div>
   <!-- GRÁFICOS CONDENAÇÃO ANIMAL -->
   <div class="sec-hdr" style="margin-top:8px">Condenação de animais inteiros</div>
+
+  <!-- Filtro de tipo -->
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+    <label style="font-size:11px;font-weight:700;color:var(--muted)">TIPO</label>
+    <select id="cond-filtro-tipo" onchange="renderCondenacaoAnimalCharts()" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px">
+      <option value="">Todos</option>
+      <option value="Condenação">Condenação</option>
+      <option value="Tratamento pelo frio">Tratamento pelo frio</option>
+    </select>
+  </div>
+
+  <!-- Gráfico por dia (colunas empilhadas) -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-hdr">
+      <div class="card-title">📅 Condenações por dia</div>
+      <button class="btn-chart-dl" onclick="downloadChart('chart-cond-dia','Condenacoes_Dia')">↓ png</button>
+    </div>
+    <div class="card-body" style="height:220px;position:relative"><canvas id="chart-cond-dia"></canvas></div>
+  </div>
+
   <div class="two-col" style="margin-bottom:14px">
     <div class="card">
       <div class="card-hdr"><div class="card-title">📊 Pareto por motivo</div><button class="btn-chart-dl" onclick="downloadChart('chart-cond-pareto','Pareto_Condenacao')">↓ png</button><span class="card-date" id="cond-pareto-periodo">—</span></div>
@@ -2416,11 +2436,43 @@ async function renderCondenacaoAnimalCharts(){
   const diasFiltrados=getHistoricoFiltrado();
   if(!diasFiltrados.length||!condenacaoCache.length) return;
   const datasSet=new Set(diasFiltrados.map(d=>d.data));
-  const regs=condenacaoCache.filter(r=>datasSet.has(r.data));
-  // Total abatidos no período — calculado antes do pareto
   const totalAbatidos=diasFiltrados.reduce((a,h)=>a+(h.bovino||[]).reduce((b,e)=>b+(e.abatidos||0),0),0);
 
-  // --- PARETO POR MOTIVO ---
+  // Filtro de tipo
+  const filtroTipo=document.getElementById('cond-filtro-tipo')?.value||'';
+  let regs=condenacaoCache.filter(r=>datasSet.has(r.data));
+  if(filtroTipo) regs=regs.filter(r=>r.tipo===filtroTipo);
+
+  const condRegs=filtroTipo?regs:regs.filter(r=>r.tipo==='Condenação'||r.tipo==='Animal'||!r.tipo);
+  const tratRegs=filtroTipo?regs:regs.filter(r=>r.tipo==='Tratamento pelo frio');
+
+  // ── Gráfico por dia (colunas empilhadas) ──
+  const porDia={};
+  diasFiltrados.forEach(d=>{porDia[d.data]={cond:0,trat:0};});
+  condRegs.forEach(r=>{if(porDia[r.data]!==undefined) porDia[r.data].cond++;});
+  tratRegs.forEach(r=>{if(porDia[r.data]!==undefined) porDia[r.data].trat++;});
+  const diasOrd=Object.keys(porDia).sort();
+  const labDia=diasOrd.map(d=>fmtBR(d));
+  const valsCond=diasOrd.map(d=>porDia[d].cond);
+  const valsTrat=diasOrd.map(d=>porDia[d].trat);
+  const ctxDia=document.getElementById('chart-cond-dia');
+  if(ctxDia){
+    if(ctxDia._chart)ctxDia._chart.destroy();
+    const dsDia=[];
+    if(!filtroTipo||filtroTipo==='Condenação') dsDia.push({label:'Condenação',data:valsCond,backgroundColor:'rgba(220,38,38,0.8)',stack:'s',
+      datalabels:{display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}});
+    if(!filtroTipo||filtroTipo==='Tratamento pelo frio') dsDia.push({label:'Tratamento pelo frio',data:valsTrat,backgroundColor:'rgba(202,138,4,0.8)',stack:'s',
+      datalabels:{display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}});
+    ctxDia._chart=new Chart(ctxDia,{type:'bar',data:{labels:labDia,datasets:dsDia},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},
+        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,usePointStyle:true}},datalabels:{}},
+        scales:{y:{stacked:true,beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},stepSize:1}},
+          x:{stacked:true,grid:{display:false},ticks:{font:{size:9},maxRotation:35}}}},
+      plugins:[ChartDataLabels]});
+  }
+
+  // ── Pareto por motivo ──
+  set('cond-pareto-periodo',fmt(totalAbatidos)+' abatidos');
   const porMotivo={};
   regs.forEach(r=>{const m=r.motivo||'Sem motivo';if(!porMotivo[m])porMotivo[m]=0;porMotivo[m]++;});
   const motOrdenados=Object.entries(porMotivo).sort((a,b)=>b[1]-a[1]);
