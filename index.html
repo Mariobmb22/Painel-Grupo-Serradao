@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-195</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-196</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -3692,9 +3692,10 @@ async function renderAnaliseComparativa(){
     const preco=precos[m.nome]||0;
     if(base===null&&atual===null)return;
 
-    // Perda vs meta = (meta% - real%) / 100 × peso do próprio período × preço/kg
+    // Perda vs meta: usa sempre o volume do período BASE para isolar efeito do rendimento
+    // Assim a diferença entre base e atual reflete só a mudança de rendimento, não de volume
     const perdaBaseM=base!==null&&preco>0?((meta-(base||0))/100)*pesoBaseMensal*preco:null;
-    const perdaAtualM=atual!==null&&preco>0?((meta-(atual||0))/100)*pesoAtualMensal*preco:null;
+    const perdaAtualM=atual!==null&&preco>0?((meta-(atual||0))/100)*pesoBaseMensal*preco:null;
     // Ganho mensal = quanto a menos se perde agora vs antes
     const ganhoMensal=perdaBaseM!==null&&perdaAtualM!==null?(perdaBaseM-perdaAtualM):null;
     // Potencial restante vs meta = quanto ainda perde por mês
@@ -3720,7 +3721,7 @@ async function renderAnaliseComparativa(){
   document.getElementById('comp-ganho-total').style.color=ganhoMensalTotal>=0?'var(--green)':'var(--red)';
   const elSub=document.getElementById('comp-ganho-sub');
   if(elSub){
-    elSub.innerHTML=`Perdia <b style="color:var(--red)">${fmtMoeda(perdaBaseMensal)}/mês</b> → Perde <b style="color:${perdaAtualMensal>0?'var(--red)':'var(--green)'}">${fmtMoeda(perdaAtualMensal)}/mês</b><br><span style="font-size:9px;color:var(--muted)">Ambos sobre ${(pesoAtualMensal/1000).toFixed(0)}t/mês de carcaça atual</span>`;
+    elSub.innerHTML=`Perdia <b style="color:var(--red)">${fmtMoeda(perdaBaseMensal)}/mês</b> → Perde <b style="color:${perdaAtualMensal>0?'var(--red)':'var(--green)'}">${fmtMoeda(perdaAtualMensal)}/mês</b><br><span style="font-size:9px;color:var(--muted)">Ambos sobre ${(pesoBaseMensal/1000).toFixed(0)}t/mês de carcaça base</span>`;
   }
 
   // Card 2: Potencial vs meta (quanto ainda perde por mês)
