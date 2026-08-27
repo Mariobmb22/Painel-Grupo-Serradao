@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-186</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-187</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -536,8 +536,18 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       </div>
       <div class="card-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-          <div class="efic-mini"><div class="efic-mini-label">Total animais condenados</div><div class="efic-mini-val" id="cond-animais-total" style="color:var(--red)">—</div></div>
-          <div class="efic-mini"><div class="efic-mini-label">% sobre abatidos</div><div class="efic-mini-val" id="cond-animais-pct" style="color:var(--red)">—</div><div style="font-size:10px;color:var(--muted);margin-top:2px" id="cond-animais-abatidos">— abatidos</div></div>
+          <div class="efic-mini">
+            <div class="efic-mini-label">Animais condenados</div>
+            <div style="display:flex;align-items:baseline;gap:6px">
+              <div class="efic-mini-val" id="cond-animais-total" style="color:var(--red)">—</div>
+              <div style="font-size:11px;color:#94a3b8;font-weight:600" id="cond-animais-trat-total">— trat.</div>
+            </div>
+          </div>
+          <div class="efic-mini">
+            <div class="efic-mini-label">% condenados</div>
+            <div class="efic-mini-val" id="cond-animais-pct" style="color:var(--red)">—</div>
+            <div style="font-size:10px;color:#ca8a04;margin-top:2px;font-weight:600" id="cond-animais-pct-trat">— trat.</div>
+          </div>
         </div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase">Evolução no período</div>
         <div id="cond-animais-lista" style="font-size:12px;color:var(--muted)">Sem dados no período selecionado</div>
@@ -2545,8 +2555,23 @@ async function renderCondenacaoAnimalCharts(){
       datalabels:{display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,anchor:'center',align:'center',font:{size:9,weight:'800'},color:'#fff',formatter:v=>v||''}
     });
     dsVol.push({
-      type:'line',label:'Abates',data:abatesPorDia,borderColor:'#1a5ca8',borderWidth:2,pointRadius:3,pointBackgroundColor:'#1a5ca8',fill:false,yAxisID:'y2',
-      datalabels:{display:true,anchor:'end',align:'top',font:{size:10,weight:'800'},color:'#0f2947',backgroundColor:'rgba(255,255,255,0.85)',borderRadius:3,padding:{top:2,bottom:2,left:3,right:3},formatter:v=>v?fmt(v):''}
+      type:'line',label:'Abates',data:abatesPorDia,borderColor:'#1e293b',borderWidth:2,pointRadius:3,pointBackgroundColor:'#1e293b',fill:false,yAxisID:'y2',
+      datalabels:{
+        display:true,
+        anchor:'end',
+        align:ctx=>{
+          const dia=diasOrd[ctx.dataIndex];
+          const totalCond=(porDia[dia]?.cond||0)+(porDia[dia]?.trat||0);
+          const maxCond=Math.max(...diasOrd.map(d=>(porDia[d]?.cond||0)+(porDia[d]?.trat||0)),1);
+          return totalCond/maxCond>0.6?'bottom':'top';
+        },
+        font:{size:10,weight:'800'},
+        color:'#0f2947',
+        backgroundColor:'rgba(255,255,255,0.85)',
+        borderRadius:3,
+        padding:{top:2,bottom:2,left:3,right:3},
+        formatter:v=>v?fmt(v):''
+      }
     });
     ctxV._chart=new Chart(ctxV,{
       data:{labels:labDia,datasets:dsVol},
@@ -2605,9 +2630,12 @@ async function renderCondenacaoReal(tBov){
   const totalTratamento=animaisTratamento.length;
   const totalAnimais=animaisInteiros.length;
   const pctCondenados=totalAbatidos>0?(totalCondenados/totalAbatidos*100):0;
+  const pctTratamento=totalAbatidos>0?(totalTratamento/totalAbatidos*100):0;
   set('cond-animais-total',fmt(totalCondenados)||'0');
+  set('cond-animais-trat-total',`+${totalTratamento} trat.`);
   set('cond-animais-pct',pctCondenados.toFixed(3)+'%');
-  set('cond-animais-abatidos',`${fmt(totalAbatidos)} abatidos · ${totalTratamento} em tratamento pelo frio`);
+  set('cond-animais-pct-trat',`+${pctTratamento.toFixed(3)}% trat.`);
+  set('cond-animais-abatidos',`${fmt(totalAbatidos)} abatidos`);
   const listaEl=document.getElementById('cond-animais-lista');
   if(listaEl){
     if(!totalAnimais){listaEl.textContent='Nenhuma condenação de animal inteiro no período';}
