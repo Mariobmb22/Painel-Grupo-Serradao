@@ -228,7 +228,7 @@ body.site-locked > *:not(#login-site-overlay){display:none !important}
       <span class="brand-name">Dashboard Operacional</span>
       <span class="brand-sub">Frigorífico Serradão · Atualização diária</span>
     </div>
-    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-204</span>
+    <span style="font-size:9px;color:#cbd5e1;margin-left:8px" title="Versão do código">v2026.06.30-206</span>
   </div>
   <div class="top-right">
     <div class="legend">
@@ -3102,8 +3102,10 @@ function verificarDadosExtracao(){
 let paradasLista=[];
 
 async function salvarHorarioParadas(){
-  const data=dadosDia?.data||document.getElementById('ref-data')?.value;
-  if(!data){showAlert('op-alert','Processe os PDFs primeiro para definir a data do dia.','warn');return;}
+  const data=dadosDia?.data
+    ||document.getElementById('upload-date')?.value
+    ||document.getElementById('miudos-date')?.value;
+  if(!data){showAlert('op-alert','Selecione a data de referência primeiro.','warn');return;}
   const btn=event?.target;if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
     // TempoAbate — horários e operadores
@@ -3125,22 +3127,21 @@ async function salvarHorarioParadas(){
     if(bovMin>0) tempoRows.push([data,'Bovino',tBov,kgBov,colabBov,bovMin-pausaTotalMin]);
     if(suiMin>0) tempoRows.push([data,'Suino',tSui,kgSui,colabSui,suiMin]);
     if(tempoRows.length){
+      // Remove linhas do dia e reinsere — preserva o resto da aba
       const exist=await sheetsRead('TempoAbate');
-      const filtered=(exist||[]).slice(1).filter(r=>String(r[0]||'').slice(0,10)!==data);
-      const hdr=(exist||[])[0]||['Data','Animal','Cabecas','TotalKg','Operadores','TempoMin'];
+      const semHoje=(exist||[]).slice(1).filter(r=>String(r[0]||'').slice(0,10)!==data);
+      const hdr=['Data','Animal','Qtd','TotalKg','Operadores','TempoMin'];
       await sheetsClearRange('TempoAbate');
-      await sheetsAppend('TempoAbate',[hdr,...filtered,...tempoRows]);
+      await sheetsAppend('TempoAbate',[hdr,...semHoje,...tempoRows]);
       tempoAbateCache=null;
     }
-    // Paradas
+    // Paradas — remove do dia e reinsere
     const novasParadas=paradasLista.filter(p=>p.durMin>0).map(p=>[data,p.linha,p.tipo,p.local,p.descricao,p.durMin]);
-    if(novasParadas.length){
-      const existPar=await sheetsRead('Paradas');
-      const filteredPar=(existPar||[]).slice(1).filter(r=>String(r[0]||'').slice(0,10)!==data);
-      const hdrPar=(existPar||[])[0]||['Data','Linha','Tipo','Local','Descricao','DuracaoMin'];
-      await sheetsClearRange('Paradas');
-      await sheetsAppend('Paradas',[hdrPar,...filteredPar,...novasParadas]);
-    }
+    const existPar=await sheetsRead('Paradas');
+    const semHojePar=(existPar||[]).slice(1).filter(r=>String(r[0]||'').slice(0,10)!==data);
+    const hdrPar=['Data','Linha','Tipo','Local','Descricao','DuracaoMin'];
+    await sheetsClearRange('Paradas');
+    await sheetsAppend('Paradas',[hdrPar,...semHojePar,...novasParadas]);
     showAlert('op-alert','Horários e paradas salvos!','ok');
   }catch(e){showAlert('op-alert','Erro: '+e.message,'err');}
   if(btn){btn.disabled=false;btn.textContent='Salvar horários e paradas';}
